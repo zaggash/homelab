@@ -9,7 +9,7 @@ spec:
     spec:
       interval: 5m
       chart: authelia
-      version: 0.8.52
+      version: 0.8.53
       sourceRef:
         kind: HelmRepository
         name: authelia-charts
