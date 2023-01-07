@@ -1,0 +1,2 @@
+# Trigger cron build
+http -F POST https://DNS_NAME/api/repos/ORG/REPO/cron/CRON_NAME "Authorization: Bearer TOKEN"

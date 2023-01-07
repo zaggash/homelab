@@ -1,0 +1,8 @@
+---
+# Match generated configmap to HelmRelease "path" key
+nameReference:
+  - kind: ConfigMap
+    version: v1
+    fieldSpecs:
+      - path: spec/values/volumes/name
+        kind: HelmRelease

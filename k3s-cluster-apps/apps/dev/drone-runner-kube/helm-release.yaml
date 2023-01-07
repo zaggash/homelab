@@ -1,0 +1,49 @@
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: drone-runner-kube
+spec:
+  chart:
+    spec:
+      interval: 5m
+      chart: drone-runner
+      version: "0.5.3"
+      sourceRef:
+        kind: HelmRepository
+        name: drone-volker-charts
+        namespace: flux-system
+  interval: 5m
+  install:
+    crds: Create
+  maxHistory: 3
+  upgrade:
+    crds: CreateReplace
+  values:
+    podSecurityContext:
+      runAsNonRoot: true
+      runAsUser: 1000
+      runAsGroup: 1000
+      fsGroup: 1000
+    securityContext:
+      readOnlyRootFilesystem: true
+      capabilities:
+        drop:
+        - ALL
+    config:
+      DRONE_RPC_HOST: drone:8000
+      DRONE_RPC_PROTO: http
+      DRONE_RPC_SECRET: "${SECRET_DRONE_RPC_SECRET}"
+      DRONE_HTTP_BIND: ":3000"
+      DRONE_HTTP_PROTO: http
+      DRONE_NAMESPACE_DEFAULT: dev
+      DRONE_RUNNER_CAPACITY: 3
+      DRONE_UI_DISABLED: true
+  postRenderers:
+  - kustomize:
+      patchesStrategicMerge:
+      - kind: Deployment
+        apiVersion: apps/v1
+        metadata:
+          name: drone-runner-kube
+          annotations:
+            secret.reloader.stakater.com/reload: drone-runner-kube

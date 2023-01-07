@@ -1,0 +1,15 @@
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: jackett
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - kind: Rule
+      match: Host(`jackett.${SECRET_CLUSTER_DOMAIN}`)
+      services:
+        - kind: Service
+          name: jackett
+          port: 9117

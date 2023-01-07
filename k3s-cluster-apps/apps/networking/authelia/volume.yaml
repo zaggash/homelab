@@ -1,0 +1,12 @@
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: authelia
+spec:
+  storageClassName: nfs-data
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100M

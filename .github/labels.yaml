@@ -1,0 +1,26 @@
+---
+# type
+- name: type/major
+  color: "ff0000"
+- name: type/minor
+  color: "FFA500"
+- name: type/patch
+  color: "ffffe0"
+- name: type/digest
+  color: "bcbcbc"
+
+# renovate
+- name: renovate/helm
+  color: "0e1582"
+- name: renovate/container
+  color: "228fe1"
+- name: renovate/terraform
+  color: "5f43e9"
+- name: renovate/github-release
+  color: "bcbcbc"
+- name: renovate/github-action
+  color: "bcbcbc"
+
+# Flux
+- name: flux/update
+  color: "b7c7ea"

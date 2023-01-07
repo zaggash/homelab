@@ -1,0 +1,15 @@
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: photoprism
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - kind: Rule
+      match: Host(`photos.${SECRET_CLUSTER_DOMAIN}`)
+      services:
+        - kind: Service
+          name: photoprism
+          port: 2342

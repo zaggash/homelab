@@ -1,0 +1,15 @@
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: overseerr
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - kind: Rule
+      match: Host(`ask.${SECRET_CLUSTER_DOMAIN}`)
+      services:
+        - kind: Service
+          name: overseerr
+          port: 5055

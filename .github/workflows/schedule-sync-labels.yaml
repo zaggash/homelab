@@ -1,0 +1,21 @@
+---
+name: Schedule - Sync Labels
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/labels.yaml"
+
+jobs:
+  labels:
+    name: Sync Labels
+    uses: zaggash/gh-workflows/.github/workflows/run-sync-labels.yaml@main
+    with:
+      config-file: ".github/labels.yaml"
+      delete-other-labels: true
+    secrets:
+      app_id: ${{ secrets.ZAGGBOT_APP_ID }}
+      app_private_key: ${{ secrets.ZAGGBOT_APP_PRIVATE_KEY }}

@@ -1,0 +1,171 @@
+variant: fcos
+version: 1.4.0
+
+passwd:
+  users:
+    - name: core
+      ssh_authorized_keys: 
+        - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMhxyPFaMc46QLMGMCy5zaiiqBXOTt27H9fc5LPDK/q9 Home servers
+      groups:
+        - sudo
+        - docker
+
+storage:
+  directories:
+    - path: /etc/systemd/resolved.conf.d
+      overwrite: true
+      mode: 0755
+
+  files:
+    - path: /etc/pki/ca-trust/source/anchors/internal-home-ca.pem
+      mode: 0644
+      contents:
+        inline: |
+          -----BEGIN CERTIFICATE-----
+MIID9jCCAt6gAwIBAgIEAKInCjANBgkqhkiG9w0BAQsFADCBhjEPMA0GA1UEAwwG
+Uk9PVENBMQswCQYDVQQGEwJGUjEOMAwGA1UECAwFTWFybmUxEzARBgNVBAcMCk1v
+bnRtaXJhaWwxDTALBgNVBAoMBEhvbWUxDDAKBgNVBAsMA0xhYjEkMCIGCSqGSIb3
+DQEJARYVd2VibWFzdGVyQHppZ2d6YWdnLmZyMB4XDTIyMDkxNjAwMjQyM1oXDTMy
+MDkxMzAwMjQyM1owgYYxDzANBgNVBAMMBlJPT1RDQTELMAkGA1UEBhMCRlIxDjAM
+BgNVBAgMBU1hcm5lMRMwEQYDVQQHDApNb250bWlyYWlsMQ0wCwYDVQQKDARIb21l
+MQwwCgYDVQQLDANMYWIxJDAiBgkqhkiG9w0BCQEWFXdlYm1hc3RlckB6aWdnemFn
+Zy5mcjCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBANozLqwal9QeuAMl
+pTYAmnv5lNULsX26e26D6eoKfUY8CUjO0zuy3QfL78xpSUfF8gnWTVkAtYHrvB2C
+TcF0yC4KpFytC+rKqOrtv7/wAJSam712gNXbpzwi35TujKKDSie4LDFni15fFNER
+ro7kMGpmsUA096wipFPv7ly71BAqeutqHX4uVNQ7BlzxpjDldhu6J+0hmLM1ltwB
+OZTKP8XftXqQ7oU5O5fCulATDuu+5T9ODlIxDYoLiyjjtPIjT534tPLuZdCkKhXE
+oiUvbFXqm4trMx72dEZDtUIAyZzh6pzh1DnUCE5P9+jzid9eBhU4VOf+At1ynTib
+7JKJBKcCAwEAAaNqMGgwEQYDVR0RBAowCIIGUk9PVENBMB0GA1UdDgQWBBQnpVZs
+PRZLK36zqTJ2S84w0i7GXDAPBgNVHRMBAf8EBTADAQH/MBMGA1UdJQQMMAoGCCsG
+AQUFBwMBMA4GA1UdDwEB/wQEAwIBBjANBgkqhkiG9w0BAQsFAAOCAQEAdsN5pcNJ
+bjwqzxNxkcCC4wO5BA/70YJUgdg8i5SV4nBXvkkaJDp2sH0qVI8yObibeaTjpZE8
+hN+Sg5awBUl6IsABE8RozgkVozEOH3tMcWoGN7XiqrV9DcXDdzzGJQw8kLRc3ji8
+EqvQErM8ps0iycO1sL6DEzhLkjk4oHkjQNiPaZmw0+WJMAZcFx5Wi4mJ+xEaCzE4
+P+0CqjFXyecMnvsq1Q2rTN827nGIz3ovY3CYxH8RA2dwVadsJdyT1FcCFlETMAI3
+/Hq/YHueFS272u8JlhE0b/zsX26SwVVjJAw245XAv2GXdR7nPZu/CYe7xjNdt3HK
+Rg26Hvk5j3aC5Q==
+-----END CERTIFICATE-----
+
+    - path: /etc/systemd/resolved.conf.d/fedora-coreos-stub-listener.conf
+      mode: 0644
+      contents:
+        inline: |
+          [Resolve]
+          DNSStubListener=no
+
+    - path: /etc/NetworkManager/system-connections/eth0.nmconnection
+      mode: 0600
+      contents:
+        inline: |
+          [connection]
+          id=eth0
+          type=ethernet
+          interface-name=eth0
+          [ipv4]
+          address1=192.168.1.10/24,192.168.1.1
+          dns=1.1.1.1;1.0.0.1;
+          dns-search=
+          may-fail=false
+          method=manual
+          [ipv6]
+          address1=2a01:e0a:83c:6b30::10,2a01:e0a:83c:6b30::1
+          dns=2606:4700:4700::1111,2606:4700:4700::1001
+          dns-search=home.lan
+          may-fail=false
+          method=manual
+
+    - path: /etc/selinux/config
+      overwrite: true
+      contents:
+        inline: |
+          # This file controls the state of SELinux on the system.
+          # SELINUX= can take one of these three values:
+          #     enforcing - SELinux security policy is enforced.
+          #     permissive - SELinux prints warnings instead of enforcing.
+          #     disabled - No SELinux policy is loaded.
+          SELINUX=disabled
+          # SELINUXTYPE= can take one of these three values:
+          #     targeted - Targeted processes are protected,
+          #     minimum - Modification of targeted policy. Only selected processes are
+          #     protected.
+          #     mls - Multi Level Security protection.
+          SELINUXTYPE=targeted
+
+    - path: /etc/vconsole.conf
+      mode: 0644
+      contents:
+        inline: KEYMAP=fr
+
+    - path: /etc/modules-load.d/br_netfilter.conf
+      mode: 0644
+      contents:
+        inline: br_netfilter
+
+    - path: /etc/sysctl.d/custom.conf
+      mode: 0644
+      contents:
+        inline: |
+          net.bridge.bridge-nf-call-iptables = 1
+          kernel.panic = 10
+          kernel.panic_on_oops = 1
+          vm.overcommit_memory = 1
+          vm.panic_on_oom = 0
+          net.ipv4.ip_forward = 1
+
+    - path: /etc/hostname
+      mode: 0644      
+      contents:
+        inline: rpi4-docker
+
+    - path: /etc/systemd/timesyncd.conf
+      overwrite: true
+      mode: 0644
+      contents:
+        inline: |
+          [Time]
+          NTP=0.fr.pool.ntp.org 1.fr.pool.ntp.org 2.fr.pool.ntp.org 3.fr.pool.ntp.org
+
+    - path: /etc/ssh/sshd_config.d/20-custom-sshd
+      overwrite: true
+      mode: 0644
+      contents:
+        inline: |
+          # Use most defaults for sshd configuration.
+          UsePrivilegeSeparation sandbox
+          Subsystem sftp internal-sftp
+          UseDNS no
+          PermitRootLogin no
+          AllowUsers core
+          PasswordAuthentication no
+          AuthenticationMethods publickey
+
+    - path: /etc/sudoers.d/core-nopasswd
+      mode: 0644
+      contents:
+        inline: |
+          core ALL=(ALL:ALL) NOPASSWD: ALL
+
+systemd:
+  units:
+    - name: rpm-ostree-countme.timer
+      enabled: false
+      mask: true
+
+    - name: portainer-agent.service
+      enabled: true
+      contents: |
+        [Unit]
+        Description=portainer-agent
+        After=network-online.target
+        Wants=network-online.target
+        [Service]
+        TimeoutStartSec=0
+        ExecStartPre=-/bin/docker rm -f portainer_agent
+        ExecStartPre=/bin/docker pull portainer/agent:latest
+        ExecStart=/bin/docker run -d --name portainer_agent --restart=always \
+          -v /var/lib/docker/volumes:/var/lib/docker/volumes \
+          -v /var/run/docker.sock:/var/run/docker.sock \
+          -p 9001:9001 \
+          portainer/agent:latest
+        [Install]
+        WantedBy=multi-user.target

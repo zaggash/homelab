@@ -1,0 +1,7 @@
+# K3s
+kubeconfig
+k3sup
+
+# Flux
+cluster-secrets.txt
+Dockerfile*

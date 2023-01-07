@@ -1,0 +1,21 @@
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: vaultwarden
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - kind: Rule
+      match: Host(`pass.${SECRET_CLUSTER_DOMAIN}`)
+      services:
+        - kind: Service
+          name: vaultwarden
+          port: 8000
+    - kind: Rule
+      match: Host(`pass.${SECRET_CLUSTER_DOMAIN}`) && (Path(`/notifications/hub`) || Path(`/notifications/hub/negotiate`))
+      services:
+        - kind: Service
+          name: vaultwarden
+          port: 3012

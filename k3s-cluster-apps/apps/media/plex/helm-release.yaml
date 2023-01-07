@@ -1,0 +1,64 @@
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: plex
+spec:
+  chart:
+    spec:
+      interval: 5m
+      chart: app-template
+      version: "1.2.1"
+      sourceRef:
+        kind: HelmRepository
+        name: bjw-s-charts
+        namespace: flux-system
+  interval: 5m
+  install:
+    crds: Create
+  maxHistory: 3
+  upgrade:
+    crds: CreateReplace
+  values:
+    podAnnotations:
+      backup.velero.io/backup-volumes-excludes: media
+    image:
+      repository: ghcr.io/onedr0p/plex
+      tag: 1.30.0.6486-629d58034@sha256:5182d9c44126ed89b98b2c1a0c0b71bd927293952141770f8877521b09febf0c
+    env:
+      TZ: "Europe/Paris"
+      # PLEX_CLAIM: "${SECRET_PLEX_CLAIM}" ## Use to authenticate PMS during 1st install
+      ADVERTISE_IP: "${SECRET_PLEX_ADVERTISE_IP}"
+    podSecurityContext:
+      runAsUser: 1000
+      runAsGroup: 1000
+      fsGroup: 1000
+      supplementalGroups:
+      - 44
+      - 109
+    service:
+      main:
+        ports:
+          http:
+            port: 32400
+            protocol: TCP
+    ingress:
+      main:
+        enabled: false
+    persistence:
+      config:
+        enabled: true
+        retain: true
+        existingClaim: "plex-config"
+        mountPath: /config
+      media:
+        enabled: true
+        accessMode: "ReadWriteOnce"
+        retain: true
+        existingClaim: "all-data"
+        subPath:
+        - path: movies
+          mountPath: /media/movies
+        - path: cartoons
+          mountPath: /media/cartoons
+        - path: tvshows
+          mountPath: /media/tvshows

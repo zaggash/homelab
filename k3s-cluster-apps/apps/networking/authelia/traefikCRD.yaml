@@ -1,0 +1,47 @@
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: authelia-forward
+spec:
+  forwardAuth:
+    address: http://authelia.networking.svc/api/verify?rd=https://login.${SECRET_CLUSTER_DOMAIN}/
+    trustForwardHeader: true
+    authResponseHeaders:
+      - Remote-User
+      - Remote-Groups
+      - Remote-Name
+      - Remote-Email
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: authelia-rate-limit
+spec:
+  rateLimit:
+    sourceCriterion:
+      ipStrategy:
+        depth: 2
+    burst: 50
+    average: 100
+    period: 5s
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: authelia
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - kind: Rule
+      match: Host(`login.${SECRET_CLUSTER_DOMAIN}`)
+      middlewares:
+        - name: authelia-forward
+          namespace: networking
+        - name: authelia-rate-limit
+          namespace: networking
+      services:
+        - kind: Service
+          name: authelia
+          port: 80

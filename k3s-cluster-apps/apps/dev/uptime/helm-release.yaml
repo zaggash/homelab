@@ -1,0 +1,41 @@
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: uptime-kuma
+spec:
+  chart:
+    spec:
+      interval: 5m
+      chart: app-template
+      version: "1.2.1"
+      sourceRef:
+        kind: HelmRepository
+        name: bjw-s-charts
+        namespace: flux-system
+  interval: 5m
+  install:
+    crds: Create
+  maxHistory: 3
+  upgrade:
+    crds: CreateReplace
+  values:
+    image:
+      repository: louislam/uptime-kuma
+      tag: 1.19.3-alpine@sha256:2b46b0a419e673d37215ab183e02b8ce5655e951c86d43327f4eeba611fa6e74
+    env:
+      TZ: "Europe/Paris"
+      PUID: 1000
+      PGID: 1000
+    service:
+      main:
+        ports:
+          http:
+            type: ClusterIP
+            port: 3001
+    ingress:
+      main:
+        enabled: false
+    persistence:
+      data:
+        enabled: true
+        existingClaim: uptime-kuma-data

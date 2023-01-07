@@ -1,0 +1,18 @@
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: homer
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - kind: Rule
+      match: Host(`home.${SECRET_CLUSTER_DOMAIN}`)
+      middlewares:
+        - name: authelia-forward
+          namespace: networking
+      services:
+        - kind: Service
+          name: homer
+          port: 8080

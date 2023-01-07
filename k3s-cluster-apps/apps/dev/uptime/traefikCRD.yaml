@@ -1,0 +1,15 @@
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: uptime-kuma
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - kind: Rule
+      match: Host(`uptime.${SECRET_CLUSTER_DOMAIN}`)
+      services:
+        - kind: Service
+          name: uptime-kuma
+          port: 3001

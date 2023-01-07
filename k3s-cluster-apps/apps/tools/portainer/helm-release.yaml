@@ -1,0 +1,34 @@
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: portainer
+spec:
+  chart:
+    spec:
+      interval: 5m
+      chart: portainer
+      version: "1.0.38"
+      sourceRef:
+        kind: HelmRepository
+        name: portainer-charts
+        namespace: flux-system
+  interval: 5m
+  install:
+    crds: Create
+  maxHistory: 3
+  upgrade:
+    crds: CreateReplace
+  values:
+    enterpriseEdition:
+      enabled: true
+    tls:
+      force: true
+    service:
+      type: ClusterIP
+      httpPort: 9443
+    ingress:
+      enabled: false
+    persistence:
+      enabled: true
+      existingClaim: "portainer-data"
+      mountPath: /data

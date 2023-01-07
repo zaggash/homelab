@@ -1,0 +1,50 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "github>zaggash/gh-workflows//renovate-config/default"
+  ],
+
+  "username": "zagg-bot[bot]",
+  "gitAuthor": "zagg-bot <121982232+zagg-bot[bot]@users.noreply.github.com>",
+  "repositories": ["zaggash/homelab"],
+
+  "flux": {
+    "fileMatch": ["k3s-cluster-apps/.+\\.ya?ml$"],
+    "ignorePaths": ["k3s-cluster-apps/init/flux-system/"]
+  },
+  "helm-values": {
+    "fileMatch": ["k3s-cluster-apps/.+helm-release\\.ya?ml$"]
+  },
+  "kubernetes": {
+    "fileMatch": ["k3s-cluster-apps/.+\\.ya?ml$"],
+    "ignorePaths": ["k3s-cluster-apps/init/flux-system/"]
+  },
+
+  "packageRules": [
+    // Disable Kubernetes
+    {
+      description: "Disable kubernetes-api",
+      matchManagers: ["kubernetes"],
+      matchDatasources: ["kubernetes-api"],
+      enabled: false,
+    },
+
+    //Set automerge rules
+    {
+      description: "Auto merge containers",
+      matchDatasources: ["docker"],
+      automerge: true,
+      ignoreTests: true,
+      automergeType: "branch",
+      matchUpdateTypes: ["minor", "patch"],
+      matchPackageNames: ["ghcr.io/linuxserver/jackett"],
+    },
+
+    //version-<major>.<minor>.<patch>
+    {
+      "matchDatasources": ["docker"],
+      "matchPackageNames": ["docker.io/linuxserver/calibre-web"],
+      "versioning": "regex:^version-(?<major>\\d+)\\.(?<minor>\\d+)\\.(?<patch>\\d+)$",
+    }
+  ]
+}

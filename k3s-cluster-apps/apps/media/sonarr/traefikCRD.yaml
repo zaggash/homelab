@@ -1,0 +1,15 @@
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: sonarr
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - kind: Rule
+      match: Host(`sonarr.${SECRET_CLUSTER_DOMAIN}`)
+      services:
+        - kind: Service
+          name: sonarr
+          port: 8989

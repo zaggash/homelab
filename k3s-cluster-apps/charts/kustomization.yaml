@@ -1,0 +1,18 @@
+---
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - nfs-provisioner-charts.yaml
+  - metallb-charts.yaml
+  - drone-charts.yaml
+  - drone-volker-charts.yaml
+  - traefik-charts.yaml
+  - authelia-charts.yaml
+  - stakater-charts.yaml
+  - bitnami-charts.yaml
+  - runix-charts.yaml
+  - containeroo-charts.yaml
+  - bjw-s-charts.yaml
+  - samipsolutions-charts.yaml
+  - vmware-tanzu-charts.yaml
+  - portainer-charts.yaml

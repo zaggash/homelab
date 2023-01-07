@@ -1,0 +1,12 @@
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: jackett-config
+spec:
+  storageClassName: nfs-data
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100M

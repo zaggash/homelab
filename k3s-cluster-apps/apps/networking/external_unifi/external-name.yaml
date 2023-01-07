@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: unifi
+spec:
+  type: ExternalName
+  externalName: rpi4-docker.home.lan.

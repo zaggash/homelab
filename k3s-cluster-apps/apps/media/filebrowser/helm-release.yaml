@@ -1,0 +1,72 @@
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: filebrowser
+spec:
+  chart:
+    spec:
+      interval: 5m
+      chart: app-template
+      version: "1.2.1"
+      sourceRef:
+        kind: HelmRepository
+        name: bjw-s-charts
+        namespace: flux-system
+  interval: 5m
+  install:
+    crds: Create
+  maxHistory: 3
+  upgrade:
+    crds: CreateReplace
+  values:
+    podAnnotations:
+      backup.velero.io/backup-volumes-excludes: data
+    image:
+      repository: docker.io/filebrowser/filebrowser
+      tag: v2.23.0@sha256:dd9f222c59acea83633f4101597f32620e24aa868ee7a72c40305fbd010887f2
+    env:
+      TZ: "Europe/Paris"
+      LOG_LEVEL: info
+    controller:
+      annotations:
+        configmap.reloader.stakater.com/reload: filebrowser-settings
+    configMaps:
+      settings:
+        enabled: true
+        data:
+          .filebrowser.json: |
+            {
+              "port": 80,
+              "baseURL": "",
+              "address": "",
+              "log": "stdout",
+              "database": "/config/database.db",
+              "root": "/mnt/data",
+              "branding.name": "Seedbox Cloud"
+            }
+    service:
+      main:
+        ports:
+          http:
+            port: 80
+            protocol: TCP
+    ingress:
+      main:
+        enabled: false
+    persistence:
+      settings:
+        enabled: true
+        type: configMap
+        name: filebrowser-settings
+        mountPath: /.filebrowser.json
+        subPath: .filebrowser.json
+        readOnly: true
+      config:
+        enabled: true
+        existingClaim: "filebrowser-config"
+        mountPath: /config
+      data:
+        enabled: true
+        retain: true
+        existingClaim: "all-data"
+        mountPath: /mnt/data

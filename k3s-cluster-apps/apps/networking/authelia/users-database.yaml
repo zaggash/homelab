@@ -1,0 +1,14 @@
+---
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: authelia-config-custom
+data:
+  users_database.yml: |
+    users:
+      zaggash:
+        displayname: "Zagg"
+        password: "${SECRET_AUTHELIA_USER_ZAGG_PASSWORD}"
+        email: ${SECRET_AUTHELIA_USER_ZAGG_EMAIL}
+        groups:
+          - admins

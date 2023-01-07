@@ -1,0 +1,15 @@
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: portainer
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - kind: Rule
+      match: Host(`portainer.${SECRET_CLUSTER_DOMAIN}`)
+      services:
+        - kind: Service
+          name: portainer
+          port: 9443
