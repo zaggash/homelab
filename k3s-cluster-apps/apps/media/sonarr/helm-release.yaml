@@ -23,7 +23,7 @@ spec:
       backup.velero.io/backup-volumes-excludes: media
     image:
       repository: ghcr.io/onedr0p/sonarr
-      tag: 3.0.9.1549@sha256:7b121038c6e78b3035d45c312bf4aa32c99ae72e0985c14b464e8c032166b4bf
+      tag: 3.0.9.1549@sha256:4d586c0cf66494d45bd01a660323d177cbb6e371fd08c8827b23f3d3dcf79dac
     env:
       TZ: "Europe/Paris"
     podSecurityContext:
