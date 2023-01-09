@@ -23,7 +23,7 @@ spec:
       backup.velero.io/backup-volumes-excludes: media
     image:
       repository: ghcr.io/onedr0p/radarr
-      tag: 4.3.2.6857@sha256:b24ddbcef186fa0e08ddf6065d5730378ad122566a50b76fc44a950fa5d2614d
+      tag: 4.3.2.6857@sha256:4aec2871d42491bfc63b6de9109c9a0fdd62a15191382184b702e9c5aa549fb6
     env:
       TZ: "Europe/Paris"
     podSecurityContext:
