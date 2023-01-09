@@ -21,7 +21,7 @@ spec:
   values:
     image:
       repository: louislam/uptime-kuma
-      tag: 1.19.3-alpine@sha256:2b46b0a419e673d37215ab183e02b8ce5655e951c86d43327f4eeba611fa6e74
+      tag: 1.19.4-alpine@sha256:ae75312ea48c0cf3bd94a1e40b2d4022c8b170a961dc361ce4d39d70ab4c946d
     env:
       TZ: "Europe/Paris"
       PUID: 1000
