@@ -23,7 +23,7 @@ spec:
       backup.velero.io/backup-volumes-excludes: media
     image:
       repository: ghcr.io/onedr0p/bazarr
-      tag: 1.1.4@sha256:f64eb8f75ea5959409fdf44e83bcd77eea3fe0a841814768289a1a0775434ef5
+      tag: 1.1.4@sha256:40c2c980fad80981f519d1866a82513d9e7fbc0db2e03a66d4162b809ec1133f
     env:
       TZ: "Europe/Paris"
     service:
