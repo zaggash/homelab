@@ -5,7 +5,7 @@
 <div align="center">  
 
 [![k3s](https://img.shields.io/badge/k3s-v1.24.4-blue?style=for-the-badge&logo=kubernetes&logoColor=white)](https://k3s.io/)
-[![renovate](https://img.shields.io/badge/renovate-enabled?style=for-the-badge&logo=renovatebot&logoColor=white&color=brightgreen)](https://github.com/renovatebot/renovate)  
+![Renovate](https://img.shields.io/github/actions/workflow/status/zaggash/homelab/schedule-renovate.yaml?label=renovate&logo=RenovateBot&logoColor=white&style=for-the-badge)  
 
 ... Powered by Flux2, k3s and Renovate 🤖
 
