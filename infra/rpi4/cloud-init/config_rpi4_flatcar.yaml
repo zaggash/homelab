@@ -87,5 +87,7 @@ systemd:
           -v /var/run/docker.sock:/var/run/docker.sock \
           -p 9001:9001 \
           portainer/agent:latest
+        Restart=on-failure
+        RestartSec=10s
         [Install]
         WantedBy=multi-user.target
