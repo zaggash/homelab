@@ -21,7 +21,7 @@ spec:
   values:
     image:
       repository: ghcr.io/linuxserver/healthchecks
-      tag: 2.5.20230106@sha256:8811dc6d902ccc3e551b02f2a41d0b56193bbdc56ceddaabb386ad011d7300d2
+      tag: 2.5.20230113@sha256:119cc23557c09ce5a8734131e9cc1400f7049e7678e67f8d39a54db847fcf36d
     dependsOn:
     - name: postgresql
       namespace: dev
