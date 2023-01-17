@@ -1,0 +1,32 @@
+version: "3"
+services:
+  pihole:
+    hostname: pihole
+    domainname: home.lan
+    image: pihole/pihole:2022.12
+    network_mode: "host"
+    dns:
+      - 192.168.1.10
+      - 1.0.0.1
+    environment:
+      TZ: 'Europe/Paris'
+      FTLCONF_LOCAL_IPV4: 192.168.1.10
+      FTLCONF_LOCAL_IPV6: 2a01:e0a:83c:6b30::10
+      DNSSEC: false
+      DHCP_ACTIVE: true
+      DHCP_ROUTER: 192.168.1.1
+      DHCP_START: 192.168.1.100
+      DHCP_END: 192.168.1.254
+      PIHOLE_DOMAIN: home.lan
+      VIRTUAL_HOST: pihole.home.lan 
+    # Volumes store your data between container upgrades
+    volumes:
+      - 'data:/etc/pihole'
+      - 'dnsmasq:/etc/dnsmasq.d'
+    cap_add:
+      - NET_ADMIN
+    restart: unless-stopped
+    
+volumes:
+  data:
+  dnsmasq:

@@ -1,0 +1,29 @@
+version: "3"
+services:
+  controller:
+    hostname: unifi
+    domainname: home.lan
+    image: jacobalberty/unifi:latest
+    init: true
+    dns:
+      - 192.168.1.10
+      - 1.0.0.1
+    environment:
+      TZ: 'Europe/Paris'
+      UNIFI_STDOUT: true
+      RUNAS_UID0: false
+      UNIFI_UID: 1000
+      UNIFI_GID: 1000
+      JVM_INIT_HEAP_SIZE: 1024M
+      JVM_MAX_HEAP_SIZE: 1024M
+      LOTSOFDEVICES: true
+    volumes:
+      - data:/unifi
+    ports:
+      - 8443:8443/tcp # UI
+      - 8080:8080/tcp # Inform
+      - 3478:3478/udp # Stun
+    restart: unless-stopped
+    
+volumes:
+  data:
