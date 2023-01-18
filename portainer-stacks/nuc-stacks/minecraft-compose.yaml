@@ -1,0 +1,80 @@
+version: "3"
+services:
+  proxy:
+    image: zaggash/bedrock-connect:2022-11-15
+    init: true
+    dns:
+      - 192.168.1.10
+      - 1.0.0.1
+    ports:
+      - 19132:19132/tcp
+      - 19132:19132/udp
+    restart: always
+
+  server:
+    image: itzg/minecraft-server:java19@sha256:dd4ae10d2540fa66a06b6027047196df35e9fb1caeb470d5065056e20413034d
+    init: true
+    dns:
+      - 192.168.1.10
+      - 1.0.0.1
+    environment:
+      ## Global settings ##
+      TZ: 'Europe/Paris'
+      EULA: "TRUE"
+      LOG_TIMESTAMP: true
+      DEBUG_MEMORY: true
+      DEBUG_EXEC: true
+      MEMORY: 5G
+      ENABLE_ROLLING_LOGS: true
+      USE_AIKAR_FLAGS: true
+      ## Minecraft settings ##
+      TYPE: PAPER # Download latest Paper Fork
+      VERSION: 1.19.2 # Set minecraft server version
+      SPIGET_RESOURCES: "19254,60623,274" # Download plugins : ViaVersion + SleepMost + Dynmap
+      # Add latest Geyser and  FloodGate
+      MODS: "https://ci.opencollab.dev/job/GeyserMC/job/Geyser/job/master/lastSuccessfulBuild/artifact/bootstrap/spigot/build/libs/Geyser-Spigot.jar,https://ci.opencollab.dev/job/GeyserMC/job/Floodgate/job/master/lastSuccessfulBuild/artifact/spigot/build/libs/floodgate-spigot.jar"
+      # server.properties #
+      OVERRIDE_ICON: TRUE
+      ICON: "https://cdn-icons-png.flaticon.com/512/1409/1409036.png"
+      NOOPER_ENABLED: false
+      LEVEL: MyHomeWorld
+      SEED: "-266100150045570408"
+      SERVER_NAME: "Serveur Minecraft \'La Famille\' !"
+      MOTD: "Bienvenue."
+      MAX_PLAYERS: 6
+      ANNOUNCE_PLAYER_ACHIEVEMENTS: true
+      ENFORCE_WHITELIST: TRUE
+      WHITELIST: "Zaggash"
+      OPS: "Zaggash"
+      DIFFICULTY: easy
+      ONLINE_MODE: true
+      ENABLE_RCON: false
+      LEVEL_TYPE: "minecraft:normal"
+      MODE: survival
+      PVP: true
+      HARDCORE: false
+      FORCE_GAMEMODE: true
+      ALLOW_FLIGHT: false
+      MAX_BUILD_HEIGHT: 300
+      GENERATE_STRUCTURES: true
+      VIEW_DISTANCE: 10
+      SPAWN_PROTECTION: 16
+      ALLOW_NETHER: true
+      SPAWN_ANIMALS: true
+      SPAWN_MONSTERS: true
+      SPAWN_NPCS: true
+      PLAYER_IDLE_TIMEOUT: 5
+    volumes:
+      - data:/data
+    ports:
+      - 25565:25565/tcp
+      - 25565:25565/udp
+      - 19133:19133/tcp
+      - 19133:19133/udp
+      - 8123:8123/tcp
+    tty: true
+    stdin_open: true
+    restart: always
+
+volumes:
+  data:
