@@ -42,6 +42,15 @@
     },
 
     {
+      description: "Set fixed version for bedrock-connect",
+      matchManagers: ["dockerfile"],
+      matchDatasources: ["docker"],
+      matchPaths: ["portainer-stacks/nuc-stacks/bedrock-connect/**"],
+      matchPackageNames: ["eclipse-temurin"],
+      allowedVersions: "<=11.*"
+    },
+
+    {
       //version-<major>.<minor>.<patch>
       "matchDatasources": ["docker"],
       "matchPackageNames": ["docker.io/linuxserver/calibre-web"],
