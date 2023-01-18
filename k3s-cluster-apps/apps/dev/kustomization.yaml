@@ -4,8 +4,6 @@ kind: Kustomization
 namespace: dev
 resources:
   - namespace.yaml
-  - drone
-  - drone-runner-kube
   - healthchecks
   - uptime
   - postgresql

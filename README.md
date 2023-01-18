@@ -18,7 +18,3 @@
 - Scripts and Configs to boostrap node OS.  
 
 - FluxCD k3s repo to boostrap cluster apps.  
-
-- DroneCI init scripts and snippets.  
-
-  
