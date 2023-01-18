@@ -13,3 +13,4 @@ resources:
   - qbittorrent
   - plex
   - filebrowser
+  - calibre-web

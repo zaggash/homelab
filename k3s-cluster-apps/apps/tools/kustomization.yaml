@@ -5,7 +5,6 @@ namespace: tools
 resources:
   - namespace.yaml
   - vaultwarden
-  - calibre-web
   - homer
   - photoprism
   - portainer
