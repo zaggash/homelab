@@ -1,7 +1,7 @@
 version: "3"
 services:
   proxy:
-    image: zaggash/bedrock-connect:2022-11-15
+    image: zaggash/bedrock-connect:2022-11-15@sha256:29b0f3b542e479ade26c88037da0d91b7cc0a0e0979e1cb9925e39ebcd58efb8
     init: true
     dns:
       - 192.168.1.10
@@ -12,7 +12,7 @@ services:
     restart: always
 
   server:
-    image: itzg/minecraft-server:java19@sha256:dd4ae10d2540fa66a06b6027047196df35e9fb1caeb470d5065056e20413034d
+    image: itzg/minecraft-server:java19@sha256:f38f06740766098f2df050f6a7a9d67647013210cc872dc0fbcff6719a4367d2
     init: true
     dns:
       - 192.168.1.10

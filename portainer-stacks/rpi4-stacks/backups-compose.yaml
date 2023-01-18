@@ -2,7 +2,7 @@ version: "3"
 
 services:
   pihole: &backup_service
-    image: offen/docker-volume-backup:v2.25.1@sha256:1bb1e4aa293705996b796c9a0593f3c14f771ad2ea2dd329d6520e15149ae44d
+    image: offen/docker-volume-backup:v2.25.1@sha256:413cc3fabcff5a1526892a6448f8c6ed31d21d1fad2e0fcc94a86336ed3f1014
     restart: always
     dns:
       - 192.168.1.10
