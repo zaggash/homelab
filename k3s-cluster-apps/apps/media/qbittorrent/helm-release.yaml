@@ -23,7 +23,7 @@ spec:
       backup.velero.io/backup-volumes-excludes: data
     image:
       repository: ghcr.io/onedr0p/qbittorrent
-      tag: 4.5.0@sha256:c070aa47a28188cf562c3a32a2855db5817145d7da7026a6acf0fc6d0c779481
+      tag: 4.5.0@sha256:5ff2064d788100f54770dc5e477f32d41be7e71ee36923a22236053576e39d5d
     env:
       TZ: "Europe/Paris"
     settings:
