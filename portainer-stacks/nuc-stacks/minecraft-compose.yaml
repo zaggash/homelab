@@ -39,7 +39,7 @@ services:
       NOOPER_ENABLED: false
       LEVEL: MyHomeWorld
       SEED: "-266100150045570408"
-      SERVER_NAME: "Serveur Minecraft \'La Famille\' !"
+      SERVER_NAME: "Serveur Maison"
       MOTD: "Bienvenue."
       MAX_PLAYERS: 6
       ANNOUNCE_PLAYER_ACHIEVEMENTS: true
