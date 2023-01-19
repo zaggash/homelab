@@ -1,12 +1,9 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+
   "extends": [
     "github>zaggash/gh-workflows//renovate-config/default"
   ],
-
-  "username": "zagg-bot[bot]",
-  "gitAuthor": "zagg-bot <121982232+zagg-bot[bot]@users.noreply.github.com>",
-  "repositories": ["zaggash/homelab"],
 
   "flux": {
     "fileMatch": ["k3s-cluster-apps/.+\\.ya?ml$"],
