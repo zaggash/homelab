@@ -3,7 +3,7 @@ services:
   pihole:
     hostname: pihole
     domainname: home.lan
-    image: ghcr.io/pi-hole/pihole:2023.01.4@sha256:692fbac7bc846e556d66c67c224b0a25e3d5855ff0fd4df95ef7cd516a402ce0
+    image: ghcr.io/pi-hole/pihole:2023.01.5@sha256:cdb242c361dfecda0887d2108022e34362b569506f0c65a9103e80c1c3070785
     network_mode: "host"
     dns:
       - 192.168.1.10
