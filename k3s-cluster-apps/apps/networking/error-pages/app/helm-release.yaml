@@ -1,0 +1,38 @@
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: error-pages
+spec:
+  interval: 15m
+  chart:
+    spec:
+      chart: error-pages
+      version: "3.0.0"
+      sourceRef:
+        kind: HelmRepository
+        name: samipsolutions-charts
+        namespace: flux-system
+  maxHistory: 3
+  install:
+    createNamespace: true
+    remediation:
+      retries: 3
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      retries: 3
+  uninstall:
+    keepHistory: false
+  values:
+    env:
+      TZ: "Europe/Paris"
+      TEMPLATE_NAME: "ghost"
+      SHOW_DETAILS: "true"
+    service:
+      main:
+        ports:
+          http:
+            port: 8080
+    ingress:
+      main:
+        enabled: false

@@ -1,0 +1,47 @@
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: flaresolverr
+spec:
+  interval: 5m
+  chart:
+    spec:
+      chart: app-template
+      version: "1.2.1"
+      sourceRef:
+        kind: HelmRepository
+        name: bjw-s-charts
+        namespace: flux-system
+  maxHistory: 3
+  install:
+    createNamespace: true
+    remediation:
+      retries: 3
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      retries: 3
+  uninstall:
+    keepHistory: false
+  values:
+    image:
+      repository: ghcr.io/flaresolverr/flaresolverr
+      tag: v2.2.10@sha256:08cf762f3f538438c949c5ec63dd9ed99a9c8de7745f50378ac6a358604f5023
+    env:
+      TZ: "Europe/Paris"
+      LOG_LEVEL: info
+    service:
+      main:
+        enabled: false
+      api:
+        enabled: true
+        primary: true
+        type: "ClusterIP"
+        ports:
+          api:
+            enabled: true
+            port: 8191
+            protocol: TCP
+    ingress:
+      main:
+        enabled: false

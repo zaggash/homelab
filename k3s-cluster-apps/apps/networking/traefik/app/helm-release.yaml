@@ -1,0 +1,143 @@
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: traefik
+spec:
+  interval: 15m
+  chart:
+    spec:
+      chart: traefik
+      version: "20.8.0"
+      sourceRef:
+        kind: HelmRepository
+        name: traefik-charts
+        namespace: flux-system
+  maxHistory: 3
+  install:
+    createNamespace: true
+    remediation:
+      retries: 3
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      retries: 3
+  uninstall:
+    keepHistory: false
+  values:
+    ingressClass:
+      enabled: true
+      isDefaultClass: true
+    ingressRoute:
+      dashboard:
+        enabled: false
+    # Enable Kubernetes Ingresses
+    providers:
+      kubernetesCRD:
+        enabled: true
+        allowExternalNameServices: true
+        allowCrossNamespace: true
+      kubernetesIngress:
+        enabled: true
+    logs:
+      general:
+        level: INFO
+      access:
+        enabled: false
+    globalArguments:
+    - "--global.checknewversion=false"
+    - "--global.sendanonymoususage=false"
+    additionalArguments:
+    # Setup Kubernetes ingress hostname
+    - "--providers.kubernetesingress.ingressendpoint.hostname=homelab.${SECRET_CLUSTER_DOMAIN}"
+    # Define configFile middleware not namespaced
+    - "--providers.file.filename=/config/traefik-static.yaml"
+    # Set idefault Entrypoint middleware from file - Flux fail to load Middleware object without CRDs otherwise.
+    - "--entrypoints.websecure.http.middlewares=compress-all@file,secure-headers@file"
+    # Define CertificateResolver
+    - "--certificatesResolvers.ovh.acme.email=${SECRET_CLUSTER_DOMAIN_EMAIL}"
+    - "--certificatesResolvers.ovh.acme.storage=/certs/acme.json"
+    - "--certificatesResolvers.ovh.acme.dnsChallenge=true"
+    - "--certificatesResolvers.ovh.acme.dnsChallenge.provider=ovh"
+    - "--certificatesResolvers.ovh.acme.dnsChallenge.delayBeforeCheck=0"
+    - "--certificatesResolvers.ovh.acme.keyType=RSA4096"
+    # Remove cert check from traefik to https backends.
+    # Can be replaced with "--serverstransport.rootcas=" to check SelfSignCert
+    - "--serverstransport.insecureskipverify=true"
+    tlsOptions:
+      intermediate:
+        sniStrict: true
+        minVersion: VersionTLS12
+        cipherSuites:
+        - TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256
+        - TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
+        - TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384
+        - TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+        - TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305
+        - TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305
+      modern:
+        sniStrict: true
+        minVersion: VersionTLS13
+    env:
+    - name: TZ
+      value: "Europe/Paris"
+    - name: OVH_APPLICATION_KEY
+      value: "${SECRET_CLUSTER_OVH_APPLICATION_KEY}"
+    - name: OVH_APPLICATION_SECRET
+      value: "${SECRET_CLUSTER_OVH_APPLICATION_SECRET}"
+    - name: OVH_CONSUMER_KEY
+      value: "${SECRET_CLUSTER_OVH_CONSUMER_KEY}"
+    - name: OVH_ENDPOINT
+      value: "ovh-eu"
+    hostNetwork: false
+    ports:
+      web:
+        # Traefik runs as non-root so port are above 1024
+        port: 8000
+        expose: true
+        exposedPort: 80
+        protocol: TCP
+        redirectTo: websecure
+      websecure:
+        # Traefik runs as non-root so port are above 1024
+        port: 8443
+        expose: true
+        exposedPort: 443
+        protocol: TCP
+        tls:
+          enabled: true
+          options: "networking-intermediate@kubernetescrd"
+          certResolver: "ovh"
+          domains:
+          - main: "${SECRET_CLUSTER_DOMAIN}"
+            sans:
+            - "${SECRET_CLUSTER_DOMAIN}"
+            - "*.${SECRET_CLUSTER_DOMAIN}"
+      unifi-inform:
+        protocol: TCP
+        port: 8080
+        expose: true
+        exposedPort: 8080
+      unifi-stun:
+        protocol: UDP
+        port: 3478
+        expose: true
+        exposedPort: 3478
+    # Disable service if hostPort
+    service:
+      type: LoadBalancer
+      enabled: true
+      single: true
+      ipFamilyPolicy: SingleStack
+      spec:
+        externalTrafficPolicy: Local
+        allocateLoadBalancerNodePorts: false
+    priorityClassName: "system-cluster-critical"
+    persistence:
+      enabled: true
+      name: certs
+      path: /certs
+      size: 128Mi
+    volumes:
+    - mountPath: /config
+      name: traefik-static
+      type: configMap

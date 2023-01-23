@@ -1,0 +1,20 @@
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1beta2
+kind: Kustomization
+metadata:
+  name: apps-external-services
+  namespace: flux-system
+  labels:
+    substitution.flux.home/enabled: "true"
+spec:
+  dependsOn:
+    - name: apps-traefik
+  path: ./k3s-cluster-apps/apps/networking/external-services/config
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: homelab-cluster
+  wait: true
+  interval: 30m
+  retryInterval: 1m
+  timeout: 3m

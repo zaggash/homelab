@@ -1,0 +1,46 @@
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: jackett
+spec:
+  interval: 15m
+  chart:
+    spec:
+      chart: app-template
+      version: "1.2.1"
+      sourceRef:
+        kind: HelmRepository
+        name: bjw-s-charts
+        namespace: flux-system
+  maxHistory: 3
+  install:
+    createNamespace: true
+    remediation:
+      retries: 3
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      retries: 3
+  uninstall:
+    keepHistory: false
+  values:
+    image:
+      repository: ghcr.io/linuxserver/jackett
+      tag: 0.20.2688@sha256:46d40bb8801907e065303090dd62e06c4f4d9f8b633a17c9b32597e6973bdf3d
+    env:
+      TZ: "Europe/Paris"
+    service:
+      main:
+        ports:
+          http:
+            port: 9117
+            protocol: TCP
+    ingress:
+      main:
+        enabled: false
+    persistence:
+      config:
+        enabled: true
+        retain: true
+        existingClaim: "jackett-config"
+        mountPath: /config

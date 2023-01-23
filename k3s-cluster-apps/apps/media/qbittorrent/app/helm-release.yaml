@@ -1,0 +1,70 @@
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: qbittorrent
+spec:
+  interval: 15m
+  chart:
+    spec:
+      chart: app-template
+      version: "1.2.1"
+      sourceRef:
+        kind: HelmRepository
+        name: bjw-s-charts
+        namespace: flux-system
+  maxHistory: 3
+  install:
+    createNamespace: true
+    remediation:
+      retries: 3
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      retries: 3
+  uninstall:
+    keepHistory: false
+  values:
+    podAnnotations:
+      backup.velero.io/backup-volumes-excludes: data
+    image:
+      repository: ghcr.io/onedr0p/qbittorrent
+      tag: 4.5.0@sha256:5ff2064d788100f54770dc5e477f32d41be7e71ee36923a22236053576e39d5d
+    env:
+      TZ: "Europe/Paris"
+    settings:
+      automaticPortSetup: true
+    podSecurityContext:
+      runAsUser: 1000
+      runAsGroup: 1000
+      fsGroup: 1000
+    service:
+      main:
+        ports:
+          http:
+            port: 8080
+            protocol: TCP
+      bittorrent:
+        enabled: true
+        type: ClusterIP
+        ports:
+          bittorrent:
+            enabled: true
+            port: 6881
+            protocol: TCP
+            targetPort: 6881
+    ingress:
+      main:
+        enabled: false
+    persistence:
+      config:
+        enabled: true
+        retain: true
+        existingClaim: "qbittorrent-config"
+        mountPath: /config
+      data:
+        enabled: true
+        accessMode: "ReadWriteOnce"
+        retain: true
+        existingClaim: "all-data"
+        subPath: downloads
+        mountPath: /media/downloads

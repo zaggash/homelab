@@ -1,0 +1,27 @@
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1beta2
+kind: Kustomization
+metadata:
+  name: apps-nfs-provisioners
+  namespace: flux-system
+  labels:
+    substitution.flux.home/enabled: "true"
+spec:
+  path: ./k3s-cluster-apps/apps/kube-system/nfs-provisioner/app
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: homelab-cluster
+  healthChecks:
+    - apiVersion: helm.toolkit.fluxcd.io/v2beta1
+      kind: HelmRelease
+      name: nfs-provisioner-data
+      namespace: kube-system
+    - apiVersion: helm.toolkit.fluxcd.io/v2beta1
+      kind: HelmRelease
+      name: nfs-provisioner-media
+      namespace: kube-system
+  interval: 30m
+  retryInterval: 1m
+  timeout: 3m
+

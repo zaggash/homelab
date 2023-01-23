@@ -1,0 +1,37 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: nfs-provisioner-media
+spec:
+  interval: 15m
+  chart:
+    spec:
+      chart: nfs-subdir-external-provisioner
+      version: "4.0.17"
+      sourceRef:
+        kind: HelmRepository
+        name: nfs-provisioner-charts
+        namespace: flux-system
+  maxHistory: 3
+  install:
+    createNamespace: true
+    remediation:
+      retries: 3
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      retries: 3
+  uninstall:
+    keepHistory: false
+  values:
+    storageClass:
+      name: nfs-media
+      provisionerName: homelab/nfs-media-provisioner
+      defaultClass: false
+      reclaimPolicy: Delete
+      archiveOnDelete: true
+    nfs:
+      server: "${SECRET_NFS_PROVISIONER_SERVER}"
+      path: /mnt/data-pool/VM-data/k3s-cluster-media
+      volumeName: nfs-media-root

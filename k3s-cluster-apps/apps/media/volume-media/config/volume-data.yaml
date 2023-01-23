@@ -1,0 +1,12 @@
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: all-data
+spec:
+  storageClassName: nfs-media
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1500G

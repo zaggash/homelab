@@ -1,0 +1,23 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: hassio
+spec:
+  type: ExternalName
+  externalName: hassio.home.lan.
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: hassio
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - kind: Rule
+      match: Host(`hassio.${SECRET_CLUSTER_DOMAIN}`)
+      services:
+        - kind: Service
+          name: hassio
+          port: 8123

@@ -8,7 +8,7 @@ flux bootstrap github \
   --path=k3s-cluster-apps/init \
   --read-write-key \
   --personal \
-  --private=true \
+  --private=false \
   --author-name ZaggBot \
   --author-email 101278001+ZaggBot@users.noreply.github.com
  ```

@@ -1,0 +1,51 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: unifi
+spec:
+  type: ExternalName
+  externalName: rpi4-docker.home.lan.
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: unifi
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - kind: Rule
+      match: Host(`unifi.${SECRET_CLUSTER_DOMAIN}`)
+      services:
+        - kind: Service
+          name: unifi
+          port: 8443
+          scheme: https
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: unifi-inform
+spec:
+  entryPoints:
+    - unifi-inform
+  routes:
+    - kind: Rule
+      match: (Host(`unifi`) || Host(`unifi.${SECRET_HOME_DOMAIN}`)) && Path(`/inform`)
+      services:
+        - kind: Service
+          name: unifi
+          port: 8080
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRouteUDP
+metadata:
+  name: unifi-stun
+spec:
+  entryPoints:
+    - unifi-stun
+  routes:
+    - services:
+        - name: unifi
+          port: 3478

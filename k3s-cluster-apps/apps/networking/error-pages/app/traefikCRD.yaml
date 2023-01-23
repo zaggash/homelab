@@ -1,0 +1,30 @@
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: error-pages
+spec:
+  errors:
+    status:
+      - "400-599"
+    query: /{status}.html
+    service:
+      name: error-pages
+      port: 8080
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: error-pages
+  namespace: networking
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - kind: Rule
+      match: HostRegexp(`{host:.+}`)
+      priority: 1
+      services:
+        - kind: Service
+          name: error-pages
+          port: 8080

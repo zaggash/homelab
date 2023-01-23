@@ -1,0 +1,44 @@
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: botkube
+spec:
+  interval: 15m
+  chart:
+    spec:
+      chart: botkube
+      version: "0.17.0"
+      sourceRef:
+        kind: HelmRepository
+        name: botkube-charts
+        namespace: flux-system
+  maxHistory: 3
+  install:
+    createNamespace: true
+    remediation:
+      retries: 3
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      retries: 3
+  uninstall:
+    keepHistory: false
+  values:
+    communications:
+      default-group:
+        discord:
+          enabled: true
+          botID: ${SECRET_BOTKUBE_DISCORD_BOT_ID}
+          token: ${SECRET_BOTKUBE_DISCORD_TOKEN}
+          channels:
+            default:
+              id: ${SECRET_BOTKUBE_DISCORD_CHANNEL_ID}
+    settings:
+      clusterName: "HomeLab"
+      upgradeNotifier: false
+    executors:
+      'kubectl-read-only':
+        kubectl:
+          enabled: true
+    analytics:
+      disable: true

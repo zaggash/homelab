@@ -1,0 +1,23 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dynmap
+spec:
+  type: ExternalName
+  externalName: mc.home.lan.
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: dynmap
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - kind: Rule
+      match: Host(`mc.${SECRET_CLUSTER_DOMAIN}`)
+      services:
+        - kind: Service
+          name: dynmap
+          port: 8123

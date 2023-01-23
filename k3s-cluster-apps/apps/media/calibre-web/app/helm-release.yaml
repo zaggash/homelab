@@ -1,0 +1,58 @@
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: calibre-web
+spec:
+  interval: 15m
+  chart:
+    spec:
+      chart: app-template
+      version: "1.2.1"
+      sourceRef:
+        kind: HelmRepository
+        name: bjw-s-charts
+        namespace: flux-system
+  maxHistory: 3
+  install:
+    createNamespace: true
+    remediation:
+      retries: 3
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      retries: 3
+  uninstall:
+    keepHistory: false
+  values:
+    image:
+      repository: docker.io/linuxserver/calibre-web
+      tag: version-0.6.19@sha256:6666226b0ceba54af4dcb39b913c679704677769922c7eff08464cca44296dc5
+    env:
+      TZ: "Europe/Paris"
+      PUID: "1000"
+      PGID: "1000"
+      DOCKER_MODS: "linuxserver/mods:universal-calibre"
+    service:
+      main:
+        ports:
+          http:
+            port: 8083
+            protocol: TCP
+    ingress:
+      main:
+        enabled: false
+    # For new instance, add metadata.db from calibre in the config directory
+    # https://github.com/kovidgoyal/calibre/raw/master/src/calibre/db/tests/metadata.db
+    persistence:
+      config:
+        enabled: true
+        existingClaim: "calibre-web-config"
+        mountPath: /config
+      books:
+        enabled: true
+        existingClaim: "calibre-web-books"
+        mountPath: /book
+    probes:
+      readiness:
+        spec:
+          initialDelaySeconds: 60
