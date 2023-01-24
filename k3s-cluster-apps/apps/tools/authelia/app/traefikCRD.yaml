@@ -5,7 +5,7 @@ metadata:
   name: authelia-forward
 spec:
   forwardAuth:
-    address: http://authelia.networking.svc/api/verify?rd=https://login.${SECRET_CLUSTER_DOMAIN}/
+    address: http://authelia.tools.svc/api/verify?rd=https://login.${SECRET_CLUSTER_DOMAIN}/
     trustForwardHeader: true
     authResponseHeaders:
       - Remote-User
@@ -38,9 +38,9 @@ spec:
       match: Host(`login.${SECRET_CLUSTER_DOMAIN}`)
       middlewares:
         - name: authelia-forward
-          namespace: networking
+          namespace: tools
         - name: authelia-rate-limit
-          namespace: networking
+          namespace: tools
       services:
         - kind: Service
           name: authelia

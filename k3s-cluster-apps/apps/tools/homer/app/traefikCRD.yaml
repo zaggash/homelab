@@ -11,7 +11,7 @@ spec:
       match: Host(`home.${SECRET_CLUSTER_DOMAIN}`)
       middlewares:
         - name: authelia-forward
-          namespace: networking
+          namespace: tools
       services:
         - kind: Service
           name: homer

@@ -11,7 +11,7 @@ spec:
       match: Host(`traefik.${SECRET_CLUSTER_DOMAIN}`)
       middlewares:
         - name: authelia-forward
-          namespace: networking
+          namespace: tools
       services:
         - kind: TraefikService
           name: api@internal
