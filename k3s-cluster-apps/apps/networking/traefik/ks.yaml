@@ -25,6 +25,8 @@ kind: Kustomization
 metadata:
   name: apps-traefik
   namespace: flux-system
+  labels:
+    substitution.flux.home/enabled: "true"
 spec:
   path: ./k3s-cluster-apps/apps/networking/traefik/app
   prune: true
