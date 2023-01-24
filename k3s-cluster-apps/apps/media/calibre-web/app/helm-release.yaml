@@ -26,7 +26,7 @@ spec:
   values:
     image:
       repository: docker.io/linuxserver/calibre-web
-      tag: version-0.6.19@sha256:6666226b0ceba54af4dcb39b913c679704677769922c7eff08464cca44296dc5
+      tag: version-0.6.19@sha256:f1de2ce170640896b74da7c9aeed5d292ad7a8bef1b497e2c55b711118287637
     env:
       TZ: "Europe/Paris"
       PUID: "1000"
