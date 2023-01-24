@@ -48,7 +48,7 @@ spec:
       bittorrent:
         enabled: true
         type: ClusterIP
-        externalTrafficPolicy: Local
+        #externalTrafficPolicy: Local
         ports:
           bittorrent:
             enabled: true
