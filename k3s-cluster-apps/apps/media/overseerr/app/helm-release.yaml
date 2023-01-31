@@ -26,7 +26,7 @@ spec:
   values:
     image:
       repository: ghcr.io/sct/overseerr 
-      tag: 1.32.4@sha256:2bcc02f55057da31db09734f735b15707cb5e495666f1160ba45a29c4da2b14d
+      tag: 1.32.5@sha256:7f82b15910de1da8b28b7225a2c825bd632e7ff33a0869ae65956b7dbc35b499
     env:
       TZ: "Europe/Paris"
       LOG_LEVEL: "info"
