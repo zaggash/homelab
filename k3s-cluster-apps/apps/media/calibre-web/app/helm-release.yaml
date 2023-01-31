@@ -25,13 +25,18 @@ spec:
     keepHistory: false
   values:
     image:
-      repository: docker.io/linuxserver/calibre-web
-      tag: version-0.6.19@sha256:f1de2ce170640896b74da7c9aeed5d292ad7a8bef1b497e2c55b711118287637
+      repository: ghcr.io/bjw-s/calibre-web
+      tag: 0.6.19@sha256:48c632bc8f01a9eb140cf95e05c3bc33ee151b25ec8db304732ca97414c4c597
+
+    podSecurityContext:
+      runAsUser: 568
+      runAsGroup: 568
+      fsGroup: 568
+      fsGroupChangePolicy: "OnRootMismatch"
+
     env:
       TZ: "Europe/Paris"
-      PUID: "1000"
-      PGID: "1000"
-      DOCKER_MODS: "linuxserver/mods:universal-calibre"
+
     service:
       main:
         ports:
@@ -41,6 +46,7 @@ spec:
     ingress:
       main:
         enabled: false
+
     # For new instance, add metadata.db from calibre in the config directory
     # https://github.com/kovidgoyal/calibre/raw/master/src/calibre/db/tests/metadata.db
     persistence:
@@ -51,8 +57,4 @@ spec:
       books:
         enabled: true
         existingClaim: "calibre-web-books"
-        mountPath: /book
-    probes:
-      readiness:
-        spec:
-          initialDelaySeconds: 60
+        mountPath: /books
