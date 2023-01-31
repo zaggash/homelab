@@ -1,5 +1,5 @@
 ---
-name: Schedule - Flux2 Update
+name: Flux2 Update
 
 on:
   workflow_dispatch:
@@ -7,7 +7,7 @@ on:
 jobs:
   flux:
     name: Flux2 Update
-    uses: zaggash/gh-workflows/.github/workflows/run-flux2-update.yaml@main
+    uses: zaggash/gh-workflows/.github/workflows/action_flux2-update.yaml@main
     with:
       gotk-components-file: "./k3s-cluster-apps/init/flux-system/gotk-components.yaml"
       author-name: "zagg-bot"

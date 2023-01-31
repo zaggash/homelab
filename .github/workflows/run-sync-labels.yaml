@@ -1,5 +1,5 @@
 ---
-name: Schedule - Sync Labels
+name: Sync Labels
 
 on:
   workflow_dispatch:
@@ -8,11 +8,12 @@ on:
       - main
     paths:
       - ".github/labels.yaml"
+      - ".github/workflows/run-sync-labels.yaml"
 
 jobs:
   labels:
     name: Sync Labels
-    uses: zaggash/gh-workflows/.github/workflows/run-sync-labels.yaml@main
+    uses: zaggash/gh-workflows/.github/workflows/action_sync-labels.yaml@main
     with:
       config-file: ".github/labels.yaml"
       delete-other-labels: true
