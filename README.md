@@ -15,6 +15,8 @@
 
 ---
   
-- Scripts and Configs to boostrap node OS.  
+- [Scripts and Configs to boostrap node OS.](https://github.com/zaggash/homelab/tree/main/infra)  
 
-- FluxCD k3s repo to boostrap cluster apps.  
+- [FluxCD k3s repo to boostrap cluster apps.](https://github.com/zaggash/homelab/tree/main/k3s-cluster-apps)  
+
+- [Portainer stacks for standalone applications.](https://github.com/zaggash/homelab/tree/main/portainer-stacks)
