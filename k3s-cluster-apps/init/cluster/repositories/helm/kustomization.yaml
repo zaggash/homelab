@@ -15,3 +15,5 @@ resources:
   - ./vmware-tanzu-charts.yaml
   - ./portainer-charts.yaml
   - ./botkube-charts.yaml
+  - ./jetstack-charts.yaml
+  - ./cert-manager-webhook-ovh-charts.yaml

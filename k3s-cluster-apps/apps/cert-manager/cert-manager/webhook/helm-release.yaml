@@ -1,0 +1,38 @@
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: cert-manager-webhook-ovh
+spec:
+  interval: 15m
+  chart:
+    spec:
+      chart: cert-manager-webhook-ovh
+      version: "v0.4.1"
+      sourceRef:
+        kind: HelmRepository
+        name: cert-manager-webhook-ovh-charts
+        namespace: flux-system
+  maxHistory: 3
+  install:
+    createNamespace: true
+    remediation:
+      retries: 3
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      retries: 3
+  uninstall:
+    keepHistory: false
+  values:
+    groupName: ${SECRET_CLUSTER_DOMAIN}
+    issuers:
+      - name: letsencrypt-production
+        create: true
+        kind: ClusterIssuer
+        email: ${SECRET_CLUSTER_DOMAIN_EMAIL}
+        ovhEndpointName: ovh-eu
+        ovhAuthentication:
+          applicationKey: "${SECRET_CLUSTER_OVH_APPLICATION_KEY}"
+          applicationSecret: "${SECRET_CLUSTER_OVH_APPLICATION_SECRET}"
+          consumerKey: "${SECRET_CLUSTER_OVH_CONSUMER_KEY}"
+
