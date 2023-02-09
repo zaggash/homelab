@@ -70,6 +70,12 @@ spec:
       modern:
         sniStrict: true
         minVersion: VersionTLS13
+    tlsStore:
+      default:
+        certificates:
+          - secretName: "${SECRET_CLUSTER_DOMAIN}-tls"
+        defaultCertificate:
+          secretName: "${SECRET_CLUSTER_DOMAIN}-tls"
     hostNetwork: false
     ports:
       web:

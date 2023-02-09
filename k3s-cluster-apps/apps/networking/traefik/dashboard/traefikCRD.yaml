@@ -15,5 +15,3 @@ spec:
       services:
         - kind: TraefikService
           name: api@internal
-  tls:
-    secretName: "${SECRET_CLUSTER_DOMAIN}-tls"
