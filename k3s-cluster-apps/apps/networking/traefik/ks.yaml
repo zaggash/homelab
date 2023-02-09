@@ -28,6 +28,8 @@ metadata:
   labels:
     substitution.flux.home/enabled: "true"
 spec:
+  dependsOn:
+    - name: apps-cert-manager-config
   path: ./k3s-cluster-apps/apps/networking/traefik/app
   prune: true
   sourceRef:

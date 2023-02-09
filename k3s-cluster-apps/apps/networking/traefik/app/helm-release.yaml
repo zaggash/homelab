@@ -74,6 +74,7 @@ spec:
       default:
         certificates:
           - secretName: "${SECRET_CLUSTER_DOMAIN}-tls"
+          - secretName: "${SECRET_HOME_DOMAIN}-tls"
         defaultCertificate:
           secretName: "${SECRET_CLUSTER_DOMAIN}-tls"
     hostNetwork: false
