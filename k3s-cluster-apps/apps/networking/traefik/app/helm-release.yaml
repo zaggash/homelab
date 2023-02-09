@@ -53,13 +53,6 @@ spec:
     - "--providers.file.filename=/config/traefik-static.yaml"
     # Set idefault Entrypoint middleware from file - Flux fail to load Middleware object without CRDs otherwise.
     - "--entrypoints.websecure.http.middlewares=compress-all@file,secure-headers@file"
-    # Define CertificateResolver
-    - "--certificatesResolvers.ovh.acme.email=${SECRET_CLUSTER_DOMAIN_EMAIL}"
-    - "--certificatesResolvers.ovh.acme.storage=/certs/acme.json"
-    - "--certificatesResolvers.ovh.acme.dnsChallenge=true"
-    - "--certificatesResolvers.ovh.acme.dnsChallenge.provider=ovh"
-    - "--certificatesResolvers.ovh.acme.dnsChallenge.delayBeforeCheck=0"
-    - "--certificatesResolvers.ovh.acme.keyType=RSA4096"
     # Remove cert check from traefik to https backends.
     # Can be replaced with "--serverstransport.rootcas=" to check SelfSignCert
     - "--serverstransport.insecureskipverify=true"
@@ -77,17 +70,6 @@ spec:
       modern:
         sniStrict: true
         minVersion: VersionTLS13
-    env:
-    - name: TZ
-      value: "Europe/Paris"
-    - name: OVH_APPLICATION_KEY
-      value: "${SECRET_CLUSTER_OVH_APPLICATION_KEY}"
-    - name: OVH_APPLICATION_SECRET
-      value: "${SECRET_CLUSTER_OVH_APPLICATION_SECRET}"
-    - name: OVH_CONSUMER_KEY
-      value: "${SECRET_CLUSTER_OVH_CONSUMER_KEY}"
-    - name: OVH_ENDPOINT
-      value: "ovh-eu"
     hostNetwork: false
     ports:
       web:
@@ -106,12 +88,13 @@ spec:
         tls:
           enabled: true
           options: "networking-intermediate@kubernetescrd"
-          certResolver: "ovh"
           domains:
           - main: "${SECRET_CLUSTER_DOMAIN}"
             sans:
             - "${SECRET_CLUSTER_DOMAIN}"
             - "*.${SECRET_CLUSTER_DOMAIN}"
+            - "${SECRET_HOME_DOMAIN}"
+            - "*.${SECRET_HOME_DOMAIN}"
       unifi-inform:
         protocol: TCP
         port: 8080
@@ -132,11 +115,6 @@ spec:
         externalTrafficPolicy: Local
         allocateLoadBalancerNodePorts: false
     priorityClassName: "system-cluster-critical"
-    persistence:
-      enabled: true
-      name: certs
-      path: /certs
-      size: 128Mi
     volumes:
     - mountPath: /config
       name: traefik-static
