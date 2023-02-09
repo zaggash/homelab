@@ -1,0 +1,14 @@
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: lldap-data
+  annotations:
+    volumeType: local
+spec:
+  storageClassName: local-path-retain
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10M

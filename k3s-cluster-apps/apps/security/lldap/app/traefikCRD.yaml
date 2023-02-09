@@ -1,0 +1,16 @@
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: lldap
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - kind: Rule
+      match: Host(`ldap.${SECRET_HOME_DOMAIN}`)
+      services:
+        - kind: Service
+          name: lldap
+          port: 17170
+
