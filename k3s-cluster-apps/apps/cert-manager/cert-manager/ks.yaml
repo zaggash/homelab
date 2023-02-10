@@ -48,19 +48,27 @@ spec:
 apiVersion: kustomize.toolkit.fluxcd.io/v1beta2
 kind: Kustomization
 metadata:
-  name: apps-cert-manager-config
+  name: apps-cert-manager-data
   namespace: flux-system
   labels:
     substitution.flux.home/enabled: "true"
 spec:
   dependsOn:
     - name: apps-cert-manager-webhook
-  path: ./k3s-cluster-apps/apps/cert-manager/cert-manager/config
+  path: ./k3s-cluster-apps/apps/cert-manager/cert-manager/data
   prune: true
   sourceRef:
     kind: GitRepository
     name: homelab-cluster
-  wait: true
+  healthChecks:
+    - apiVersion: v1
+      kind: Secret
+      name: star-home-tls
+      namespace: cert-manager
+    - apiVersion: v1
+      kind: Secret
+      name: star-public-tls
+      namespace: cert-manager
   interval: 30m
   retryInterval: 1m
   timeout: 3m
