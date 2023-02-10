@@ -73,10 +73,10 @@ spec:
     tlsStore:
       default:
         certificates:
-          - secretName: "${SECRET_CLUSTER_DOMAIN}-tls"
-          - secretName: "${SECRET_HOME_DOMAIN}-tls"
+          - secretName: "star-public-tls"
+          - secretName: "star-home-tls"
         defaultCertificate:
-          secretName: "${SECRET_CLUSTER_DOMAIN}-tls"
+          secretName: "star-public-tls"
     hostNetwork: false
     ports:
       web:

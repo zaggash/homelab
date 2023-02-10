@@ -6,3 +6,4 @@ resources:
   - ./local-path-provisioner/ks.yaml
   - ./nfs-provisioner/ks.yaml
   - ./reloader/ks.yaml
+  - ./reflector/ks.yaml
