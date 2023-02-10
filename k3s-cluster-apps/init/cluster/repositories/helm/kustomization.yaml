@@ -17,3 +17,4 @@ resources:
   - ./botkube-charts.yaml
   - ./jetstack-charts.yaml
   - ./cert-manager-webhook-ovh-charts.yaml
+  - ./emberstack-charts.yaml
