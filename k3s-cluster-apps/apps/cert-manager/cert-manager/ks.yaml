@@ -55,6 +55,7 @@ metadata:
 spec:
   dependsOn:
     - name: apps-cert-manager-webhook
+    - name: apps-reflector
   path: ./k3s-cluster-apps/apps/cert-manager/cert-manager/data
   prune: true
   sourceRef:
