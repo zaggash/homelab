@@ -6,11 +6,11 @@ spec:
   interval: 15m
   chart:
     spec:
-      chart: error-pages
-      version: "3.0.0"
+      chart:  app-template
+      version: "1.3.2"
       sourceRef:
         kind: HelmRepository
-        name: samipsolutions-charts
+        name: bjw-s-charts
         namespace: flux-system
   maxHistory: 3
   install:
@@ -24,6 +24,9 @@ spec:
   uninstall:
     keepHistory: false
   values:
+    image:
+      repository: ghcr.io/tarampampam/error-pages
+      tag: 2.21@sha256:a6065d9e12229003b9b3c5892cf3548195ff15f81f5d13d13c1f763fbefb43ec
     env:
       TZ: "Europe/Paris"
       TEMPLATE_NAME: "ghost"
