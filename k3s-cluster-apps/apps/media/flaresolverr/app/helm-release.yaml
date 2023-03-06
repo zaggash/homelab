@@ -26,7 +26,7 @@ spec:
   values:
     image:
       repository: ghcr.io/flaresolverr/flaresolverr
-      tag: v3.0.2@sha256:dc89d65e646fe8ae20e935112bf760033b6a7cc3633933f076b6b1c7cde6ab0b
+      tag: v3.0.3@sha256:8c43572f10debb8fc97f2bbbfaf649d59ce89fa2954cdc5111e1c5018d9957bc
     env:
       TZ: "Europe/Paris"
       LOG_LEVEL: info
