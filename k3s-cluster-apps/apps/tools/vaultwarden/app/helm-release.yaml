@@ -26,7 +26,7 @@ spec:
   values:
     image:
       repository: docker.io/vaultwarden/server
-      tag: 1.28.0@sha256:836f746aa2abcb25f36f088d7e728edc8b25fc46ea930051bc9f4639d079db7f
+      tag: 1.28.1@sha256:04691aaf1d8531ccb796de620841c030ecfd45613388a2e6a6a9434dc5d14d9d
     podSecurityContext:
       runAsUser: 1000
       runAsGroup: 1000
