@@ -37,8 +37,8 @@ spec:
       clusterName: "HomeLab"
       upgradeNotifier: false
     executors:
-      'kubectl-read-only':
-        kubectl:
+      k8s-default-tools:
+        botkube/kubectl:
           enabled: true
     analytics:
       disable: true
