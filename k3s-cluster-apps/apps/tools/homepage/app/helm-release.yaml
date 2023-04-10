@@ -31,10 +31,10 @@ spec:
       TZ: "Europe/Paris"
     serviceAccount:
       create: create
-    controller:                                                                                         ┤
-      annotations:                                                                                      │
+    controller:
+      annotations:
         reloader.stakater.com/search: "true"
-        configmap.reloader.stakater.com/reload: filebrowser-config
+        configmap.reloader.stakater.com/reload: homepage-config
     service:
       main:
         ports:
