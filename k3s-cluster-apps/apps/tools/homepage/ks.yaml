@@ -1,7 +1,7 @@
 apiVersion: kustomize.toolkit.fluxcd.io/v1beta2
 kind: Kustomization
 metadata:
-  name: apps-homer
+  name: apps-homepage
   namespace: flux-system
   labels:
     substitution.flux.home/enabled: "true"
@@ -9,7 +9,7 @@ spec:
   dependsOn:
     - name: apps-authelia
     - name: apps-traefik
-  path: ./k3s-cluster-apps/apps/tools/homer/app
+  path: ./k3s-cluster-apps/apps/tools/homepage/app
   prune: true
   sourceRef:
     kind: GitRepository
@@ -17,7 +17,7 @@ spec:
   healthChecks:
     - apiVersion: helm.toolkit.fluxcd.io/v2beta1
       kind: HelmRelease
-      name: homer
+      name: homepage
       namespace: tools
   interval: 30m
   retryInterval: 1m

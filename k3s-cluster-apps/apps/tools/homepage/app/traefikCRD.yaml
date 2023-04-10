@@ -2,7 +2,7 @@
 apiVersion: traefik.containo.us/v1alpha1
 kind: IngressRoute
 metadata:
-  name: homer
+  name: homepage
 spec:
   entryPoints:
     - websecure
@@ -14,5 +14,5 @@ spec:
           namespace: tools
       services:
         - kind: Service
-          name: homer
-          port: 8080
+          name: homepage
+          port: 3000
