@@ -26,7 +26,7 @@ spec:
   values:
     image:
       repository: ghcr.io/benphelps/homepage
-      tag: v0.6.15@sha256:918646a24037f4c07fb6ec44df34e201ecc1e8f3c046340c877e4cbf5e463aab
+      tag: v0.6.16@sha256:a41b93359b20e8dbaac0a156cc4012da58a3b5e037f6be919e62e35127734994
     env:
       TZ: "Europe/Paris"
     serviceAccount:
