@@ -26,7 +26,7 @@ spec:
   values:
     image:
       repository: docker.io/nitnelave/lldap
-      tag: v0.4.2@sha256:4c27b311671d878edb6dac8a50c8328fde8a68d68b540a44bfc8a11943475e2d
+      tag: v0.4.3@sha256:25aef5beb0455b762eb1bb9af8491b1af2dd39f10f5a26ea5e9192367d01a3d2
     env:
       TZ: "Europe/Paris"
       LLDAP_JWT_SECRET: "${SECRET_LLDAP_JWT_SECRET}"
