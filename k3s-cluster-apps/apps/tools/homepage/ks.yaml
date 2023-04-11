@@ -19,6 +19,9 @@ spec:
       kind: HelmRelease
       name: homepage
       namespace: tools
+    - apiVersion: rbac.authorization.k8s.io/v1
+      kind: ClusterRoleBinding
+      name: homepage
   interval: 30m
   retryInterval: 1m
   timeout: 3m
