@@ -51,10 +51,14 @@ spec:
         data:
           settings.yaml: |
             ---
-            title: Dashboard
-            theme: dark
-            color: neutral
+            title: Home Dashboard
             language: fr
+            layout:
+              Media:
+                style: row
+                columns: 4
+              Outils:
+              Dev & Sécurité:
 
           widgets.yaml: |
             ---
@@ -76,6 +80,101 @@ spec:
 
           services.yaml: |
             ---
+            - Outils:
+              - Photoprism:
+                  href: "https://photos.${SECRET_CLUSTER_DOMAIN}"
+                  description: "Galerie photos, boosté à l'Intelligence Artificielle"
+                  icon: "https://github.com/photoprism/photoprism/raw/develop/assets/static/icons/app.svg"
+                  namespace: "tools"
+                  app: "photoprism"
+              - Portainer:
+                  href: "https://portainer.${SECRET_CLUSTER_DOMAIN}"
+                  description: "Interface Web pour gérer vos conteneurs sous Docker"
+                  icon: "https://github.com/loganmarchione/homelab-svg-assets/raw/main/assets/portainer.svg"
+                  namespace: "tools"
+                  app: "portainer"
+              - Vaultwarden:
+                  href: "https://pass.${SECRET_CLUSTER_DOMAIN}"
+                  description: "Gestionnaire de mots de passe"
+                  icon: "https://github.com/loganmarchione/homelab-svg-assets/raw/main/assets/bitwarden.svg"
+                  namespace: "tools"
+                  app: "vaultwarden"
+
+            - Dev & Sécurité:
+              - PgAdmin:
+                  href: "https://pga.${SECRET_CLUSTER_DOMAIN}"
+                  description: "Interface Web pour gérer des bases Postres"
+                  icon: "https://github.com/loganmarchione/homelab-svg-assets/raw/main/assets/postgresql.svg"
+                  namespace: "dev"
+                  app: "pgadmin4"
+              - LLDAP:
+                  href: "https://ldap.${SECRET_HOME_DOMAIN}"
+                  description: "Interface Web pour LightLDAP"
+                  icon: "https://github.com/loganmarchione/homelab-svg-assets/raw/main/assets/microsoftazure.svg"
+                  namespace: "security"
+                  app: "lldap"
+              - Traefik:
+                  href: "https://traefik.${SECRET_CLUSTER_DOMAIN}"
+                  description: "Dashboard de Traefik"
+                  icon: "https://github.com/loganmarchione/homelab-svg-assets/raw/main/assets/traefik-gopher.svg"
+                  namespace: "networking"
+                  app: "traefik"
+
+            - Media:
+              - Sonarr:
+                  href: "https://sonarr.${SECRET_CLUSTER_DOMAIN}"
+                  description: ""
+                  icon: "https://github.com/loganmarchione/homelab-svg-assets/raw/main/assets/sonarr.svg"
+                  namespace: "media"
+                  app: "sonarr"
+              - Radarr:
+                  href: "https://radarr.${SECRET_CLUSTER_DOMAIN}"
+                  description: ""
+                  icon: "https://github.com/loganmarchione/homelab-svg-assets/raw/main/assets/radarr.svg"
+                  namespace: "media"
+                  app: "radarr"
+              - Bazarr:
+                  href: "https://bazarr.${SECRET_CLUSTER_DOMAIN}"
+                  description: ""
+                  icon: "https://github.com/loganmarchione/homelab-svg-assets/raw/main/assets/bazarr.svg"
+                  namespace: "media"
+                  app: "bazarr"
+              - Overseerr:
+                  href: "https://ask.${SECRET_CLUSTER_DOMAIN}"
+                  description: ""
+                  icon: "https://github.com/loganmarchione/homelab-svg-assets/raw/main/assets/overseerr.svg"
+                  namespace: "media"
+                  app: "overseerr"
+              - Jackett:
+                  href: "https://jackett.${SECRET_CLUSTER_DOMAIN}"
+                  description: ""
+                  icon: "https://github.com/Jackett/Jackett/raw/master/src/Jackett.Common/Content/jacket_medium.png"
+                  namespace: "media"
+                  app: "jackett"
+              - qBittorrent:
+                  href: "https://dl.${SECRET_CLUSTER_DOMAIN}"
+                  description: ""
+                  icon: "https://github.com/loganmarchione/homelab-svg-assets/raw/main/assets/qbittorrent.svg"
+                  namespace: "media"
+                  app: "qbittorrent"
+              - Plex:
+                  href: "https://plex.${SECRET_CLUSTER_DOMAIN}"
+                  description: ""
+                  icon: "https://github.com/walkxcode/dashboard-icons/raw/main/svg/plex-new.svg"
+                  namespace: "media"
+                  app: "plex"
+              - FileBrowser:
+                  href: "https://cloud.${SECRET_CLUSTER_DOMAIN}"
+                  description: ""
+                  icon: "https://github.com/loganmarchione/homelab-svg-assets/raw/main/assets/filebrowser.svg"
+                  namespace: "media"
+                  app: "filebrowser"
+              - Calibre-Web:
+                  href: "https://books.${SECRET_CLUSTER_DOMAIN}"
+                  description: ""
+                  icon: "https://github.com/walkxcode/dashboard-icons/raw/main/svg/calibreweb.svg"
+                  namespace: "media"
+                  app: "calibre-web"
 
           bookmarks.yaml: |
             ---
