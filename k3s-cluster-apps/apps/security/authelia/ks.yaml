@@ -10,7 +10,8 @@ spec:
   dependsOn:
     - name: apps-nfs-provisioners
     - name: apps-traefik
-  path: ./k3s-cluster-apps/apps/tools/authelia/app
+    - name: apps-lldap
+  path: ./k3s-cluster-apps/apps/security/authelia/app
   prune: true
   sourceRef:
     kind: GitRepository
@@ -19,7 +20,7 @@ spec:
     - apiVersion: helm.toolkit.fluxcd.io/v2beta1
       kind: HelmRelease
       name: authelia
-      namespace: tools
+      namespace: security
   interval: 30m
   retryInterval: 1m
   timeout: 3m
