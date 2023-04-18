@@ -42,7 +42,7 @@
       description: "Set fixed version for bedrock-connect",
       matchManagers: ["dockerfile"],
       matchDatasources: ["docker"],
-      matchPaths: ["portainer-stacks/nuc-stacks/bedrock-connect/**"],
+      matchPaths: ["portainer-stacks/nuc4-stacks/bedrock-connect/**"],
       matchPackageNames: ["eclipse-temurin"],
       allowedVersions: "<=11.*"
     },
