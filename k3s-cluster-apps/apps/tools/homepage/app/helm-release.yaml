@@ -160,7 +160,7 @@ spec:
               - Plex:
                   href: "https://plex.${SECRET_CLUSTER_DOMAIN}"
                   description: ""
-                  icon: "https://github.com/walkxcode/dashboard-icons/raw/main/svg/plex-new.svg"
+                  icon: "https://github.com/walkxcode/dashboard-icons/raw/main/svg/plex.svg"
                   namespace: "media"
                   app: "plex"
               - FileBrowser:
