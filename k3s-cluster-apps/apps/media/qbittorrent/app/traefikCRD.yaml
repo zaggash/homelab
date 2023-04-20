@@ -9,6 +9,9 @@ spec:
   routes:
     - kind: Rule
       match: Host(`dl.${SECRET_CLUSTER_DOMAIN}`)
+      middlewares:
+        - name: authelia-forward
+          namespace: security
       services:
         - kind: Service
           name: qbittorrent
