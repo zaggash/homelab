@@ -115,6 +115,8 @@ spec:
     # Disable service if hostPort
     service:
       type: LoadBalancer
+      annotations: 
+        metallb.universe.tf/address-pool: homelab-public
       enabled: true
       single: true
       ipFamilyPolicy: SingleStack

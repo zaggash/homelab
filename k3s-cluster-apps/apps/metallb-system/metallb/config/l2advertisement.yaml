@@ -5,5 +5,5 @@ metadata:
   namespace: metallb-system
 spec:
   ipAddressPools:
-  - homelab-pool
-
+    - homelab-public
+    - homelab-internal
