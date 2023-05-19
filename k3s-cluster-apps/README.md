@@ -26,7 +26,6 @@ kubectl -n flux-system create secret generic sops-age \
 <details>
 <summary>Create single secret</summary>  
 
----
 ##### Create single secret
 ```
 kubectl -n myns create secret generic my-secret \
@@ -42,7 +41,6 @@ kubectl -n myns create secret generic my-secret \
 <details>
 <summary>Create cluster wide secret</summary>  
 
----
 ##### Create cluster wide secret
 ```
 kubectl -n flux-system create secret generic cluster-secrets \
