@@ -1,17 +1,8 @@
-#### Bootstrap flux
-Remove repo deploy SSH key from Github repo if it exists, it'll be redeployed  
+### Install FluxCD
 
-```
-flux bootstrap github \
-  --owner=zaggash \
-  --repository=homelab \
-  --path=k3s-cluster-apps/init \
-  --read-write-key \
-  --personal \
-  --private=false \
-  --author-name ZaggBot \
-  --author-email 101278001+ZaggBot@users.noreply.github.com
- ```
+#### Bootstrap FluxCD
+
+`kubectl apply --server-side --kustomize ./bootstrap/flux`
 
 #### Create and add SOPS secret with `age`
 `age-keygen -o age.agekey`
@@ -20,6 +11,16 @@ flux bootstrap github \
 cat age.agekey |\
 kubectl -n flux-system create secret generic sops-age \
 --from-file=age.agekey=/dev/stdin
+```
+
+#### Create GitHub deploy key
+*identity*:  as private key  
+*identity.pub*: as public key  
+*known_hosts*: as github.com SSH public keys  
+
+```
+export GH_SSH=$(ssh-keyscan github.com)
+kubectl create secret generic flux-system --from-file=identity=./private --from-file=identity.pub=./public.pub --from-literal=known_hosts=$GH_SSH --namespace flux-system
 ```
 
 #### Encrypt secrets with SOPS
@@ -60,3 +61,15 @@ sops \
   --encrypted-regex '^(data|stringData)$' \
   --in-place cluster-secrets.yaml
 ```
+
+#### Start FluxCD
+Apply **agekey secret**, **github deploy secret** and **cluster-secrets** to the cluster.
+
+```
+sops --decrypt ./bootstrap/flux/age.agekey.encoded.yaml | kubectl apply -f -
+sops --decrypt ./bootstrap/flux/github-deploy-key.encoded.yaml | kubectl apply -f -
+sops --decrypt ./flux/variables/cluster-secrets.encoded.yaml | kubectl apply -f -
+```
+
+Then apply the config and start Flux on the Repo:
+`kubectl apply --server-side --kustomize ./flux/config`
