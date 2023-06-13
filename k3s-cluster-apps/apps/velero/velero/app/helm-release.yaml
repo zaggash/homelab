@@ -72,6 +72,7 @@ spec:
             - dev
             - media
             - networking
+            - security
             - tools
     metrics:
       enabled: false
