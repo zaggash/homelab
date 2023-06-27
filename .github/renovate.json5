@@ -7,14 +7,12 @@
 
   "flux": {
     "fileMatch": ["k3s-cluster-apps/.+\\.ya?ml$"],
-    "ignorePaths": ["k3s-cluster-apps/init/flux-system/"]
   },
   "helm-values": {
     "fileMatch": ["k3s-cluster-apps/.+helm-release\\.ya?ml$"]
   },
   "kubernetes": {
     "fileMatch": ["k3s-cluster-apps/.+\\.ya?ml$"],
-    "ignorePaths": ["k3s-cluster-apps/init/flux-system/"]
   },
   "docker-compose": {
     "fileMatch": ["portainer-stacks/.+-compose\\.ya?ml$"],
