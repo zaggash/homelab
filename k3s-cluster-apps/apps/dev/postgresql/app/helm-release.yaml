@@ -7,7 +7,7 @@ spec:
     spec:
       interval: 5m
       chart: postgresql
-      version: "12.6.0"
+      version: "12.6.1"
       sourceRef:
         kind: HelmRepository
         name: bitnami-charts
