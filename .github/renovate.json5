@@ -27,6 +27,18 @@
     },
 
     {
+      "description": "Group Flux update",
+      "groupName": "Flux",
+      "matchPackagePatterns": ["flux"],
+      "matchDatasources": ["docker", "github-tags"],
+      "versioning": "semver",
+      "group": {
+        "commitMessageTopic": "{{{groupName}}} group"
+      },
+      "separateMinorPatch": true
+    },
+
+    {
       description: "Auto merge containers",
       matchDatasources: ["docker"],
       automerge: true,
