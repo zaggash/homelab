@@ -26,7 +26,7 @@ spec:
   values:
     image:
       repository: ghcr.io/linuxserver/jackett
-      tag: 0.21.643@sha256:23206c5969a5e267db4c343b3c4aa1a2ee4aa502a8c45d41af64c8f864571dfe
+      tag: 0.21.648@sha256:c606dc5432f3df76c0dfe20a61948813e1ee1431e318b52ac4d386dc02666509
     env:
       TZ: "Europe/Paris"
     service:
