@@ -7,7 +7,6 @@ resources:
   - ./traefik-charts.yaml
   - ./authelia-charts.yaml
   - ./stakater-charts.yaml
-  - ./bitnami-charts.yaml
   - ./runix-charts.yaml
   - ./containeroo-charts.yaml
   - ./bjw-s-charts.yaml
