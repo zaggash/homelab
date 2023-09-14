@@ -28,7 +28,7 @@ spec:
       backup.velero.io/backup-volumes-excludes: data
     image:
       repository: docker.io/filebrowser/filebrowser
-      tag: v2.24.2@sha256:cad5de57ffb2d079598e8bc3fec51968920b79b3253e415a6d2f39c70d030bac
+      tag: v2.25.0@sha256:dfbedfc74452e3685eec6d1a08d45b9072d974719c33a6349e3c11d207867848
     env:
       TZ: "Europe/Paris"
       LOG_LEVEL: info
