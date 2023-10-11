@@ -7,7 +7,7 @@ spec:
     spec:
       interval: 5m
       chart: pgadmin4
-      version: "1.17.3"
+      version: "1.18.0"
       sourceRef:
         kind: HelmRepository
         name: runix-charts
