@@ -45,7 +45,7 @@
       ignoreTests: true,
       automergeType: "branch",
       matchUpdateTypes: ["minor", "patch"],
-      matchPackageNames: ["ghcr.io/linuxserver/jackett"],
+      matchPackageNames: ["linuxserver/jackett"],
     },
 
     {
