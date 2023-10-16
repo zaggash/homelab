@@ -13,6 +13,10 @@ on:
         description: "Log-Level"
         default: "debug"
         required: false
+      renovateVersion:
+        description: "Renovate tag Version"
+        default: "latest"
+        required: false
   schedule:
     - cron: "0 * * * *"
   push:
@@ -31,6 +35,7 @@ jobs:
       configurationFile: ".github/renovate-bot.json5"
       dryRun: ${{ inputs.dryRun || 'false' }}
       renovateLogLevel: ${{ inputs.logLevel || 'debug' }}
+      renovateVersion: ${{ inputs.renovateVersion || 'latest' }}
     secrets:
       app_id: ${{ secrets.ZAGGBOT_APP_ID }}
       app_private_key: ${{ secrets.ZAGGBOT_APP_PRIVATE_KEY }}
