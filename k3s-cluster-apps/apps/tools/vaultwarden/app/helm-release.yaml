@@ -63,8 +63,7 @@ spec:
               SMTP_FROM_NAME: "${SECRET_VAULTWARDEN_SMTP_FROM_NAME}"
               SMTP_HOST: "${SECRET_OVH_SMTP_HOST}"
               SMTP_PORT: 587
-              SMTP_SSL: "true"
-              SMTP_EXPLICIT_TLS: false # mislabelled (see bug #851)
+              SMTP_SECURITY: "starttls"
               SMTP_USERNAME: "${SECRET_OVH_SMTP_USERNAME}"
               SMTP_PASSWORD: "${SECRET_OVH_SMTP_PASSWORD}"
 
