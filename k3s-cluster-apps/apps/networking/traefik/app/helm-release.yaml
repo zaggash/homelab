@@ -85,7 +85,8 @@ spec:
         expose: true
         exposedPort: 80
         protocol: TCP
-        redirectTo: websecure
+        redirectTo:
+          port: websecure
       websecure:
         # Traefik runs as non-root so port are above 1024
         port: 8443
