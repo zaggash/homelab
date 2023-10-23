@@ -24,26 +24,36 @@ spec:
   uninstall:
     keepHistory: false
   values:
-    podAnnotations:
-      backup.velero.io/backup-volumes-excludes: media
-    image:
-      repository: ghcr.io/onedr0p/sonarr
-      tag: 3.0.10.1567@sha256:ea8acd3ec2c212e254c8c8f6d8f748227c0691d90816761d220bd3e4765b21c7
-    env:
-      TZ: "Europe/Paris"
-    podSecurityContext:
-      runAsUser: 1000
-      runAsGroup: 1000
-      fsGroup: 1000
+    controllers:
+      main:
+        annotations:
+          backup.velero.io/backup-volumes-excludes: media
+
+        pod: 
+          securityContext:
+            runAsUser: 1000
+            runAsGroup: 1000
+            fsGroup: 1000
+              
+        containers:
+          main:
+            image:
+              repository: ghcr.io/onedr0p/sonarr
+              tag: 3.0.10.1567@sha256:ea8acd3ec2c212e254c8c8f6d8f748227c0691d90816761d220bd3e4765b21c7
+            env:
+              TZ: "Europe/Paris"
+
     service:
       main:
         ports:
           http:
             port: 8989
             protocol: TCP
+
     ingress:
       main:
         enabled: false
+
     persistence:
       config:
         enabled: true

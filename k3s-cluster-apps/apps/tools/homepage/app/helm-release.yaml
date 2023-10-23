@@ -24,23 +24,29 @@ spec:
   uninstall:
     keepHistory: false
   values:
-    image:
-      repository: ghcr.io/gethomepage/homepage
-      tag: v0.7.4@sha256:84d3b6d260bd1ed4b04a3671bacd6d933662cfd07f8ccc312fbdf2182fa3d97a
-    env:
-      TZ: "Europe/Paris"
-    serviceAccount:
-      create: create
-    controller:
-      annotations:
-        reloader.stakater.com/search: "true"
-        configmap.reloader.stakater.com/reload: homepage-config
+    controllers:
+      main:
+        annotations:
+          reloader.stakater.com/search: "true"
+          configmap.reloader.stakater.com/reload: homepage-config
+
+        containers:
+          main:
+            image:
+              repository: ghcr.io/gethomepage/homepage
+              tag: v0.7.4@sha256:84d3b6d260bd1ed4b04a3671bacd6d933662cfd07f8ccc312fbdf2182fa3d97a
+            env:
+              TZ: "Europe/Paris"
+            serviceAccount:
+              create: create
+
     service:
       main:
         ports:
           http:
             port: 3000
             protocol: TCP
+
     ingress:
       main:
         enabled: false

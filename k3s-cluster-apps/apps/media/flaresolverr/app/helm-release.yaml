@@ -24,24 +24,30 @@ spec:
   uninstall:
     keepHistory: false
   values:
-    image:
-      repository: ghcr.io/flaresolverr/flaresolverr
-      tag: v3.3.6@sha256:965e7dfc76d08e175864a9772ab746005087db138f2e2ba8017e75574d4f0286
-    env:
-      TZ: "Europe/Paris"
-      LOG_LEVEL: info
+    controllers:
+      main:
+
+        containers:
+          main:
+            image:
+              repository: ghcr.io/flaresolverr/flaresolverr
+              tag: v3.3.6@sha256:965e7dfc76d08e175864a9772ab746005087db138f2e2ba8017e75574d4f0286
+            env:
+              TZ: "Europe/Paris"
+              LOG_LEVEL: info
+
     service:
       main:
-        enabled: false
-      api:
-        enabled: true
-        primary: true
-        type: "ClusterIP"
         ports:
+          http:
+            enabled: false
           api:
             enabled: true
+            primary: true
+            type: "ClusterIP"
             port: 8191
             protocol: TCP
+
     ingress:
       main:
         enabled: false

@@ -24,26 +24,36 @@ spec:
   uninstall:
     keepHistory: false
   values:
-    podAnnotations:
-      backup.velero.io/backup-volumes-excludes: media
-    image:
-      repository: ghcr.io/onedr0p/radarr
-      tag: 5.0.3.8127@sha256:0d9a584e18080bc5e6a597bc13d96455777539ee5ad27cf1c4c88940dbbf4cf9
-    env:
-      TZ: "Europe/Paris"
-    podSecurityContext:
-      runAsUser: 1000
-      runAsGroup: 1000
-      fsGroup: 1000
+    controllers:
+      main:
+        annotations:
+          backup.velero.io/backup-volumes-excludes: media
+
+        pod:
+          securityContext:
+            runAsUser: 1000
+            runAsGroup: 1000
+            fsGroup: 1000
+
+        containers:
+          main:
+            image:
+              repository: ghcr.io/onedr0p/radarr
+              tag: 5.0.3.8127@sha256:0d9a584e18080bc5e6a597bc13d96455777539ee5ad27cf1c4c88940dbbf4cf9
+            env:
+              TZ: "Europe/Paris"
+
     service:
       main:
         ports:
           http:
             port: 7878
             protocol: TCP
+
     ingress:
       main:
         enabled: false
+
     persistence:
       config:
         enabled: true

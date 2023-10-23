@@ -24,42 +24,50 @@ spec:
   uninstall:
     keepHistory: false
   values:
-    image:
-      repository: docker.io/vaultwarden/server
-      tag: 1.29.2@sha256:fe651bfc38e98cfdd56c43e4ad3b8ad35d1bead78bd5b636e4acfceb4a48bd46
-    podSecurityContext:
-      runAsUser: 1000
-      runAsGroup: 1000
-      fsGroup: 1000
-    securityContext:
-      readOnlyRootFilesystem: true
-      capabilities:
-        drop:
-        - ALL
-    env:
-      TZ: "Europe/Paris"
-      WEBSOCKET_ENABLED: "true"
-      WEBSOCKET_PORT: "3012"
-      ROCKET_PORT: "8000"
-      DATA_FOLDER: "/data"
-      LOG_FILE: "/data/bitwarden.log"
-      LOG_LEVEL: "info"
-      EXTENDED_LOGGING: "true"
-      SHOW_PASSWORD_HINT: "false"
-      SIGNUPS_ALLOWED: "false"
-      SIGNUPS_VERIFY: "true"
-      INVITATION_ORG_NAME: "${SECRET_VAULTWARDEN_INVITATION_ORG_NAME}"
-      ADMIN_TOKEN: "${SECRET_VAULTWARDEN_ADMIN_TOKEN}"
-      DOMAIN: "https://pass.${SECRET_CLUSTER_DOMAIN}"
-      ORG_CREATION_USERS: "${SECRET_VAULTWARDEN_ORG_CREATION_USERS}"
-      SMTP_FROM: "vault@${SECRET_CLUSTER_DOMAIN}"
-      SMTP_FROM_NAME: "${SECRET_VAULTWARDEN_SMTP_FROM_NAME}"
-      SMTP_HOST: "${SECRET_OVH_SMTP_HOST}"
-      SMTP_PORT: 587
-      SMTP_SSL: "true"
-      SMTP_EXPLICIT_TLS: false # mislabelled (see bug #851)
-      SMTP_USERNAME: "${SECRET_OVH_SMTP_USERNAME}"
-      SMTP_PASSWORD: "${SECRET_OVH_SMTP_PASSWORD}"
+    controllers:
+      main:
+
+        pod:
+          securityContext:
+            runAsUser: 1000
+            runAsGroup: 1000
+            fsGroup: 1000
+
+        containers:
+          main:
+            securityContext:
+              readOnlyRootFilesystem: true
+              capabilities:
+                drop:
+                  - ALL
+            image:
+              repository: docker.io/vaultwarden/server
+              tag: 1.29.2@sha256:fe651bfc38e98cfdd56c43e4ad3b8ad35d1bead78bd5b636e4acfceb4a48bd46
+            env:
+              TZ: "Europe/Paris"
+              WEBSOCKET_ENABLED: "true"
+              WEBSOCKET_PORT: "3012"
+              ROCKET_PORT: "8000"
+              DATA_FOLDER: "/data"
+              LOG_FILE: "/data/bitwarden.log"
+              LOG_LEVEL: "info"
+              EXTENDED_LOGGING: "true"
+              SHOW_PASSWORD_HINT: "false"
+              SIGNUPS_ALLOWED: "false"
+              SIGNUPS_VERIFY: "true"
+              INVITATION_ORG_NAME: "${SECRET_VAULTWARDEN_INVITATION_ORG_NAME}"
+              ADMIN_TOKEN: "${SECRET_VAULTWARDEN_ADMIN_TOKEN}"
+              DOMAIN: "https://pass.${SECRET_CLUSTER_DOMAIN}"
+              ORG_CREATION_USERS: "${SECRET_VAULTWARDEN_ORG_CREATION_USERS}"
+              SMTP_FROM: "vault@${SECRET_CLUSTER_DOMAIN}"
+              SMTP_FROM_NAME: "${SECRET_VAULTWARDEN_SMTP_FROM_NAME}"
+              SMTP_HOST: "${SECRET_OVH_SMTP_HOST}"
+              SMTP_PORT: 587
+              SMTP_SSL: "true"
+              SMTP_EXPLICIT_TLS: false # mislabelled (see bug #851)
+              SMTP_USERNAME: "${SECRET_OVH_SMTP_USERNAME}"
+              SMTP_PASSWORD: "${SECRET_OVH_SMTP_PASSWORD}"
+
     service:
       main:
         ports:
@@ -70,9 +78,11 @@ spec:
             enabled: true
             port: 3012
             protocol: TCP
+
     ingress:
       main:
         enabled: false
+
     persistence:
       data:
         enabled: true

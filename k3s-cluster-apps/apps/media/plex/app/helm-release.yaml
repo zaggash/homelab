@@ -24,31 +24,50 @@ spec:
   uninstall:
     keepHistory: false
   values:
-    podAnnotations:
-      backup.velero.io/backup-volumes-excludes: media
-    image:
-      repository: ghcr.io/onedr0p/plex
-      tag: 1.32.6.7557-1cf77d501@sha256:6f87b0811df009af1defc9afad6afa383b9d821a7fcaddc968df41ba445d321e
-    env:
-      TZ: "Europe/Paris"
-      # PLEX_CLAIM: "${SECRET_PLEX_CLAIM}" ## Use to authenticate PMS during 1st install
-      ADVERTISE_IP: "${SECRET_PLEX_ADVERTISE_IP}"
-    podSecurityContext:
-      runAsUser: 1000
-      runAsGroup: 1000
-      fsGroup: 1000
-      supplementalGroups:
-      - 44
-      - 109
+    defaultPodOptions:
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        supplementalGroups:
+        - 44
+        - 109
+
+    controllers:
+      main:
+        annotations:
+          backup.velero.io/backup-volumes-excludes: media
+
+        pod:
+          securityContext:
+            runAsUser: 1000
+            runAsGroup: 1000
+            fsGroup: 1000
+            supplementalGroups:
+              - 44
+              - 109
+
+        containers:
+          main:
+            image:
+              repository: ghcr.io/onedr0p/plex
+              tag: 1.32.6.7557-1cf77d501@sha256:6f87b0811df009af1defc9afad6afa383b9d821a7fcaddc968df41ba445d321e
+            env:
+              TZ: "Europe/Paris"
+              # PLEX_CLAIM: "${SECRET_PLEX_CLAIM}" ## Use to authenticate PMS during 1st install
+              ADVERTISE_IP: "${SECRET_PLEX_ADVERTISE_IP}"
+    
     service:
       main:
         ports:
           http:
             port: 32400
             protocol: TCP
+
     ingress:
       main:
         enabled: false
+
     persistence:
       config:
         enabled: true

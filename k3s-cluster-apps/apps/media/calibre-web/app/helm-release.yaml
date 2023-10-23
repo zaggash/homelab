@@ -24,18 +24,23 @@ spec:
   uninstall:
     keepHistory: false
   values:
-    image:
-      repository: ghcr.io/bjw-s/calibre-web
-      tag: 0.6.20@sha256:5bd1c1cee482e52ece70e4e2fe0589d1910455e3e09e330c92c24bd304edccfb
+    controllers:
+      main:
 
-    podSecurityContext:
-      runAsUser: 568
-      runAsGroup: 568
-      fsGroup: 568
-      fsGroupChangePolicy: "OnRootMismatch"
+        pod:
+          securityContext:
+            runAsUser: 568
+            runAsGroup: 568
+            fsGroup: 568
+            fsGroupChangePolicy: "OnRootMismatch"
 
-    env:
-      TZ: "Europe/Paris"
+        containers:
+          main:
+            image:
+              repository: ghcr.io/bjw-s/calibre-web
+              tag: 0.6.20@sha256:5bd1c1cee482e52ece70e4e2fe0589d1910455e3e09e330c92c24bd304edccfb
+            env:
+              TZ: "Europe/Paris"
 
     service:
       main:
@@ -43,6 +48,7 @@ spec:
           http:
             port: 8083
             protocol: TCP
+
     ingress:
       main:
         enabled: false

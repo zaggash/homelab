@@ -9,7 +9,6 @@ metadata:
 spec:
   dependsOn:
     - name: apps-nfs-provisioners
-    - name: apps-postgresql
   path: ./k3s-cluster-apps/apps/dev/pgadmin/app
   prune: true
   sourceRef:

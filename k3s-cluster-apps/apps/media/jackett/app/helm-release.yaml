@@ -24,20 +24,28 @@ spec:
   uninstall:
     keepHistory: false
   values:
-    image:
-      repository: linuxserver/jackett
-      tag: 0.21.1076@sha256:c0d8d008c8dee58b855b886c58b8ed1f9b14654bcca56539f0390f44bdac0bbf
-    env:
-      TZ: "Europe/Paris"
+    controllers:
+      main:
+
+        containers:
+          main:
+            image:
+              repository: linuxserver/jackett
+              tag: 0.21.1076@sha256:c0d8d008c8dee58b855b886c58b8ed1f9b14654bcca56539f0390f44bdac0bbf
+            env:
+              TZ: "Europe/Paris"
+
     service:
       main:
         ports:
           http:
             port: 9117
             protocol: TCP
+
     ingress:
       main:
         enabled: false
+
     persistence:
       config:
         enabled: true

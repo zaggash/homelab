@@ -24,18 +24,24 @@ spec:
   uninstall:
     keepHistory: false
   values:
-    image:
-      repository: ghcr.io/tarampampam/error-pages
-      tag: 2.25@sha256:a469bcdfb1abdcb3e6f22d53a6f973c2ed59ef0d9e0f9bcc650bfc7730afee02
-    env:
-      TZ: "Europe/Paris"
-      TEMPLATE_NAME: "ghost"
-      SHOW_DETAILS: "true"
+    controllers:
+      main:
+
+        containers:
+          main:
+            image:
+              repository: ghcr.io/tarampampam/error-pages
+              tag: 2.25@sha256:a469bcdfb1abdcb3e6f22d53a6f973c2ed59ef0d9e0f9bcc650bfc7730afee02
+            env:
+              TZ: "Europe/Paris"
+              TEMPLATE_NAME: "ghost"
+              SHOW_DETAILS: "true"
     service:
       main:
         ports:
           http:
             port: 8080
+
     ingress:
       main:
         enabled: false

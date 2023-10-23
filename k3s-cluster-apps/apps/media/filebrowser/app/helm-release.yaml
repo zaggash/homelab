@@ -24,17 +24,21 @@ spec:
   uninstall:
     keepHistory: false
   values:
-    podAnnotations:
-      backup.velero.io/backup-volumes-excludes: data
-    image:
-      repository: docker.io/filebrowser/filebrowser
-      tag: v2.25.0@sha256:dfbedfc74452e3685eec6d1a08d45b9072d974719c33a6349e3c11d207867848
-    env:
-      TZ: "Europe/Paris"
-      LOG_LEVEL: info
-    controller:
-      annotations:
-        configmap.reloader.stakater.com/reload: filebrowser-settings
+    controllers:
+      main:
+        annotations:
+          backup.velero.io/backup-volumes-excludes: data
+          configmap.reloader.stakater.com/reload: filebrowser-settings
+
+        containers:
+          main:
+            image:
+              repository: docker.io/filebrowser/filebrowser
+              tag: v2.25.0@sha256:dfbedfc74452e3685eec6d1a08d45b9072d974719c33a6349e3c11d207867848
+            env:
+              TZ: "Europe/Paris"
+              LOG_LEVEL: info
+        
     configMaps:
       settings:
         enabled: true
@@ -55,9 +59,11 @@ spec:
           http:
             port: 80
             protocol: TCP
+
     ingress:
       main:
         enabled: false
+
     persistence:
       settings:
         enabled: true

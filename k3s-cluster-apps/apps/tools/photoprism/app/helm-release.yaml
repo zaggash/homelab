@@ -24,24 +24,35 @@ spec:
   uninstall:
     keepHistory: false
   values:
-    image:
-      repository: docker.io/photoprism/photoprism
-      tag: 221118-jammy@sha256:16645a56a968e9411a0b432a84887d8e2a77e8bdab96aa1d6b8654132b1797c8
-    env:
-      TZ: "Europe/Paris"
-      UID: 1000
-      GID: 1000
-      PHOTOPRISM_DATABASE_DRIVER: "sqlite"
-      PHOTOPRISM_ADMIN_PASSWORD: "${SECRET_PHOTOPRISM_ADMIN_PASSWORD}"
-      PHOTOPRISM_PUBLIC: false
+    controllers:
+      main:
+
+        containers:
+          main:
+            image:
+              repository: docker.io/photoprism/photoprism
+              tag: 221118-jammy@sha256:16645a56a968e9411a0b432a84887d8e2a77e8bdab96aa1d6b8654132b1797c8
+            env:
+              TZ: "Europe/Paris"
+              UID: 1000
+              GID: 1000
+              PHOTOPRISM_DATABASE_DRIVER: "sqlite"
+              PHOTOPRISM_ADMIN_PASSWORD: "${SECRET_PHOTOPRISM_ADMIN_PASSWORD}"
+              PHOTOPRISM_PUBLIC: false
+            probes:
+             readiness:
+               spec:
+                 initialDelaySeconds: 60
     service:
       main:
         ports:
           http:
             port: 2342
+
     ingress:
       main:
         enabled: false
+
     persistence:
       config:
         enabled: true
@@ -53,7 +64,3 @@ spec:
         retain: true
         existingClaim: "photoprism-data"
         mountPath: /photoprism/originals
-    probes:
-      readiness:
-        spec:
-          initialDelaySeconds: 60

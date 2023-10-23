@@ -24,32 +24,37 @@ spec:
   uninstall:
     keepHistory: false
   values:
-    image:
-      repository: docker.io/nitnelave/lldap
-      tag: v0.5.0@sha256:7df30065344c5b7f73bae2591db779460ae937e39e11b4a5d1adeb91082ed97e
-    env:
-      TZ: "Europe/Paris"
-      LLDAP_LDAP_PORT: "3890"
-      LLDAP_HTTP_PORT: "17170"
-      LLDAP_JWT_SECRET: "${SECRET_LLDAP_JWT_SECRET}"
-      LLDAP_LDAP_USER_EMAIL: "${SECRET_CLUSTER_DOMAIN_EMAIL}"
-      LLDAP_LDAP_USER_DN: "${SECRET_LLDAP_LDAP_USER_DN}"
-      LLDAP_LDAP_USER_PASS: ${SECRET_LLDAP_LDAP_USER_PASS}
-      LLDAP_LDAP_BASE_DN: "${SECRET_LLDAP_BASE_DN}"
-      #---
-      #LLDAP_LDAPS_OPTIONS__ENABLED: "true"
-      #LLDAP_LDAPS_OPTIONS__PORT: ""
-      #LLDAP_LDAPS_OPTIONS__CERT_FILE: ""
-      #LLDAP_LDAPS_OPTIONS__KEY_FILE: ""
-      #---
-      #LLDAP_SMTP_OPTIONS__ENABLE_PASSWORD_RESET: true
-      #LLDAP_SMTP_OPTIONS__SERVER: ""
-      #LLDAP_SMTP_OPTIONS__PORT: ""
-      #LLDAP_SMTP_OPTIONS__SMTP_ENCRYPTION: ""
-      #LLDAP_SMTP_OPTIONS__USER: ""
-      #LLDAP_SMTP_OPTIONS__PASSWORD: ""
-      #LLDAP_SMTP_OPTIONS__FROM: ""
-      #LLDAP_SMTP_OPTIONS__REPLY_TO: ""
+    controllers:
+      main:
+
+        containers:
+          main:
+            image:
+              repository: docker.io/nitnelave/lldap
+              tag: v0.5.0@sha256:7df30065344c5b7f73bae2591db779460ae937e39e11b4a5d1adeb91082ed97e
+            env:
+              TZ: "Europe/Paris"
+              LLDAP_LDAP_PORT: "3890"
+              LLDAP_HTTP_PORT: "17170"
+              LLDAP_JWT_SECRET: "${SECRET_LLDAP_JWT_SECRET}"
+              LLDAP_LDAP_USER_EMAIL: "${SECRET_CLUSTER_DOMAIN_EMAIL}"
+              LLDAP_LDAP_USER_DN: "${SECRET_LLDAP_LDAP_USER_DN}"
+              LLDAP_LDAP_USER_PASS: ${SECRET_LLDAP_LDAP_USER_PASS}
+              LLDAP_LDAP_BASE_DN: "${SECRET_LLDAP_BASE_DN}"
+              #---
+              #LLDAP_LDAPS_OPTIONS__ENABLED: "true"
+              #LLDAP_LDAPS_OPTIONS__PORT: ""
+              #LLDAP_LDAPS_OPTIONS__CERT_FILE: ""
+              #LLDAP_LDAPS_OPTIONS__KEY_FILE: ""
+              #---
+              #LLDAP_SMTP_OPTIONS__ENABLE_PASSWORD_RESET: true
+              #LLDAP_SMTP_OPTIONS__SERVER: ""
+              #LLDAP_SMTP_OPTIONS__PORT: ""
+              #LLDAP_SMTP_OPTIONS__SMTP_ENCRYPTION: ""
+              #LLDAP_SMTP_OPTIONS__USER: ""
+              #LLDAP_SMTP_OPTIONS__PASSWORD: ""
+              #LLDAP_SMTP_OPTIONS__FROM: ""
+              #LLDAP_SMTP_OPTIONS__REPLY_TO: ""
 
     service:
       main:
@@ -61,9 +66,11 @@ spec:
             enabled: true
             port: 3890
             protocol: TCP
+
     ingress:
       main:
         enabled: false
+
     persistence:
       data:
         enabled: true
