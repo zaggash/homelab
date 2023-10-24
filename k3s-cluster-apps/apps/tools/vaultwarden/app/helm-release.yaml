@@ -89,5 +89,7 @@ spec:
       data:
         enabled: true
         retain: true
+        type: persistentVolumeClaim
         existingClaim: "vaultwarden-data"
-        mountPath: /data
+        globalMounts:
+          - path: /data

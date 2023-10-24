@@ -65,19 +65,25 @@ spec:
         enabled: false
 
     persistence:
+      config:
+        enabled: true
+        retain: true
+        type: persistentVolumeClaim
+        existingClaim: "filebrowser-config"
+        globalMounts:
+          - path: /config
       settings:
         enabled: true
         type: configMap
         name: filebrowser-settings
-        mountPath: /.filebrowser.json
-        subPath: .filebrowser.json
-        readOnly: true
-      config:
-        enabled: true
-        existingClaim: "filebrowser-config"
-        mountPath: /config
+        globalMounts:
+          - path: /.filebrowser.json
+            subPath: .filebrowser.json
       data:
         enabled: true
         retain: true
+        type: persistentVolumeClaim
+        accessMode: "ReadWriteOnce"
         existingClaim: "all-data"
-        mountPath: /mnt/data
+        globalMounts:
+          - path: /mnt/data

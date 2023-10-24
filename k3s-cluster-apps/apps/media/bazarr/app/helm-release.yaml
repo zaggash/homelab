@@ -52,11 +52,16 @@ spec:
       config:
         enabled: true
         retain: true
+        type: persistentVolumeClaim
         existingClaim: "bazarr-config"
-        mountPath: /config
+        globalMounts:
+          - path: /config
       media:
         enabled: true
         retain: true
+        type: persistentVolumeClaim
+        accessMode: "ReadWriteOnce"
         existingClaim: "all-data"
-        subPath: tvshows
-        mountPath: /media/tvshows
+        globalMounts:
+          - path: /media/tvshows
+            subPath: tvshows

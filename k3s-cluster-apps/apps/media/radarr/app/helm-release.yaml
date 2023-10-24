@@ -58,11 +58,15 @@ spec:
       config:
         enabled: true
         retain: true
+        type: persistentVolumeClaim
         existingClaim: "radarr-config"
-        mountPath: /config
+        globalMounts:
+          - path: /config
       media:
         enabled: true
-        accessMode: "ReadWriteOnce"
         retain: true
+        type: persistentVolumeClaim
+        accessMode: "ReadWriteOnce"
         existingClaim: "all-data"
-        mountPath: /media
+        globalMounts:
+          - path: /media

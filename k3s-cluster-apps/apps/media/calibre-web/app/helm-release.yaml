@@ -58,9 +58,16 @@ spec:
     persistence:
       config:
         enabled: true
+        retain: true
+        type: persistentVolumeClaim
         existingClaim: "calibre-web-config"
-        mountPath: /config
+        globalMounts:
+          - path: /config
       books:
         enabled: true
+        retain: true
+        type: persistentVolumeClaim
+        accessMode: "ReadWriteOnce"
         existingClaim: "calibre-web-books"
-        mountPath: /books
+        globalMounts:
+          - path: /books

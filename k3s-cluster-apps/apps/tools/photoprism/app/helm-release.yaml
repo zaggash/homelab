@@ -57,10 +57,15 @@ spec:
       config:
         enabled: true
         retain: true
+        type: persistentVolumeClaim
         existingClaim: "photoprism-config"
-        mountPath: /photoprism/storage
+        globalMounts:
+          - path: /photoprism/storage
       originals:
         enabled: true
         retain: true
+        type: persistentVolumeClaim
+        accessMode: "ReadWriteOnce"
         existingClaim: "photoprism-data"
-        mountPath: /photoprism/originals
+        globalMounts:
+          - path: /photoprism/originals

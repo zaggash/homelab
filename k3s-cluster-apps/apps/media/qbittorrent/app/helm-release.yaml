@@ -68,12 +68,16 @@ spec:
       config:
         enabled: true
         retain: true
+        type: persistentVolumeClaim
         existingClaim: "qbittorrent-config"
-        mountPath: /config
+        globalMounts:
+          - mountPath: /config
       data:
         enabled: true
-        accessMode: "ReadWriteOnce"
         retain: true
+        type: persistentVolumeClaim
+        accessMode: "ReadWriteOnce"
         existingClaim: "all-data"
-        subPath: downloads
-        mountPath: /media/downloads
+        globalMounts:
+          - path: /media/downloads
+            subPath: downloads

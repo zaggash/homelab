@@ -51,5 +51,7 @@ spec:
       config:
         enabled: true
         retain: true
+        type: persistentVolumeClaim
         existingClaim: "overseerr-config"
-        mountPath: /app/config
+        globalMounts:
+          - path: /app/config

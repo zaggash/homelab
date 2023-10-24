@@ -75,5 +75,7 @@ spec:
       data:
         enabled: true
         retain: true
+        type: persistentVolumeClaim
         existingClaim: "lldap-data"
-        mountPath: /data
+        globalMounts:
+          - path: /data

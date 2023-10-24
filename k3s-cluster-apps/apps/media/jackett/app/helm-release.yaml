@@ -50,5 +50,7 @@ spec:
       config:
         enabled: true
         retain: true
+        type: persistentVolumeClaim
         existingClaim: "jackett-config"
-        mountPath: /config
+        globalMounts:
+          - path: /config

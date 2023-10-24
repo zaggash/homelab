@@ -72,17 +72,20 @@ spec:
       config:
         enabled: true
         retain: true
+        type: persistentVolumeClaim
         existingClaim: "plex-config"
-        mountPath: /config
-      media:
+        globalMounts:
+          - path: /config
+      data:
         enabled: true
-        accessMode: "ReadWriteOnce"
         retain: true
+        type: persistentVolumeClaim
+        accessMode: "ReadWriteOnce"
         existingClaim: "all-data"
-        subPath:
-        - path: movies
-          mountPath: /media/movies
-        - path: cartoons
-          mountPath: /media/cartoons
-        - path: tvshows
-          mountPath: /media/tvshows
+        globalMounts:
+          - path: /media/movies
+            subPath: movies
+          - path: /media/cartoons
+            subPath: cartoons
+          - path: /media/tvshows
+            subPath: tvshows
