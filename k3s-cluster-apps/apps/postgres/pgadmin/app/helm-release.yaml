@@ -31,5 +31,4 @@ spec:
       targetPort: 80
       portName: http
     persistentVolume:
-      enabled: true
-      existingClaim: pgadmin-config
+      enabled: false

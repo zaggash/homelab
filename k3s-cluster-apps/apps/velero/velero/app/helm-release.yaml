@@ -69,7 +69,7 @@ spec:
         template:
           ttl: "1440h0m0s"
           includedNamespaces:
-            - dev
+            - postgres
             - media
             - networking
             - security

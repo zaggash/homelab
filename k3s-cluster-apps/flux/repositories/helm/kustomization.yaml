@@ -16,3 +16,4 @@ resources:
   - ./jetstack-charts.yaml
   - ./cert-manager-webhook-ovh-charts.yaml
   - ./emberstack-charts.yaml
+  - ./cloudnative-pg-charts.yaml

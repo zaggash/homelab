@@ -111,7 +111,7 @@ spec:
                   href: "https://pga.${SECRET_CLUSTER_DOMAIN}"
                   description: "Interface Web pour gérer des bases Postres"
                   icon: "https://github.com/loganmarchione/homelab-svg-assets/raw/main/assets/postgresql.svg"
-                  namespace: "dev"
+                  namespace: "postgres"
                   app: "pgadmin4"
               - LLDAP:
                   href: "https://ldap.${SECRET_HOME_DOMAIN}"
