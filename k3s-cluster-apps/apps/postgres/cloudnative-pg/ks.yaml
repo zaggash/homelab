@@ -22,3 +22,28 @@ spec:
   interval: 30m
   retryInterval: 1m
   timeout: 3m
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: apps-cloudnative-pg-cluster
+  namespace: flux-system
+  labels:
+    substitution.flux.home/enabled: "true"
+spec:
+  dependsOn:
+    - name: apps-nfs-provisioners
+    - name: apps-cloudnative-pg
+  path: ./k3s-cluster-apps/apps/postgres/cloudnative-pg/cluster
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: homelab-cluster
+  healthChecks:
+    - apiVersion: postgresql.cnpg.io/v1
+      kind: Cluster
+      name: nas-instance
+      namespace: postgres
+  interval: 30m
+  retryInterval: 1m
+  timeout: 3m

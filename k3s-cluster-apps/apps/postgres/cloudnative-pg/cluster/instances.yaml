@@ -1,0 +1,54 @@
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: nas-instance
+spec:
+  instances: 2
+  postgresql:
+    parameters:
+      timezone: "Europe/Paris"
+  primaryUpdateStrategy: unsupervised
+  storage:
+    size: 20Gi
+    storageClass: nfs-data
+  superuserSecret:
+    name: postgres-superuser
+  backup:
+    retentionPolicy: 30d
+    barmanObjectStore:
+      wal:
+        compression: bzip2
+        maxParallel: 8
+      destinationPath: s3://postgresql/
+      endpointURL: https://s3.home.lan:9000
+      endpointCA:
+        name: home-ca
+        key: tls.crt
+      s3Credentials: 
+        accessKeyId:
+          name: postgres-minio
+          key: MINIO_ACCESS_KEY
+        secretAccessKey:
+          name: postgres-minio
+          key: MINIO_SECRET_KEY
+  # bootstrap:
+  #   recovery:
+  #     source: postgres-backup
+  # externalClusters:
+  #   - name: postgres-backup
+  #     barmanObjectStore:
+  #       destinationPath: s3://postgresql/
+  #       endpointURL: https://s3.home.lan:9000
+  #       endpointCA:
+  #         name: postgres-minio
+  #         key: MINIO_CA
+  #       s3Credentials:
+  #         accessKeyId:
+  #           name: postgres-minio
+  #           key: MINIO_ACCESS_KEY
+  #         secretAccessKey:
+  #           name: postgres-minio
+  #           key: MINIO_SECRET_KEY
+  #       wal:
+  #         maxParallel: 8
