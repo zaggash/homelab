@@ -1,4 +1,4 @@
-FROM eclipse-temurin:11.0.20_8-jre@sha256:8e27128ef90ce25d03a8f188fb9c9dcea17aef838b7f3f4874a215837dd5e1ce
+FROM eclipse-temurin:11.0.21_9-jre@sha256:a4fa5b3c626e96ae0ca406dad4f2c41c492b9caeb05e72af9c58d767fe41af1b
 RUN mkdir -p /app
 ADD custom_servers.json https://github.com/Pugmatt/BedrockConnect/releases/latest/download/BedrockConnect-1.0-SNAPSHOT.jar /app/
 WORKDIR /app
