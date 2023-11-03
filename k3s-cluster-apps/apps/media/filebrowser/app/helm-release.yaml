@@ -34,7 +34,7 @@ spec:
           main:
             image:
               repository: docker.io/filebrowser/filebrowser
-              tag: v2.25.0@sha256:dfbedfc74452e3685eec6d1a08d45b9072d974719c33a6349e3c11d207867848
+              tag: v2.26.0@sha256:0e0a4b700302457772b07c4efc47bc90143d7538d36731baabcf7d375360bcee
             env:
               TZ: "Europe/Paris"
               LOG_LEVEL: info
