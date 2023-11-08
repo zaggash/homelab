@@ -42,7 +42,7 @@ spec:
                   - ALL
             image:
               repository: docker.io/vaultwarden/server
-              tag: 1.29.2@sha256:fe651bfc38e98cfdd56c43e4ad3b8ad35d1bead78bd5b636e4acfceb4a48bd46
+              tag: 1.30.0@sha256:4d80961ce9fa4c7f74e59cff34798766a4a7dc7b140aec91d4e5357a923df9bc
             env:
               TZ: "Europe/Paris"
               WEBSOCKET_ENABLED: "true"
