@@ -13,9 +13,3 @@ spec:
         - kind: Service
           name: vaultwarden
           port: 8000
-    - kind: Rule
-      match: Host(`pass.${SECRET_CLUSTER_DOMAIN}`) && (Path(`/notifications/hub`) || Path(`/notifications/hub/negotiate`))
-      services:
-        - kind: Service
-          name: vaultwarden
-          port: 3012

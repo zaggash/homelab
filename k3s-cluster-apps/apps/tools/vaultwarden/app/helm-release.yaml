@@ -45,8 +45,6 @@ spec:
               tag: 1.30.0@sha256:4d80961ce9fa4c7f74e59cff34798766a4a7dc7b140aec91d4e5357a923df9bc
             env:
               TZ: "Europe/Paris"
-              WEBSOCKET_ENABLED: "true"
-              WEBSOCKET_PORT: "3012"
               PUSH_ENABLED: "true"
               PUSH_INSTALLATION_ID: "${SECRET_VAULTWARDEN_PUSH_ID}"
               PUSH_INSTALLATION_KEY: "${SECRET_VAULTWARDEN_PUSH_KEY}"
@@ -75,10 +73,6 @@ spec:
         ports:
           http:
             port: 8000
-            protocol: TCP
-          websocket:
-            enabled: true
-            port: 3012
             protocol: TCP
 
     ingress:
