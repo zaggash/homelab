@@ -31,7 +31,7 @@ spec:
           main:
             image:
               repository: linuxserver/jackett
-              tag: 0.21.1293@sha256:8ace9b22593077c786363e948c67dced489d94386d773726d46186b18f6e807b
+              tag: 0.21.1298@sha256:be7c38f8742dc55890185085a5b3a98d1795bc979464c9488583bb5a3da6f2a8
             env:
               TZ: "Europe/Paris"
 
