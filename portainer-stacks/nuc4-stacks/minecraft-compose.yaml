@@ -12,7 +12,7 @@ services:
     restart: always
 
   server:
-    image: itzg/minecraft-server:java20@sha256:cd540e587462ff8a2af3eb29dc806d05ff9877d92e6d4ef630ee97d1b09d2248
+    image: itzg/minecraft-server:java17@sha256:616f76b395d652a21618e2d7daa0c3f26cc8dbcc9a3ff21572ba5ed35cf88d9a
     init: true
     dns:
       - 192.168.1.10
@@ -30,11 +30,20 @@ services:
       ## Minecraft settings ##
       TYPE: PAPER # Download latest Paper Fork
       VERSION: 1.19.2 # Set minecraft server version
-      SPIGET_RESOURCES: "19254,60623" # Download plugins : ViaVersion + SleepMost
-      # Add latest Geyser /  FloodGate / Dynmap (274)
-      MODS: "https://ci.opencollab.dev/job/GeyserMC/job/Geyser/job/master/lastSuccessfulBuild/artifact/bootstrap/spigot/build/libs/Geyser-Spigot.jar,
-             https://ci.opencollab.dev/job/GeyserMC/job/Floodgate/job/master/lastSuccessfulBuild/artifact/spigot/build/libs/floodgate-spigot.jar,
-             https://mediafilez.forgecdn.net/files/4444/998/Dynmap-3.5-beta-3-spigot.jar"
+      # PLUGINS / MODS #
+      # ViaVersion(19254) [Allow user with newer version]
+      # SleepMost(60623) [Ask players to skip night in a bed]
+      SPIGET_RESOURCES: |
+        19254
+        60623
+      # Geyser [Bridge between Bedrock and Java Edition]                                                                                                                                                    
+      # FloodGate [Allow Bedrock to not have Paid Java account]
+      PLUGINS: |
+        https://download.geysermc.org/v2/projects/geyser/versions/latest/builds/latest/downloads/spigot
+        https://download.geysermc.org/v2/projects/floodgate/versions/latest/builds/latest/downloads/spigot
+      # Dynmap (274)[Add Map in a browser]
+      MODRINTH_PROJECTS: |
+        dynmap
       # server.properties #
       OVERRIDE_ICON: TRUE
       ICON: "https://cdn-icons-png.flaticon.com/512/1409/1409036.png"
