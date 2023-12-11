@@ -38,6 +38,17 @@
       "separateMinorPatch": true
     },
 
+    {  
+      "description": "Group bedrock-connect update",
+      "groupName": "Bedrock-Connect",
+      "matchDatasources": ["docker", "github-tags"],
+      "matchPaths": ["portainer-stacks/nuc4-stacks/bedrock-connect/**"],
+      "group": {
+        "commitMessageTopic": "{{{groupName}}} group"
+      },
+      "separateMinorPatch": true
+    },
+
     {
       description: "Auto merge containers",
       matchDatasources: ["docker"],
