@@ -5,6 +5,8 @@ metadata:
   name: reloader
 spec:
   interval: 15m
+  driftDetection:
+    mode: enabled
   chart:
     spec:
       chart: reloader

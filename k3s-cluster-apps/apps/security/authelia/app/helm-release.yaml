@@ -5,6 +5,8 @@ metadata:
   name: authelia
 spec:
   interval: 15m
+  driftDetection:
+    mode: enabled
   chart:
     spec:
       chart: authelia

@@ -4,7 +4,9 @@ kind: HelmRelease
 metadata:
   name: velero
 spec:
-  interval: 5m
+  interval: 15m
+  driftDetection:
+    mode: enabled
   chart:
     spec:
       chart: velero

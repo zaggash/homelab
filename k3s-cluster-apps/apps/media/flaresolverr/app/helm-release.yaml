@@ -3,7 +3,9 @@ kind: HelmRelease
 metadata:
   name: flaresolverr
 spec:
-  interval: 5m
+  interval: 15m
+  driftDetection:
+    mode: enabled
   chart:
     spec:
       chart: app-template

@@ -3,16 +3,17 @@ kind: HelmRelease
 metadata:
   name: cloudnative-pg
 spec:
+  interval: 15m
+  driftDetection:
+    mode: enabled
   chart:
     spec:
-      interval: 5m
       chart: cloudnative-pg
       version: "0.19.1"
       sourceRef:
         kind: HelmRepository
         name: cloudnative-pg-charts
         namespace: flux-system
-  interval: 5m
   install:
     crds: Create
   maxHistory: 3

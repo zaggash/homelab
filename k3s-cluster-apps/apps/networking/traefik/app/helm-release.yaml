@@ -4,6 +4,8 @@ metadata:
   name: traefik
 spec:
   interval: 15m
+  driftDetection:
+    mode: enabled
   chart:
     spec:
       chart: traefik

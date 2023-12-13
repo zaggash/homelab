@@ -3,16 +3,17 @@ kind: HelmRelease
 metadata:
   name: pgadmin
 spec:
+  interval: 15m
+  driftDetection:
+    mode: enabled
   chart:
     spec:
-      interval: 5m
       chart: pgadmin4
       version: "1.18.5"
       sourceRef:
         kind: HelmRepository
         name: runix-charts
         namespace: flux-system
-  interval: 5m
   install:
     crds: Create
   maxHistory: 3

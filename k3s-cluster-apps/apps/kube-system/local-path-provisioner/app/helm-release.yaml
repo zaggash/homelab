@@ -5,6 +5,8 @@ metadata:
   name: local-path-provisioner
 spec:
   interval: 15m
+  driftDetection:
+    mode: enabled
   chart:
     spec:
       chart: local-path-provisioner

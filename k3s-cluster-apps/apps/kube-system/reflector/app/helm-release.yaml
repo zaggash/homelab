@@ -5,6 +5,8 @@ metadata:
   name: reflector
 spec:
   interval: 15m
+  driftDetection:
+    mode: enabled
   chart:
     spec:
       chart: reflector

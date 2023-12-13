@@ -4,6 +4,8 @@ metadata:
   name: cert-manager-webhook-ovh
 spec:
   interval: 15m
+  driftDetection:
+    mode: enabled
   chart:
     spec:
       chart: cert-manager-webhook-ovh
