@@ -26,3 +26,10 @@ spec:
       retries: 3
   uninstall:
     keepHistory: false
+  values:
+    controller:
+      logLevel: warn
+    speaker:
+      logLevel: warn
+    frr:
+      enabled: false
