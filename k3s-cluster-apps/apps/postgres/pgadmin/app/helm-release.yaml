@@ -14,11 +14,18 @@ spec:
         kind: HelmRepository
         name: runix-charts
         namespace: flux-system
+  maxHistory: 3
   install:
     crds: Create
-  maxHistory: 3
+    remediation:
+      retries: 3
   upgrade:
     crds: CreateReplace
+    cleanupOnFail: true
+    remediation:
+      retries: 3
+  uninstall:
+    keepHistory: false
   values:
     env:
       email: ${SECRET_PGADMIN_EMAIL}

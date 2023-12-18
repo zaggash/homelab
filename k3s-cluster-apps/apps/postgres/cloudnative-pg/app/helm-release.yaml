@@ -14,8 +14,15 @@ spec:
         kind: HelmRepository
         name: cloudnative-pg-charts
         namespace: flux-system
+  maxHistory: 3
   install:
     crds: Create
-  maxHistory: 3
+    remediation:
+      retries: 3
   upgrade:
+    cleanupOnFail: true
+    remediation:
+      retries: 3
     crds: CreateReplace
+  uninstall:
+    keepHistory: false
