@@ -44,7 +44,7 @@ spec:
                   - ALL
             image:
               repository: docker.io/vaultwarden/server
-              tag: 1.30.1@sha256:3c59fef02b02d704f304f85bab0a0c6b4ecfb513594b66fc9c26b2f994b3bdbb
+              tag: 1.30.2@sha256:0681996001f2de8009b7742e560c96cd791aebbbe21030fe25b4eef5c9024d35
             env:
               TZ: "Europe/Paris"
               PUSH_ENABLED: "true"
