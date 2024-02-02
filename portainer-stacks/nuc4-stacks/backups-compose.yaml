@@ -2,7 +2,7 @@ version: "3"
 
 services:
   minecraft: &backup_service
-    image: offen/docker-volume-backup:v2.36.0@sha256:a0e694777c1834c78e1208cee7feb2154a923229890bc8c48a8ecfc84acccb6d
+    image: offen/docker-volume-backup:v2.36.1@sha256:6cde9bfea388d603039a92ae52a2015e2fa58bb6ccfc17e610e4b93ac52a083a
     restart: always
     dns:
       - 192.168.1.10
