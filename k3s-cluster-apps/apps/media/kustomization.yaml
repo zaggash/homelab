@@ -13,4 +13,5 @@ resources:
   - ./plex/ks.yaml
   - ./filebrowser/ks.yaml
   - ./calibre-web/ks.yaml
+  - ./recyclarr/ks.yaml
   #- ./overseerr/ks.yaml
