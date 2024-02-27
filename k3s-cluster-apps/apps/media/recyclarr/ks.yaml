@@ -7,8 +7,8 @@ metadata:
     substitution.flux.home/enabled: "true"
 spec:
   dependsOn:
-    - name: apps-local-path-provisioner
-    - name: apps-traefik
+    - name: apps-radarr
+    - name: apps-sonarr
   path: ./k3s-cluster-apps/apps/media/recyclarr/app
   prune: true
   sourceRef:
