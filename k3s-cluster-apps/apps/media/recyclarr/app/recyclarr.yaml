@@ -161,13 +161,261 @@ radarr:
           - name: 4K Multi+VFF Remux
 
 
-            #sonarr:
-            #  sonarr:
-            #    base_url: http://sonarr.media.svc.cluster.local
-            #    api_key: !env_var SONARR_API_KEY
-            #
-            #    delete_old_custom_formats: true
-            #    replace_existing_custom_formats: true
-            #
-            #    quality_definition:
-            #      type: series
+sonarr:
+  sonarr:
+    base_url: http://sonarr.media.svc.cluster.local
+    api_key: !env_var SONARR_API_KEY
+
+    delete_old_custom_formats: true
+    replace_existing_custom_formats: true
+
+    quality_definition:
+      type: series
+
+    quality_profiles:
+      # ANIME
+      - name: ANIME-VOSTFR
+        reset_unmatched_scores:
+          enabled: true
+        min_format_score: 0
+        quality_sort: top
+        upgrade:
+          allowed: true
+          until_quality: Bluray 1080p
+          until_score: 10000
+        qualities:
+          - name: Bluray 1080p
+            qualities:
+              - Bluray-1080p
+              - Bluray-1080p Remux
+          - name: WEB 1080p
+            qualities:
+              - WEBRip-1080p
+              - WEBDL-1080p
+              - HDTV-1080p
+          - name: Bluray-720p
+          - name: Web 720p
+            qualities:
+              - WEBRip-720p
+              - WEBDL-720p
+              - HDTV-720p
+
+      # TVSHOWS
+      - name: VOSTFR-WEB-1080p
+        reset_unmatched_scores:
+          enabled: true
+        min_format_score: 0
+        quality_sort: top
+        upgrade:
+          allowed: true
+          until_quality: WEB 1080p
+          until_score: 10000
+        qualities:
+          - name: Bluray-1080p
+          - name: WEB 1080p
+            qualities:
+              - WEBRip-1080p
+              - WEBDL-1080p
+
+      - name: VOSTFR-WEB-2160p
+        reset_unmatched_scores:       
+          enabled: true               
+        min_format_score: 0           
+        quality_sort: top             
+        upgrade:                      
+          allowed: true               
+          until_quality: WEB 2160p
+          until_score: 10000   
+        qualities:             
+          - name: Bluray-2160p
+          - name: WEB 2160p
+            qualities:       
+              - WEBRip-2160p
+              - WEBDL-2160p
+
+      - name: VFF-WEB-1080p
+        reset_unmatched_scores:       
+          enabled: true               
+        min_format_score: 0           
+        quality_sort: top             
+        upgrade:                      
+          allowed: true               
+          until_quality: WEB 1080p
+          until_score: 10000   
+        qualities:             
+          - name: Bluray-1080p
+          - name: WEB 1080p  
+            qualities:       
+              - WEBRip-1080p
+              - WEBDL-1080p
+
+    custom_formats:
+      ###################
+      ##### TVSHOWS #####
+      ###################
+      - trash_ids:
+          # Unwanted
+          - 85c61753df5da1fb2aab6f2a47426b09  # BR-DISK
+          - 3ba797e5dc13af4b8d9bb25e83d90de2  # FR LQ
+          - 9c11cd3f07101cdba90a2d81cf0e56b4  # LQ
+          - 9b64dff695c2115facf1b6ea59c9bd07  # x265 (no HDR/DV)
+          - fbcb31d8dabd2a319072b84fc0b7249c  # Extra
+          - ea0bb4b6ba388992fad1092703b5ff7b  # FastSUB
+          # HDR
+          - 2b239ed870daba8126a53bd5dc8dc1c8  # DV HDR10+
+          - 7878c33f1963fefb3d6c8657d46c2f0a  # DV HDR10
+          - 6d0d8de7b57e35518ac0308b0ddf404e  # DV
+          - 1f733af03141f068a540eec352589a89  # DV HLG
+          - 27954b0a80aab882522a88a4d9eae1cd  # DV SDR
+          - a3d82cbef5039f8d295478d28a887159  # HDR10+
+          - 3497799d29a085e2ac2df9d468413c94  # HDR10
+          - 3e2c4e748b64a1a1118e0ea3f4cf6875  # HDR
+          - bb019e1cd00f304f80971c965de064dc  # HDR (undefined)
+          - 2a7e3be05d3861d6df7171ec74cad727  # PQ
+          - 17e889ce13117940092308f48b48b45b  # HLG
+          #
+          - 0dad0a507451acddd754fe6dc3a7f5e7  # HDR10+ Boost
+          - 385e9e8581d33133c3961bdcdeffb7b4  # DV HDR10+ Boost
+          # Misc.
+          - ec8fa7296b64e8cd390a1600981f3923  # Repack/Proper
+          - eb3d5cc0a2be0db205fb823640db6a3c  # Repack v2
+          - 44e7c4de10ae50265753082e5dc76047  # Repack v3
+          # Streaming Services
+          - bbcaf03147de0f73be2be4a9078dfa03  # 4OD
+          - fcc09418f67ccaddcf3b641a22c5cfd7  # ALL4
+          - d660701077794679fd59e8bdf4ce3a29  # AMZN
+          - f67c9ca88f463a48346062e8ad07713f  # ATVP
+          - 77a7b25585c18af08f60b1547bb9b4fb  # CC
+          - 4e9a630db98d5391aec1368a0256e2fe  # CRAV
+          - 36b72f59f4ea20aad9316f475f2d9fbb  # DCU
+          - 89358767a60cc28783cdc3d0be9388a4  # DSNP
+          - 7be9c0572d8cd4f81785dacf7e85985e  # FOD
+          - 7a235133c87f7da4c8cccceca7e3c7a6  # HBO
+          - a880d6abc21e7c16884f3ae393f84179  # HMAX
+          - f6cce30f1733d5c8194222a7507909bb  # HULU
+          - dc503e2425126fa1d0a9ad6168c83b3f  # IP
+          - 0ac24a2a68a9700bcb7eeca8e5cd644c  # iT
+          - 81d1fbf600e2540cee87f3a23f9d3c1c  # MAX
+          - d34870697c9db575f17700212167be23  # NF
+          - b2b980877494b560443631eb1f473867  # NLZ
+          - fb1a91cdc0f26f7ca0696e0e95274645  # OViD
+          - 1656adc6d7bb2c8cca6acfb6592db421  # PCOK
+          - c67a75ae4a1715f2bb4d492755ba4195  # PMTP
+          - 3ac5d84fce98bab1b531393e9c82f467  # QIBI
+          - c30d2958827d1867c73318a5a2957eb1  # RED
+          - ae58039e1319178e6be73caab5c42166  # SHO
+          - 1efe8da11bfd74fbbcd4d8117ddb9213  # STAN
+          - d100ea972d1af2150b65b1cffb80f6b5  # TVer
+          - 0e99e7cc719a8a73b2668c3a0c3fe10c  # U-NEXT
+          - 5d2317d99af813b6529c7ebf01c83533  # VDL
+          # HQ Source Groups
+          - ddb8eaa9c85a549c50034d280539d54d  # FR WEB Tier 01
+          - a4c51febd4d8b2a0db10a3c974f21d92  # FR WEB Tier 02
+          - dbfc0a4b5cb4cbd693311c4482ae9683  # FR WEB Tier 03
+          - e6258996055b9fbab7e9cb2f75819294  # WEB Tier 01
+          - 58790d4e2fdcd9733aa7ae68ba2bb503  # WEB Tier 02
+          - d84935abd3f8556dcd51d4f27e22d0a6  # WEB Tier 03
+        quality_profiles:
+          - name: VOSTFR-WEB-1080p
+          - name: VOSTFR-WEB-2160p
+          - name: VFF-WEB-1080p
+
+
+      - trash_ids:
+            - 07a32f77690263bb9fda1842db7e273f  # VOSTFR
+        quality_profiles:
+          - name: VOSTFR-WEB-1080p
+            score: 1000
+          - name: VOSTFR-WEB-2160p
+            score: 1000
+
+      - trash_ids:
+          - 84f0acbda9c0c9de783894fb66df25aa  # FanSUB
+        quality_profiles:
+          - name: VOSTFR-WEB-1080p
+            score: -10000
+          - name: VOSTFR-WEB-2160p
+            score: -10000
+
+      ####################
+      ###### ANIME #######
+      ####################
+      - trash_ids:
+          # Subs
+          - 84f0acbda9c0c9de783894fb66df25aa  # FanSUB
+          # Unwanted
+          - 85c61753df5da1fb2aab6f2a47426b09  # BR-DISK
+          - 3ba797e5dc13af4b8d9bb25e83d90de2  # FR LQ
+          - b4a1b3d705159cdca36d71e57ca86871  # Anime Raws
+          - e3515e519f3b1360cbfc17651944354c  # Anime LQ Groups
+          - 9c14d194486c4014d422adc64092d794  # Dubs Only
+          - ea0bb4b6ba388992fad1092703b5ff7b  # FastSUB
+          # Versions
+          - d2d7b8a9d39413da5f44054080e028a3  # v0
+          - 273bd326df95955e1b6c26527d1df89b  # v1
+          - 228b8ee9aa0a609463efca874524a6b8  # v2
+          - 0e5833d3af2cc5fa96a0c29cd4477feb  # v3
+          - 4fc15eeb8f2f9a749f918217d4234ad8  # v4
+          # Streaming Services
+          - d54cd2bf1326287275b56bccedb72ee2  # ADN
+          - 7dd31f3dee6d2ef8eeaa156e23c3857e  # B-Global
+          - 4c67ff059210182b59cdd41697b8cb08  # Bilibili
+          - 3e0b26604165f463f3e8e192261e7284  # CR
+          - 1284d18e693de8efe0fe7d6b3e0b9170  # FUNi
+          - 570b03b3145a25011bf073274a407259  # HIDIVE
+          - 44a8ee6403071dd7b8a3a8dd3fe8cb20  # VRV
+          - e5e6405d439dcd1af90962538acd4fe0  # WKN
+          # Misc.
+          - b2550eb333d27b75833e25b8c2557b38  # 10bit
+          - cddfb4e32db826151d97352b8e37c648  # x264
+          - c9eafd50846d299b862ca9bb6ea91950  # x265
+          # HQ Source Groups
+          - db13a377f7afb29975ea39470434d2ef  # FR Anime Tier 01
+          - 4e6134a384dbc0ef166234cc0e45d26d  # FR Anime Tier 02
+          - db34d4357937fbfe89b63ba095f22155  # FR Anime Tier 03
+          - 2f3422339d185eb227a324644a2fbfca  # FR Scene Groups
+        quality_profiles:
+          - name: ANIME-VOSTFR
+
+      - trash_ids:
+          - d660701077794679fd59e8bdf4ce3a29  # AMZN
+        quality_profiles:
+          - name: ANIME-VOSTFR
+            score: 1
+
+      - trash_ids:
+          - 89358767a60cc28783cdc3d0be9388a4  # DSNP
+        quality_profiles:
+          - name: ANIME-VOSTFR
+            score: 4
+
+      - trash_ids:
+          - d34870697c9db575f17700212167be23  # NF
+        quality_profiles:
+          - name: ANIME-VOSTFR
+            score: 2
+
+      - trash_ids:
+          - 07a32f77690263bb9fda1842db7e273f  # VOSTFR
+        quality_profiles:
+          - name: ANIME-VOSTFR
+            score: 101
+
+      #### Optionals
+      - trash_ids:
+          - 026d5aadd1a6b4e550b134cb6c72b3ca  # Uncensored
+        quality_profiles:
+          - name: ANIME-VOSTFR
+            score: 101
+
+      - trash_ids:
+          - 418f50b10f1907201b6cfdf881f467b7  # Anime Dual Audio
+        quality_profiles:
+          - name: ANIME-VOSTFR
+            score: 101
+
+      - trash_ids:
+          - 44b6c964dad997577d793fd004a39224  # FR Anime FanSub
+        quality_profiles:
+          - name: ANIME-VOSTFR
+            score: 1000 
