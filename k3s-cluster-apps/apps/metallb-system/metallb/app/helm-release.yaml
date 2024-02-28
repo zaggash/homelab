@@ -7,6 +7,12 @@ spec:
   interval: 15m
   driftDetection:
     mode: enabled
+    ignore:
+    - paths:
+        - /spec/conversion/webhook/clientConfig/caBundle
+      target:
+        kind: CustomResourceDefinition
+        name: bgppeers.metallb.io
   chart:
     spec:
       chart: metallb
