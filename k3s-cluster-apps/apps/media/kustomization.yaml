@@ -6,7 +6,6 @@ resources:
   - ./volume-media/ks.yaml
   - ./bazarr/ks.yaml
   - ./flaresolverr/ks.yaml
-  - ./jackett/ks.yaml
   - ./radarr/ks.yaml
   - ./sonarr/ks.yaml
   - ./qbittorrent/ks.yaml
