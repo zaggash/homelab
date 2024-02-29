@@ -152,6 +152,13 @@ spec:
               - "^/kobo([/?].*)?$"
             policy: bypass
 
+          # bypass for QB Api
+          - domain:
+              - dl.${SECRET_CLUSTER_DOMAIN}
+            resources:
+              - "^/api([/?].*)?$"
+            policy: bypass
+
           # Any single password authenticated user can view the landing page
           - domain: 
               - home.${SECRET_CLUSTER_DOMAIN}
