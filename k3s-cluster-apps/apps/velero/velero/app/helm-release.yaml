@@ -27,17 +27,20 @@ spec:
   uninstall:
     keepHistory: false
   values:
-    backupsEnabled: true
-    snapshotsEnabled: false
-    deployNodeAgent: true
-    podSecurityContext:
-       fsGroup: 1000
+    podSecurityContext:  
+       fsGroup: 1000                                                                                                                                                                                        
     containerSecurityContext:
       allowPrivilegeEscalation: false
       readOnlyRootFilesystem: true
-      capabilities:
+      capabilities: 
         drop: ["ALL"]
+
+    backupsEnabled: true
+    snapshotsEnabled: false
+    deployNodeAgent: true
+
     configuration:
+      uploaderType: kopia
       defaultVolumesToFsBackup: true
       defaultBackupStorageLocation: default-minio
       backupStorageLocation:
@@ -50,6 +53,7 @@ spec:
             s3Url: "https://s3.home.lan.:9000"
             s3ForcePathStyle: "true"
             insecureSkipTLSVerify: "false"
+
     credentials:
       useSecret: true
       secretContents:
@@ -57,12 +61,14 @@ spec:
           [default]
           aws_access_key_id=${SECRET_VELERO_AWS_ACCESS}
           aws_secret_access_key=${SECRET_VELERO_AWS_SECRET}
+
     initContainers:
       - name: velero-plugin-for-aws
         image: velero/velero-plugin-for-aws:v1.8.2
         volumeMounts:
           - mountPath: /target
             name: plugins
+
     schedules:
       every-sunday-at-4am:
         disabled: false
@@ -76,5 +82,6 @@ spec:
             - networking
             - security
             - tools
+
     metrics:
       enabled: false
