@@ -4,7 +4,7 @@ kind: Kustomization
 resources:
   - ./namespace.yaml
   - ./volume-media/ks.yaml
-  - ./bazarr/ks.yaml
+  #- ./bazarr/ks.yaml
   - ./flaresolverr/ks.yaml
   - ./radarr/ks.yaml
   - ./sonarr/ks.yaml
