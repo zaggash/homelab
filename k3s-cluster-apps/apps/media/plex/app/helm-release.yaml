@@ -91,3 +91,8 @@ spec:
             subPath: cartoons
           - path: /media/tvshows
             subPath: tvshows
+      tmp:
+        type: emptyDir
+      transcode:
+        type: emptyDir
+
