@@ -29,8 +29,11 @@ spec:
     controllers:
       main:
         annotations:
-          backup.velero.io/backup-volumes-excludes: data
           configmap.reloader.stakater.com/reload: filebrowser-settings
+
+        pod:
+          annotations:
+            backup.velero.io/backup-volumes: config
 
         containers:
           main:

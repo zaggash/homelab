@@ -28,10 +28,10 @@ spec:
   values:
     controllers:
       main:
-        annotations:
-          backup.velero.io/backup-volumes-excludes: media
 
         pod: 
+          annotations:
+            backup.velero.io/backup-volumes: config
           securityContext:
             runAsUser: 1000
             runAsGroup: 1000

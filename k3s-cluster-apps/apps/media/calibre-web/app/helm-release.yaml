@@ -30,6 +30,8 @@ spec:
       main:
 
         pod:
+          annotations:
+            backup.velero.io/backup-volumes: config,books
           securityContext:
             runAsUser: 568
             runAsGroup: 568

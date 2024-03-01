@@ -41,7 +41,7 @@ spec:
 
     configuration:
       uploaderType: kopia
-      defaultVolumesToFsBackup: true
+      defaultVolumesToFsBackup: false
       defaultBackupStorageLocation: default-minio
       backupStorageLocation:
         - name: default-minio
@@ -77,9 +77,7 @@ spec:
         template:
           ttl: "1440h0m0s"
           includedNamespaces:
-            - postgres
             - media
-            - networking
             - security
             - tools
 

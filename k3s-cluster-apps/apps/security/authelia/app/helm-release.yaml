@@ -38,6 +38,9 @@ spec:
       # Must be Deployment, DaemonSet, or StatefulSet.
       kind: DaemonSet
 
+      annotations:
+        backup.velero.io/backup-volumes: authelia
+
       env:
         - name: TZ
           value: Europe/Paris

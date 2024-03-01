@@ -29,6 +29,10 @@ spec:
     controllers:
       main:
 
+        pod:
+          annotations:
+            backup.velero.io/backup-volumes: config,originals
+
         containers:
           main:
             image:

@@ -39,3 +39,15 @@ spec:
       enabled: true
       existingClaim: "portainer-data"
       mountPath: /data
+  postRenderers:
+    - kustomize:
+        patches:
+          - target:
+              version: apps/v1
+              kind: Deployment
+              name: portainer
+            patch: |
+              - op: add
+                path: /spec/template/metadata/annotations
+                value:
+                  backup.velero.io~1backup-volumes: data
