@@ -78,7 +78,7 @@ spec:
         existingClaim: "plex-config"
         globalMounts:
           - path: /config
-      data:
+      media:
         enabled: true
         retain: true
         type: persistentVolumeClaim
