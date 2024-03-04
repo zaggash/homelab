@@ -115,6 +115,11 @@ spec:
         port: 3478
         expose: true
         exposedPort: 3478
+      torrents:
+        protocol: TCP
+        port: 6881
+        expose: true
+        exposedPort: 6881
     # Disable service if hostPort
     service:
       type: LoadBalancer
