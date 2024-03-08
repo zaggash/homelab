@@ -4,7 +4,6 @@ kind: Kustomization
 resources:
   - ./namespace.yaml
   - ./volume-media/ks.yaml
-  #- ./bazarr/ks.yaml
   - ./flaresolverr/ks.yaml
   - ./radarr/ks.yaml
   - ./sonarr/ks.yaml
@@ -15,4 +14,3 @@ resources:
   - ./recyclarr/ks.yaml
   - ./prowlarr/ks.yaml
   #- ./jellyfin/ks.yaml
-  #- ./overseerr/ks.yaml
