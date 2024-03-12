@@ -36,13 +36,13 @@ spec:
         cronjob:
           schedule: "@daily"
 
-        pod:
-          securityContext:
-            runAsUser: 568
-            runAsGroup: 568
-            runAsNonRoot: true
-            fsGroup: 568
-            fsGroupChangePolicy: OnRootMismatch
+            #pod:
+            #  securityContext:
+            #    runAsUser: 568
+            #    runAsGroup: 568
+            #    runAsNonRoot: true
+            #    fsGroup: 568
+            #    fsGroupChangePolicy: OnRootMismatch
 
         containers:
           app:
@@ -56,10 +56,10 @@ spec:
               - secretRef:
                   name: recyclarr-secrets
             args: ["sync"]
-            securityContext:
-              allowPrivilegeEscalation: false
-              readOnlyRootFilesystem: true
-              capabilities: { drop: ["ALL"] }
+              #securityContext:
+              #  allowPrivilegeEscalation: false
+              #  readOnlyRootFilesystem: true
+              #  capabilities: { drop: ["ALL"] }
             resources:
               requests:
                 cpu: 10m
