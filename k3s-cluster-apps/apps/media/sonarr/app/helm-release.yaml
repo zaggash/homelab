@@ -1,3 +1,4 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s/helm-charts/common-3.0.2/charts/library/common/values.schema.json
 apiVersion: helm.toolkit.fluxcd.io/v2beta2
 kind: HelmRelease
 metadata:
@@ -9,7 +10,7 @@ spec:
   chart:
     spec:
       chart: app-template
-      version: "2.6.0"
+      version: "3.0.2"
       sourceRef:
         kind: HelmRepository
         name: bjw-s-charts
@@ -27,7 +28,7 @@ spec:
     keepHistory: false
   values:
     controllers:
-      main:
+      sonarr:
 
         pod: 
           annotations:
@@ -35,40 +36,41 @@ spec:
           securityContext:
             runAsUser: 1000
             runAsGroup: 1000
+            runAsNonRoot: true
             fsGroup: 1000
+            fsGroupChangePolicy: OnRootMismatch
               
         containers:
-          main:
+          app:
             image:
               repository: ghcr.io/onedr0p/sonarr
               tag: 4.0.2.1183@sha256:e868fc45471cd7d72f006d8e70648c8cbea3ef7c2747177f750f5e6725f4c951
             env:
+              COMPlus_EnableDiagnostics: "0" # Fix the .Net CoreCLR crash on ReadOnly Filesystem
               TZ: "Europe/Paris"
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities: { drop: ["ALL"] }
 
     service:
-      main:
+      app:
+        controller: sonarr
         ports:
           http:
             port: 8989
             protocol: TCP
 
-    ingress:
-      main:
-        enabled: false
-
     persistence:
       config:
-        enabled: true
-        retain: true
-        type: persistentVolumeClaim
         existingClaim: "sonarr-config"
-        globalMounts:
-          - path: /config
+        advancedMounts:
+          sonarr:
+            app:
+              - path: /config
       media:
-        enabled: true
-        accessMode: "ReadWriteOnce"
-        retain: true
-        type: persistentVolumeClaim
         existingClaim: "all-data"
-        globalMounts:
-          - path: /media
+        advancedMounts:
+          sonarr:
+            app:
+              - path: /media

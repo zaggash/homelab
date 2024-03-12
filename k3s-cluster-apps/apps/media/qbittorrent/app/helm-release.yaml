@@ -1,3 +1,4 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s/helm-charts/common-3.0.2/charts/library/common/values.schema.json
 apiVersion: helm.toolkit.fluxcd.io/v2beta2
 kind: HelmRelease
 metadata:
@@ -9,7 +10,7 @@ spec:
   chart:
     spec:
       chart: app-template
-      version: "2.6.0"
+      version: "3.0.2"
       sourceRef:
         kind: HelmRepository
         name: bjw-s-charts
@@ -27,7 +28,7 @@ spec:
     keepHistory: false
   values:
     controllers:
-      main:
+      qbittorrent:
    
         pod:
           annotations:
@@ -36,9 +37,10 @@ spec:
             runAsUser: 1000
             runAsGroup: 1000
             fsGroup: 1000
+            fsGroupChangePolicy: OnRootMismatch
 
         containers:
-          main:
+          app:
             image:
               repository: ghcr.io/onedr0p/qbittorrent
               tag: 4.6.3@sha256:79ac03232dcb3e172fe028f66784f88ed8c49bd5c05ef4a443d675681b37d6ec
@@ -46,40 +48,33 @@ spec:
               TZ: "Europe/Paris"
               QBITTORRENT__BT_PORT: 6881
               QBITTORRENT__PORT: 8080
-            settings:
-              automaticPortSetup: true
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities: { drop: ["ALL"] }
 
     service:
-      main:
+      app:
+        controller: qbittorrent
         ports:
           http:
             port: 8080
             protocol: TCP
-      torrents:
-        controller: main
-        ports:
           torrents:
             port: 6881
             protocol: TCP
 
-    ingress:
-      main:
-        enabled: false
-
     persistence:
       config:
-        enabled: true
-        retain: true
-        type: persistentVolumeClaim
         existingClaim: "qbittorrent-config"
-        globalMounts:
-          - mountPath: /config
+        advancedMounts:
+          qbittorrent:
+            app:
+              - path: /config
       data:
-        enabled: true
-        retain: true
-        type: persistentVolumeClaim
-        accessMode: "ReadWriteOnce"
         existingClaim: "all-data"
-        globalMounts:
-          - path: /media/downloads
-            subPath: downloads
+        advancedMounts:
+          qbittorrent:
+            app:
+              - path: /media/downloads
+                subPath: downloads

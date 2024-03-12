@@ -1,3 +1,4 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s/helm-charts/common-3.0.2/charts/library/common/values.schema.json
 apiVersion: helm.toolkit.fluxcd.io/v2beta2
 kind: HelmRelease
 metadata:
@@ -9,7 +10,7 @@ spec:
   chart:
     spec:
       chart: app-template
-      version: "2.6.0"
+      version: "3.0.2"
       sourceRef:
         kind: HelmRepository
         name: bjw-s-charts
@@ -27,7 +28,7 @@ spec:
     keepHistory: false
   values:
     controllers:
-      main:
+      vaultwarden:
 
         pod:
           annotations:
@@ -38,12 +39,7 @@ spec:
             fsGroup: 1000
 
         containers:
-          main:
-            securityContext:
-              readOnlyRootFilesystem: true
-              capabilities:
-                drop:
-                  - ALL
+          app:
             image:
               repository: docker.io/vaultwarden/server
               tag: 1.30.5@sha256:3d9d937b29281dc251ecae06e627b03d34a2c85d2ed876bf4d1ffe695836f864
@@ -71,23 +67,24 @@ spec:
               SMTP_SECURITY: "starttls"
               SMTP_USERNAME: "${SECRET_OVH_SMTP_USERNAME}"
               SMTP_PASSWORD: "${SECRET_OVH_SMTP_PASSWORD}"
+            securityContext:
+              readOnlyRootFilesystem: true
+              capabilities:
+                drop:
+                  - ALL
 
     service:
-      main:
+      app:
+        controller: vaultwarden
         ports:
           http:
             port: 8000
             protocol: TCP
 
-    ingress:
-      main:
-        enabled: false
-
     persistence:
       data:
-        enabled: true
-        retain: true
-        type: persistentVolumeClaim
         existingClaim: "vaultwarden-data"
-        globalMounts:
-          - path: /data
+        advancedMounts:
+          vaultwarden:
+            app:
+              - path: /data

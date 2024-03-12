@@ -1,3 +1,4 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s/helm-charts/common-3.0.2/charts/library/common/values.schema.json
 apiVersion: helm.toolkit.fluxcd.io/v2beta2
 kind: HelmRelease
 metadata:
@@ -9,7 +10,7 @@ spec:
   chart:
     spec:
       chart: app-template
-      version: "2.6.0"
+      version: "3.0.2"
       sourceRef:
         kind: HelmRepository
         name: bjw-s-charts
@@ -27,7 +28,7 @@ spec:
     keepHistory: false
   values:
     controllers:
-      main:
+      radarr:
 
         pod:
           annotations:
@@ -35,40 +36,41 @@ spec:
           securityContext:
             runAsUser: 1000
             runAsGroup: 1000
+            runAsNonRoot: true
             fsGroup: 1000
+            fsGroupChangePolicy: OnRootMismatch
 
         containers:
-          main:
+          app:
             image:
               repository: ghcr.io/onedr0p/radarr
               tag: 5.3.6.8612@sha256:38cb50848d1563cadfb14c0b9e20c789d44e6bde0f4a4cf06e84f05d8066de55
             env:
+              COMPlus_EnableDiagnostics: "0" # Fix the .Net CoreCLR crash on ReadOnly Filesystem
               TZ: "Europe/Paris"
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities: { drop: ["ALL"] }
 
     service:
-      main:
+      app:
+        controller: radarr
         ports:
           http:
             port: 7878
             protocol: TCP
 
-    ingress:
-      main:
-        enabled: false
-
     persistence:
       config:
-        enabled: true
-        retain: true
-        type: persistentVolumeClaim
         existingClaim: "radarr-config"
-        globalMounts:
-          - path: /config
+        advancedMounts:
+          radarr:
+            app:
+              - path: /config
       media:
-        enabled: true
-        retain: true
-        type: persistentVolumeClaim
-        accessMode: "ReadWriteOnce"
         existingClaim: "all-data"
-        globalMounts:
-          - path: /media
+        advancedMounts:
+          radarr:
+            app:
+              - path: /media

@@ -1,3 +1,4 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s/helm-charts/common-3.0.2/charts/library/common/values.schema.json
 apiVersion: helm.toolkit.fluxcd.io/v2beta2
 kind: HelmRelease
 metadata:
@@ -9,7 +10,7 @@ spec:
   chart:
     spec:
       chart: app-template
-      version: "2.6.0"
+      version: "3.0.2"
       sourceRef:
         kind: HelmRepository
         name: bjw-s-charts
@@ -27,14 +28,14 @@ spec:
     keepHistory: false
   values:
     controllers:
-      main:
+      photoprism:
 
         pod:
           annotations:
             backup.velero.io/backup-volumes: config,originals
 
         containers:
-          main:
+          app:
             image:
               repository: docker.io/photoprism/photoprism
               tag: 221118-jammy@sha256:16645a56a968e9411a0b432a84887d8e2a77e8bdab96aa1d6b8654132b1797c8
@@ -49,29 +50,25 @@ spec:
              readiness:
                spec:
                  initialDelaySeconds: 60
+
     service:
-      main:
+      app:
+        controller: photoprism
         ports:
           http:
             port: 2342
 
-    ingress:
-      main:
-        enabled: false
-
     persistence:
       config:
-        enabled: true
-        retain: true
-        type: persistentVolumeClaim
         existingClaim: "photoprism-config"
-        globalMounts:
-          - path: /photoprism/storage
+        advancedMounts:
+          photoprism:
+            app:
+              - path: /photoprism/storage
+
       originals:
-        enabled: true
-        retain: true
-        type: persistentVolumeClaim
-        accessMode: "ReadWriteOnce"
         existingClaim: "photoprism-data"
-        globalMounts:
-          - path: /photoprism/originals
+        advancedMounts:
+          photoprism:
+            app:
+              - path: /photoprism/originals

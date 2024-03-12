@@ -1,3 +1,4 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s/helm-charts/common-3.0.2/charts/library/common/values.schema.json
 apiVersion: helm.toolkit.fluxcd.io/v2beta2
 kind: HelmRelease
 metadata:
@@ -9,7 +10,7 @@ spec:
   chart:
     spec:
       chart: app-template
-      version: "2.6.0"
+      version: "3.0.2"
       sourceRef:
         kind: HelmRepository
         name: bjw-s-charts
@@ -27,26 +28,29 @@ spec:
     keepHistory: false
   values:
     controllers:
-      main:
+      recyclarr:
         type: cronjob
         annotations:
           configmap.reloader.stakater.com/reload: recyclarr-configmap
+
         cronjob:
           schedule: "@daily"
+
         pod:
           securityContext:
-            runAsUser: 1000
-            runAsGroup: 1000
+            runAsUser: 568
+            runAsGroup: 568
             runAsNonRoot: true
-            fsGroup: 1000
+            fsGroup: 568
             fsGroupChangePolicy: OnRootMismatch
+
         containers:
-          main:
+          app:
             image:
               repository: ghcr.io/recyclarr/recyclarr
               tag: 6.0.2@sha256:02add40feae0569401b5020528e06419b47046723d0bb4bef1e82325e9eefdad
             env:
-              COMPlus_EnableDiagnostics: "0"
+              COMPlus_EnableDiagnostics: "0" # Fix the .Net CoreCLR crash on ReadOnly Filesystem
               TZ: "Europe/Paris"
             envFrom:
               - secretRef:
@@ -62,18 +66,13 @@ spec:
               limits:
                 memory: 128Mi
 
-    service:
-      main:
-        enabled: false
-
     persistence:
-      config:
-        enabled: false
       config-file:
         type: configMap
         name: recyclarr-configmap
-        globalMounts:
-          - path: /config/recyclarr.yml
-            subPath: recyclarr.yml
-            readOnly: true
-
+        advancedMounts:
+          recyclarr:
+            app:
+              - path: /config/recyclarr.yml
+                subPath: recyclarr.yml
+                readOnly: true

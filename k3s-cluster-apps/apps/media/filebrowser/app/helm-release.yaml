@@ -1,3 +1,4 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s/helm-charts/common-3.0.2/charts/library/common/values.schema.json
 apiVersion: helm.toolkit.fluxcd.io/v2beta2
 kind: HelmRelease
 metadata:
@@ -9,7 +10,7 @@ spec:
   chart:
     spec:
       chart: app-template
-      version: "2.6.0"
+      version: "3.0.2"
       sourceRef:
         kind: HelmRepository
         name: bjw-s-charts
@@ -27,23 +28,42 @@ spec:
     keepHistory: false
   values:
     controllers:
-      main:
+      filebrowser:
         annotations:
           configmap.reloader.stakater.com/reload: filebrowser-settings
 
         pod:
           annotations:
             backup.velero.io/backup-volumes: config
+          securityContext:
+            runAsUser: 568
+            runAsGroup: 568
+            fsGroup: 568
+            runAsNonRoot: true
+            fsGroupChangePolicy: "OnRootMismatch"
+            supplementalGroups: [1000]
 
         containers:
-          main:
+          app:
             image:
               repository: docker.io/filebrowser/filebrowser
               tag: v2.27.0@sha256:36330c6d361f4d17f30ff0ed747b3b99f6c50eaae7b9ba6d33b162b50bf2826a
             env:
               TZ: "Europe/Paris"
               LOG_LEVEL: info
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities: { drop: ["ALL"] }
         
+    service:
+      app:
+        controller: filebrowser
+        ports:
+          http:
+            port: 80
+            protocol: TCP
+
     configMaps:
       settings:
         enabled: true
@@ -58,37 +78,26 @@ spec:
               "root": "/mnt/data",
               "branding.name": "Seedbox Cloud"
             }
-    service:
-      main:
-        ports:
-          http:
-            port: 80
-            protocol: TCP
-
-    ingress:
-      main:
-        enabled: false
 
     persistence:
       config:
-        enabled: true
-        retain: true
-        type: persistentVolumeClaim
         existingClaim: "filebrowser-config"
-        globalMounts:
-          - path: /config
+        advancedMounts:
+          filebrowser:
+            app:
+              - path: /config
       settings:
-        enabled: true
         type: configMap
         name: filebrowser-settings
-        globalMounts:
-          - path: /.filebrowser.json
-            subPath: .filebrowser.json
+        advancedMounts:
+          filebrowser:
+            app:
+              - path: /.filebrowser.json
+                subPath: .filebrowser.json
       data:
-        enabled: true
-        retain: true
-        type: persistentVolumeClaim
-        accessMode: "ReadWriteOnce"
         existingClaim: "all-data"
-        globalMounts:
-          - path: /mnt/data
+        advancedMounts:
+          filebrowser:
+            app:       
+              - path: /mnt/data
+                readOnly: true
