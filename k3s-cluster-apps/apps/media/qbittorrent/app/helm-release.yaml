@@ -54,14 +54,22 @@ spec:
               capabilities: { drop: ["ALL"] }
 
     service:
-      app:
+      forwarded:
+        controller: qbittorrent
+        type: LoadBalancer
+        allocateLoadBalancerNodePorts: false
+        annotations:
+          metallb.universe.tf/address-pool: homelab-public
+          metallb.universe.tf/allow-shared-ip: public
+        ports:
+          torrent:
+            port: 6881
+            protocol: TCP
+      web:
         controller: qbittorrent
         ports:
           http:
             port: 8080
-            protocol: TCP
-          torrents:
-            port: 6881
             protocol: TCP
 
     persistence:

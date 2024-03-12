@@ -40,6 +40,7 @@ spec:
         allowCrossNamespace: true
       kubernetesIngress:
         enabled: true
+        allowExternalNameServices: true
     logs:
       general:
         level: INFO
@@ -49,8 +50,6 @@ spec:
     - "--global.checknewversion=false"
     - "--global.sendanonymoususage=false"
     additionalArguments:
-    # Setup Kubernetes ingress hostname
-    - "--providers.kubernetesingress.ingressendpoint.hostname=homelab.${SECRET_CLUSTER_DOMAIN}"
     # Define configFile middleware not namespaced
     - "--providers.file.filename=/config/traefik-static.yaml"
     # Set idefault Entrypoint middleware from file - Flux fail to load Middleware object without CRDs otherwise.
@@ -115,21 +114,17 @@ spec:
         port: 3478
         expose: true
         exposedPort: 3478
-      torrents:
-        protocol: TCP
-        port: 6881
-        expose: true
-        exposedPort: 6881
     # Disable service if hostPort
     service:
       type: LoadBalancer
       annotations: 
         metallb.universe.tf/address-pool: homelab-public
+        metallb.universe.tf/allow-shared-ip: public
       enabled: true
       single: true
       ipFamilyPolicy: SingleStack
       spec:
-        externalTrafficPolicy: Local
+        externalTrafficPolicy: Cluster
         allocateLoadBalancerNodePorts: false
     priorityClassName: "system-cluster-critical"
     volumes:
