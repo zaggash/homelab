@@ -69,6 +69,16 @@ spec:
         existingClaim: "plex-config"
         globalMounts:
           - path: /config
+
+      cache:
+        existingClaim: plex-cache
+        globalMounts:
+          - path: /config/Library/Application Support/Plex Media Server/Cache
+      logs:
+        type: emptyDir
+        globalMounts:
+          - path: /config/Library/Application Support/Plex Media Server/Logs
+
       media:
         enabled: true
         retain: true
