@@ -40,7 +40,7 @@ spec:
     deployNodeAgent: true
 
     configuration:
-      uploaderType: kopia
+      uploaderType: restic
       defaultVolumesToFsBackup: false
       defaultBackupStorageLocation: default-minio
       backupStorageLocation:
