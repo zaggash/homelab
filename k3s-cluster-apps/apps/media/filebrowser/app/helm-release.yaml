@@ -51,10 +51,6 @@ spec:
             env:
               TZ: "Europe/Paris"
               LOG_LEVEL: info
-            securityContext:
-              allowPrivilegeEscalation: false
-              readOnlyRootFilesystem: true
-              capabilities: { drop: ["ALL"] }
         
     service:
       app:
