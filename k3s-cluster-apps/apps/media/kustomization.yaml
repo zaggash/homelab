@@ -7,7 +7,6 @@ resources:
   - ./flaresolverr/ks.yaml
   - ./radarr/ks.yaml
   - ./sonarr/ks.yaml
-  - ./readarr/ks.yaml
   - ./qbittorrent/ks.yaml
   - ./plex/ks.yaml
   - ./filebrowser/ks.yaml
