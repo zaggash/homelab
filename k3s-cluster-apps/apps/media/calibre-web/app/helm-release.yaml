@@ -77,3 +77,8 @@ spec:
           calibre-web:
             app:
               - path: /books
+
+      cache:
+        type: emptyDir
+        globalMounts:
+          - path: /cache
