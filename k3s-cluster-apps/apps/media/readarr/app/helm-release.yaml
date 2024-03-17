@@ -1,0 +1,77 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s/helm-charts/common-3.0.2/charts/library/common/values.schema.json
+apiVersion: helm.toolkit.fluxcd.io/v2beta2
+kind: HelmRelease
+metadata:
+  name: readarr
+spec:
+  interval: 15m
+  driftDetection:
+    mode: enabled
+  chart:
+    spec:
+      chart: app-template
+      version: "3.0.3"
+      sourceRef:
+        kind: HelmRepository
+        name: bjw-s-charts
+        namespace: flux-system
+  maxHistory: 3
+  install:
+    createNamespace: true
+    remediation:
+      retries: 3
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      retries: 3
+  uninstall:
+    keepHistory: false
+  values:
+    controllers:
+      readarr:
+
+        pod:
+          annotations:
+            backup.velero.io/backup-volumes: config
+          securityContext:
+            runAsUser: 1000
+            runAsGroup: 1000
+            runAsNonRoot: true
+            fsGroup: 1000
+            fsGroupChangePolicy: OnRootMismatch
+
+        containers:
+          app:
+            image:
+              repository: ghcr.io/onedr0p/readarr-develop
+              tag: 0.3.20@sha256:0a9941206dacb75a9415a196819af618140933cd91374932d2b93b95df9af42d
+            env:
+              COMPlus_EnableDiagnostics: "0" # Fix the .Net CoreCLR crash on ReadOnly Filesystem
+              TZ: "Europe/Paris"
+              READARR__INSTANCE_NAME: Readarr
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities: { drop: ["ALL"] }
+
+    service:
+      app:
+        controller: readarr
+        ports:
+          http:
+            port: 8787
+            protocol: TCP
+
+    persistence:
+      config:
+        existingClaim: "readarr-config"
+        advancedMounts:
+          readarr:
+            app:
+              - path: /config
+      media:
+        existingClaim: "all-data"
+        advancedMounts:
+          readarr:
+            app:
+              - path: /media
