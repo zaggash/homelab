@@ -50,7 +50,7 @@ spec:
               CACHE_DIR: /cache
             securityContext:
               allowPrivilegeEscalation: false
-              readOnlyRootFilesystem: true
+              readOnlyRootFilesystem: false
               capabilities: { drop: ["ALL"] }
 
     service:
