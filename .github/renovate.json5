@@ -26,6 +26,14 @@
       "matchStrings": [
         "renovate: datasource=(?<datasource>.*?) depName=(?<depName>.*?) versioning=(?<versioning>.*?)\\sENV BEDROCK_CONNECT=(?<currentValue>.*)"
       ]
+    },
+    {   
+      "description": "System Upgrade custom Regex",
+      "customType": "regex",
+      "fileMatch": ["k3s-cluster-apps/apps/system-upgrade/system-upgrade-controller/app/kustomization.yaml"],
+      "matchStrings": [
+        "renovate: datasource=(?<datasource>.*?) depName=(?<depName>.*?)\\s  \- https:\/\/github.com\/rancher\/system-upgrade-controller\/releases\/download\/(?<currentValue>.*)\/crd.yaml"
+      ]
     }
   ],
 
