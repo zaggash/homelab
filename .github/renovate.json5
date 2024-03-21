@@ -18,6 +18,17 @@
     "fileMatch": ["portainer-stacks/.+-compose\\.ya?ml$"],
   },
 
+  "customManagers": [
+    {
+      "description": "Bedrock Connect custom Regex",
+      "customType": "regex",
+      "fileMatch": ["portainer-stacks\/.*\/bedrock-connect\/Dockerfile"],
+      "matchStrings": [
+        "renovate: datasource=(?<datasource>.*?) depName=(?<depName>.*?) versioning=(?<versioning>.*?)\\sENV BEDROCK_CONNECT=(?<currentValue>.*)"
+      ]
+    }
+  ],
+
   "packageRules": [
     {
       description: "Disable kubernetes-api",
