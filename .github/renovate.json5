@@ -32,7 +32,7 @@
       "customType": "regex",
       "fileMatch": ["k3s-cluster-apps/apps/system-upgrade/system-upgrade-controller/app/kustomization.yaml"],
       "matchStrings": [
-        "renovate: datasource=(?<datasource>.*?) depName=(?<depName>.*?)\\s  \- https:\/\/github.com\/rancher\/system-upgrade-controller\/releases\/download\/(?<currentValue>.*)\/crd.yaml"
+        "renovate: datasource=(?<datasource>.*?) depName=(?<depName>.*?) versioning=(?<versioning>.*?)\\s  \- https:\/\/github.com\/rancher\/system-upgrade-controller\/releases\/download\/(?<currentValue>.*)\/crd.yaml"
       ]
     }
   ],
@@ -46,7 +46,7 @@
     },
 
     {
-      "description": "Group Flux update",
+      "description": "Group Flux updates",
       "groupName": "Flux",
       "matchPackagePatterns": ["flux"],
       "matchDatasources": ["docker", "github-tags"],
@@ -58,7 +58,18 @@
     },
 
     {  
-      "description": "Group bedrock-connect update",
+      "description": "Group SUC updates",
+      "groupName": "Rancher system-upgrade-controller",
+      "matchDatasources": ["docker", "github-tags"],
+      "matchPaths": ["k3s-cluster-apps/apps/system-upgrade/system-upgrade-controller/app/**"],
+      "group": {
+        "commitMessageTopic": "{{{groupName}}} group"
+      },
+      "separateMinorPatch": true
+    },
+
+    {  
+      "description": "Group bedrock-connect updates",
       "groupName": "Bedrock-Connect",
       "matchDatasources": ["docker", "github-tags"],
       "matchPaths": ["portainer-stacks/nuc4-stacks/bedrock-connect/**"],
