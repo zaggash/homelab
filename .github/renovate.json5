@@ -5,6 +5,10 @@
     "github>zaggash/gh-workflows//renovate-config/default"
   ],
 
+  "ignorePaths": [
+    "k3s-cluster-apps/**"
+  ],
+
   "flux": {
     "fileMatch": ["k3s-cluster-apps/.+\\.ya?ml$"],
   },
