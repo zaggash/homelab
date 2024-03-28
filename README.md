@@ -1,13 +1,13 @@
-<p align="center">
-<img src="https://user-images.githubusercontent.com/1724149/210882975-93be689e-2244-4de9-a3a0-1500f9263927.png" width="500">
+<p align="center">  
+<img src="https://github.com/zaggash/homelab/assets/1724149/2bb16d13-3587-4937-918b-eb496064ea0f" width="500">
 </p>
 
 <div align="center">  
 
 ![Renovate](https://img.shields.io/github/actions/workflow/status/zaggash/homelab/run-renovate.yaml?label=renovate&logo=RenovateBot&logoColor=white&style=for-the-badge)  
-
   
 </div>  
+<p align="center">Automation makes it easy</p>
 
 
 ---
@@ -16,4 +16,4 @@
 
 - [Portainer stacks for Unraid.](https://github.com/zaggash/homelab/tree/main/portainer-stacks)  
 
-- [Archived Homelab projects. ](https://github.com/zaggash/homelab/tree/main/.archive)
+- [Archived Homelab projects. ](https://github.com/zaggash/homelab/tree/main/.archive)  
