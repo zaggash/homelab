@@ -1,0 +1,99 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+
+  "extends": [
+    "github>zaggash/gh-workflows//renovate-config/default"
+  ],
+
+  "flux": {
+    "fileMatch": ["k3s-cluster-apps/.+\\.ya?ml$"],
+  },
+  "helm-values": {
+    "fileMatch": ["k3s-cluster-apps/.+helm-release\\.ya?ml$"]
+  },
+  "kubernetes": {
+    "fileMatch": ["k3s-cluster-apps/.+\\.ya?ml$"],
+  },
+  "docker-compose": {
+    "fileMatch": ["portainer-stacks/.+-compose\\.ya?ml$"],
+  },
+
+  "customManagers": [
+    {
+      "description": "Bedrock Connect custom Regex",
+      "customType": "regex",
+      "fileMatch": ["portainer-stacks\/.*\/bedrock-connect\/Dockerfile"],
+      "matchStrings": [
+        "renovate: datasource=(?<datasource>.*?) depName=(?<depName>.*?) versioning=(?<versioning>.*?)\\sENV BEDROCK_CONNECT=(?<currentValue>.*)"
+      ]
+    },
+    {   
+      "description": "System Upgrade custom Regex",
+      "customType": "regex",
+      "fileMatch": ["k3s-cluster-apps/apps/system-upgrade/system-upgrade-controller/app/kustomization.yaml"],
+      "matchStrings": [
+        "renovate: datasource=(?<datasource>.*?) depName=(?<depName>.*?) versioning=(?<versioning>.*?)\\s  \- https:\/\/github.com\/rancher\/system-upgrade-controller\/releases\/download\/(?<currentValue>.*)\/crd.yaml"
+      ]
+    }
+  ],
+
+  "packageRules": [
+    {
+      description: "Disable kubernetes-api",
+      matchManagers: ["kubernetes"],
+      matchDatasources: ["kubernetes-api"],
+      enabled: false,
+    },
+
+    {
+      "description": "Group Flux updates",
+      "groupName": "Flux",
+      "matchPackagePatterns": ["flux"],
+      "matchDatasources": ["docker", "github-tags"],
+      "versioning": "semver",
+      "group": {
+        "commitMessageTopic": "{{{groupName}}} group"
+      },
+      "separateMinorPatch": true
+    },
+
+    {  
+      "description": "Group SUC updates",
+      "groupName": "Rancher system-upgrade-controller",
+      "matchDatasources": ["docker", "github-tags"],
+      "matchPaths": ["k3s-cluster-apps/apps/system-upgrade/system-upgrade-controller/app/**"],
+      "group": {
+        "commitMessageTopic": "{{{groupName}}} group"
+      },
+      "separateMinorPatch": true
+    },
+
+    {  
+      "description": "Group bedrock-connect updates",
+      "groupName": "Bedrock-Connect",
+      "matchDatasources": ["docker", "github-tags"],
+      "matchPaths": ["portainer-stacks/nuc4-stacks/bedrock-connect/**"],
+      "group": {
+        "commitMessageTopic": "{{{groupName}}} group"
+      },
+      "separateMinorPatch": true
+    },
+
+    {
+      description: "Set fixed version for bedrock-connect",
+      matchManagers: ["dockerfile"],
+      matchDatasources: ["docker"],
+      matchPaths: ["portainer-stacks/nuc4-stacks/bedrock-connect/**"],
+      matchPackageNames: ["eclipse-temurin"],
+      allowedVersions: "<=11.*"
+    },
+
+    {
+      "description": "Loose versioning for non-semver packages",
+      "matchDatasources": ["docker"],
+      "versioning": "loose",
+      "matchPackagePatterns": ["plex"]
+    }
+
+  ]
+}
