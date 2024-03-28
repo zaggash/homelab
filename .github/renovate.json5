@@ -5,6 +5,10 @@
     "github>zaggash/gh-workflows//renovate-config/default"
   ],
 
+   "ignorePaths": [
+    ".archive/**"
+  ],
+
   "docker-compose": {
     "fileMatch": ["portainer-stacks/.+-compose\\.ya?ml$"],
   },
