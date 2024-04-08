@@ -1,7 +1,7 @@
 services:
   prowlarr:
     container_name: prowlarr
-    image: ghcr.io/onedr0p/prowlarr-develop:1.14.3.4333@sha256:60f146b93e846e543cac0e8d74412c45cd0112a0793ad48c8ae54125f6f990fe
+    image: ghcr.io/onedr0p/prowlarr-develop:1.15.0.4361@sha256:bd8092d9136fbdcb58327eacca8d117c1c20ad861bc824ba49730a2e01405a72
     labels:
       traefik.enable: true
       traefik.http.routers.prowlarr.rule: Host(`indexer.${SECRET_DOMAIN}`)
