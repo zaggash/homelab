@@ -1,0 +1,28 @@
+name: homelab
+
+include:
+  - ./action-runner/docker-compose.yaml
+  - ./ingress/docker-compose.yaml
+  #- ./databases/docker-compose.yaml
+  - ./security/docker-compose.yaml
+  - ./tools/docker-compose.yaml
+  - ./media/docker-compose.yaml
+
+networks:
+  default:
+    driver: bridge
+
+  proxy:
+    driver: bridge
+
+  lan:
+    driver: ipvlan
+    driver_opts:
+      parent: br0
+    ipam:
+      driver: default
+      config:
+        - subnet: 192.168.1.0/24
+          gateway: 192.168.1.1
+          aux_addresses:
+            server: 192.168.1.12

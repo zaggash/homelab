@@ -14,6 +14,8 @@
 
 - [Scripts and Configs to boostrap node OS.](https://github.com/zaggash/homelab/tree/main/infra)  
 
-- [Portainer stacks for Unraid.](https://github.com/zaggash/homelab/tree/main/portainer-stacks)  
+- [Portainer stacks.](https://github.com/zaggash/homelab/tree/main/portainer-stacks)  
 
-- [Archived Homelab projects. ](https://github.com/zaggash/homelab/tree/main/.archive)  
+- [Compose stacks for Unraid.](https://github.com/zaggash/homelab/tree/main/unraid-homelab)
+
+- [Archived Homelab projects.](https://github.com/zaggash/homelab/tree/main/.archive)  

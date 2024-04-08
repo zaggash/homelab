@@ -1,0 +1,24 @@
+services:
+  radarr:
+    container_name: radarr
+    image: ghcr.io/onedr0p/radarr:5.3.6.8612@sha256:431f4d8da415645cd18359d0b704d4191f400eb57137ed3e5749774f3915c0a8
+    labels:
+      traefik.enable: true
+      traefik.http.routers.radarr.rule: Host(`radarr.${SECRET_DOMAIN}`)
+      traefik.http.routers.radarr.entryPoints: websecure
+      traefik.http.services.radarr.loadbalancer.server.port: 7878
+    volumes:
+      - "${SECRET_APPDATA}/radarr:/config"
+      - "${SECRET_DATADIR}:/data"
+    user: ${UID}:${GID}
+    environment:
+      TZ: ${TZ}
+      COMPlus_EnableDiagnostics: "0" # Fix the .Net CoreCLR crash on ReadOnly Filesystem
+    networks:
+      - proxy
+      - media
+    restart: always
+    depends_on:
+      traefik:
+        condition: service_started
+        restart: false

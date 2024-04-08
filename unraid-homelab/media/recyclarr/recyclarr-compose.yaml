@@ -1,0 +1,23 @@
+services:
+  recyclarr:
+    container_name: recyclarr
+    image: ghcr.io/recyclarr/recyclarr:6.0.2@sha256:02add40feae0569401b5020528e06419b47046723d0bb4bef1e82325e9eefdad
+    volumes:
+      - "${SECRET_APPDATA}/recyclarr:/config"
+    user: ${UID}:${GID}
+    environment:
+      TZ: ${TZ}
+      COMPlus_EnableDiagnostics: "0" # Fix the .Net CoreCLR crash on ReadOnly Filesystem
+      CRON_SCHEDULE: '@daily'
+      RADARR_API_KEY: ${SECRET_RADARR_API_KEY}
+      SONARR_API_KEY: ${SECRET_SONARR_API_KEY}
+    networks:
+      - media
+    restart: always
+    depends_on:
+      radarr:
+        condition: service_started
+        restart: true
+      sonarr:
+        condition: service_started
+        restart: true

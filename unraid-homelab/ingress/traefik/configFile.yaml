@@ -1,0 +1,78 @@
+http:
+  routers:
+    hassio:
+      entryPoints:
+        - websecure
+      rule: 'Host(`hassio.${SECRET_DOMAIN}`)'
+      service: hassio
+    unifi:
+      entryPoints:
+        - websecure
+      rule: 'Host(`unifi.${SECRET_DOMAIN}`)'
+      service: unifi
+
+  services:
+    hassio:
+      loadBalancer:
+        servers:
+          - url: http://hassio.${SECRET_HOME_DOMAIN}:8123/
+    unifi:
+      loadBalancer:
+        servers:
+          - url: https://unifi.${SECRET_HOME_DOMAIN}:8443/
+
+  middlewares:
+    compress-all:
+      compress:
+        excludedContentTypes:
+          - text/event-stream
+
+    secure-headers:
+      headers:
+        customResponseHeaders:
+          X-Robots-Tag: "none,noarchive,nosnippet,notranslate,noimageindex"
+          server: ""
+          X-Forwarded-Proto: "https"
+        sslProxyHeaders:
+          X-Forwarded-Proto: https
+        referrerPolicy: "strict-origin-when-cross-origin"
+        hostsProxyHeaders:
+          - "X-Forwarded-Host"
+        customRequestHeaders:
+          X-Forwarded-Proto: "https"
+        browserXssFilter: true
+        contentTypeNosniff: true
+        forceSTSHeader: true
+        stsIncludeSubdomains: true
+        stsPreload: true
+        stsSeconds: 63072000
+        frameDeny: false
+        customFrameOptionsValue: "sameorigin"
+
+    local-ipwhitelist:
+      ipAllowList:
+        sourceRange: 
+          - 192.168.1.0/24 # LAN Subnet
+
+    authelia:
+      forwardauth:
+        address: http://authelia:9091/api/verify?rd=https://login.${SECRET_DOMAIN}/
+        trustForwardHeader: true
+        authResponseHeaders:
+          - Remote-User
+          - Remote-Groups
+          - Remote-Name
+          - Remote-Email
+
+tls:
+  options:
+    default:
+      minVersion: VersionTLS12
+      cipherSuites:
+        - TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256
+        - TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
+        - TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384
+        - TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+        - TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305
+        - TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305
+

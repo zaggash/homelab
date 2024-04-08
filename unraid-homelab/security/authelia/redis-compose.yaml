@@ -1,0 +1,18 @@
+services:
+  authelia-redis:
+    image: bitnami/redis:7.2.4@sha256:636c88d6460b42d7029ece70ae41b5e51b40acbf125d24cc1a69df20bac2bf63
+    container_name: authelia-redis
+    volumes:
+      - "${SECRET_APPDATA}/authelia/redis:/bitnami/redis/"
+    networks:
+      - authelia-db
+    environment:
+      TZ: ${TZ}
+      REDIS_PASSWORD: ${SECRET_AUTHELIA_REDIS_PASSWORD}
+    restart: always
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping" ]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 5s

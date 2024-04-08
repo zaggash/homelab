@@ -1,0 +1,74 @@
+services:
+  traefik:
+    container_name: traefik
+    image: traefik:v2.11@sha256:0a5157f742d2900389da6ce60ea80cc476801dc951917a993cd848d982f58265
+    ports:
+      - 192.168.1.50:80:8000
+      - 192.168.1.50:443:8443
+    volumes:
+      - "${SECRET_APPDATA}/traefik:/etc/traefik/"
+    labels:
+      traefik.enable: true
+      traefik.http.routers.api.rule: Host(`traefik.${SECRET_DOMAIN}`)
+      traefik.http.routers.api.entryPoints: websecure
+      traefik.http.routers.api.service: api@internal
+      traefik.http.routers.api.middlewares: authelia@file
+
+    environment:
+      TZ: ${TZ}
+      DOCKER_HOST: traefik-socket
+      TRAEFIK_GLOBAL_CHECKNEWVERSION: false
+      TRAEFIK_GLOBAL_SENDANONYMOUSUSAGE: false
+      TRAEFIK_LOG: true
+      TRAEFIK_LOG_LEVEL: INFO
+      TRAEFIK_ACCESSLOG: false
+      TRAEFIK_API: true
+      TRAEFIK_API_DASHBOARD: true
+      TRAEFIK_API_INSECURE: true
+      TRAEFIK_PING: true
+      TRAEFIK_PING_ENTRYPOINT: traefik
+      TRAEFIK_CERTIFICATESRESOLVERS_OVH: true
+      TRAEFIK_CERTIFICATESRESOLVERS_OVH_ACME_DNSCHALLENGE: true
+      TRAEFIK_CERTIFICATESRESOLVERS_OVH_ACME_DNSCHALLENGE_PROVIDER: ovh
+      TRAEFIK_CERTIFICATESRESOLVERS_OVH_ACME_DNSCHALLENGE_RESOLVERS: "dns17.ovh.net:53,ns17.ovh.net:53"
+      TRAEFIK_CERTIFICATESRESOLVERS_OVH_ACME_EMAIL: ${SECRET_EMAIL}
+      TRAEFIK_CERTIFICATESRESOLVERS_OVH_ACME_STORAGE: /etc/traefik/acme.json
+      OVH_APPLICATION_KEY: ${SECRET_OVH_APPLICATION_KEY}
+      OVH_APPLICATION_SECRET: ${SECRET_OVH_APPLICATION_SECRET}
+      OVH_CONSUMER_KEY: ${SECRET_OVH_CONSUMER_KEY}
+      OVH_ENDPOINT: ovh-eu
+      TRAEFIK_SERVERSTRANSPORT_INSECURESKIPVERIFY: true
+      TRAEFIK_ENTRYPOINTS_WEB: true
+      TRAEFIK_ENTRYPOINTS_WEB_ADDRESS: ":8000"
+      TRAEFIK_ENTRYPOINTS_WEB_HTTP_REDIRECTIONS_ENTRYPOINT_SCHEME: https
+      TRAEFIK_ENTRYPOINTS_WEB_HTTP_REDIRECTIONS_ENTRYPOINT_TO: websecure
+      TRAEFIK_ENTRYPOINTS_WEBSECURE: true
+      TRAEFIK_ENTRYPOINTS_WEBSECURE_ADDRESS: ":8443"
+      TRAEFIK_ENTRYPOINTS_WEBSECURE_HTTP_TLS: true
+      TRAEFIK_ENTRYPOINTS_WEBSECURE_HTTP_TLS_CERTRESOLVER: ovh
+      TRAEFIK_ENTRYPOINTS_WEBSECURE_HTTP_TLS_DOMAINS_0_MAIN: ${SECRET_DOMAIN}
+      TRAEFIK_ENTRYPOINTS_WEBSECURE_HTTP_TLS_DOMAINS_0_SANS: "${SECRET_DOMAIN},*.${SECRET_DOMAIN}"
+      TRAEFIK_ENTRYPOINTS_WEBSECURE_HTTP_TLS_OPTIONS: default
+      TRAEFIK_ENTRYPOINTS_WEBSECURE_HTTP_MIDDLEWARES: compress-all@file,secure-headers@file,error-pages-middleware@docker
+      TRAEFIK_PROVIDERS_PROVIDERSTHROTTLEDURATION: 2s
+      TRAEFIK_PROVIDERS_DOCKER: true
+      TRAEFIK_PROVIDERS_DOCKER_WATCH: true
+      TRAEFIK_PROVIDERS_DOCKER_ENDPOINT: "tcp://traefik-socket:2375"
+      TRAEFIK_PROVIDERS_DOCKER_EXPOSEDBYDEFAULT: false
+      TRAEFIK_PROVIDERS_DOCKER_NETWORK: homelab_proxy
+      TRAEFIK_PROVIDERS_FILE_WATCH: true
+      TRAEFIK_PROVIDERS_FILE_FILENAME: /etc/traefik/configFile.yaml
+    networks:
+      - proxy
+      - traefik-socket
+    restart: unless-stopped
+    depends_on:
+      traefik-socket:
+        condition: service_healthy
+        restart: false
+    healthcheck:
+      test: ["CMD", "traefik", "healthcheck", "--ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 5s

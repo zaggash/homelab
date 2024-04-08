@@ -1,0 +1,38 @@
+services:
+  lldap:
+    container_name: lldap
+    image: ghcr.io/lldap/lldap:2024-03-18@sha256:8a0b5c750fcc21550b5d117f573130b1615f3a52f55f4d0127de7dff3cb4372e
+    labels:
+      traefik.enable: true
+      traefik.http.routers.lldap.rule: Host(`ldap.${SECRET_HOME_DOMAIN}`)
+      traefik.http.routers.lldap.entryPoints: websecure
+      traefik.http.services.lldap.loadbalancer.server.port: 17170
+    volumes:
+      - "${SECRET_APPDATA}/lldap:/data"
+    environment:
+      #UID: ${UID} # default to 1000
+      #GID: ${GID} # default to 1000
+      TZ: ${TZ}
+      LLDAP_HTTP_URL: https://ldap.${SECRET_HOME_DOMAIN}
+      LLDAP_JWT_SECRET: ${SECRET_LLDAP_JWT_SECRET}
+      LLDAP_KEY_SEED: ${SECRET_LLDAP_KEY_SEED}
+      LLDAP_LDAP_BASE_DN: ${SECRET_LLDAP_BASE_DN}
+      LLDAP_LDAP_USER_DN: ${SECRET_LLDAP_LDAP_USER_DN}
+      LLDAP_LDAP_USER_PASS: ${SECRET_LLDAP_LDAP_USER_PASS}
+      LLDAP_SMTP_OPTIONS__ENABLE_PASSWORD_RESET: true
+      LLDAP_SMTP_OPTIONS__SERVER: ${SECRET_OVH_SMTP_HOST}
+      LLDAP_SMTP_OPTIONS__PORT: 465
+      LLDAP_SMTP_OPTIONS__SMTP_ENCRYPTION: TLS
+      LLDAP_SMTP_OPTIONS__USER: ${SECRET_OVH_SMTP_USERNAME}
+      LLDAP_SMTP_OPTIONS__PASSWORD: ${SECRET_OVH_SMTP_PASSWORD}
+      LLDAP_SMTP_OPTIONS__FROM: "LLDAP Account <ldap@${SECRET_DOMAIN}>"
+      LLDAP_SMTP_OPTIONS__REPLY_TO: "Ne pas Repondre <noreply@${SECRET_DOMAIN}>"
+      LLDAP_VERBOSE: false
+    networks:
+      - proxy
+      - lldap
+    restart: always
+
+networks:
+  lldap:
+    driver: bridge

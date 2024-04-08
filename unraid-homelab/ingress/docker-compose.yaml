@@ -1,0 +1,3 @@
+include:
+  - traefik/docker-compose.yaml
+  - errorpages-compose.yaml

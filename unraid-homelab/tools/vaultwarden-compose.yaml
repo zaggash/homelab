@@ -1,0 +1,43 @@
+services:
+  vaultwarden:
+    container_name: vaultwarden
+    image: ghcr.io/dani-garcia/vaultwarden:1.30.5@sha256:edb8e2bab9cbca22e555638294db9b3657ffbb6e5d149a29d7ccdb243e3c71e0
+    labels:
+      traefik.enable: true
+      traefik.http.routers.vaultwarden.rule: Host(`pass.${SECRET_DOMAIN}`)
+      traefik.http.routers.vaultwarden.entryPoints: websecure
+      traefik.http.services.vaultwarden.loadbalancer.server.port: 8000
+    volumes:
+      - "${SECRET_APPDATA}/vaultwarden:/data"
+    user: ${UID}:${GID}
+    environment:
+      TZ: ${TZ}
+      PUSH_ENABLED: "true"
+      PUSH_INSTALLATION_ID: "${SECRET_VAULTWARDEN_PUSH_ID}"
+      PUSH_INSTALLATION_KEY: "${SECRET_VAULTWARDEN_PUSH_KEY}"
+      ROCKET_PORT: "8000"
+      DATA_FOLDER: "/data"
+      LOG_FILE: "/data/bitwarden.log"
+      LOG_LEVEL: "info"
+      EXTENDED_LOGGING: "true"
+      SHOW_PASSWORD_HINT: "false"
+      SIGNUPS_ALLOWED: "false"
+      SIGNUPS_VERIFY: "true"
+      INVITATION_ORG_NAME: "${SECRET_VAULTWARDEN_INVITATION_ORG_NAME}"
+      ADMIN_TOKEN: "${SECRET_VAULTWARDEN_ADMIN_TOKEN}"
+      DOMAIN: "https://pass.${SECRET_DOMAIN}"
+      ORG_CREATION_USERS: "${SECRET_VAULTWARDEN_ORG_CREATION_USERS}"
+      SMTP_FROM: "vault@${SECRET_DOMAIN}"
+      SMTP_FROM_NAME: "${SECRET_VAULTWARDEN_SMTP_FROM_NAME}"
+      SMTP_HOST: "${SECRET_OVH_SMTP_HOST}"
+      SMTP_PORT: 465
+      SMTP_SECURITY: "force_tls"
+      SMTP_USERNAME: "${SECRET_OVH_SMTP_USERNAME}"
+      SMTP_PASSWORD: "${SECRET_OVH_SMTP_PASSWORD}"
+    networks:
+      - proxy
+    restart: always
+    depends_on:
+      traefik:
+        condition: service_started
+        restart: false

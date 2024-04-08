@@ -1,0 +1,21 @@
+services:
+  worker:
+    image: myoung34/github-runner:ubuntu-focal
+    volumes:
+      - '/var/run/docker.sock:/var/run/docker.sock'
+      - "${SECRET_APPDATA}/action-runner/work:${SECRET_APPDATA}/action-runner/work"
+      # note: a quirk of docker-in-docker is that this path
+      # needs to be the same path on host and inside the container,
+      # docker mgmt cmds run outside of docker but expect the paths from within
+    security_opt:
+      # needed on SELinux systems to allow docker container to manage other docker containers
+      - label:disable
+    environment:
+      REPO_URL: https://github.com/zaggash/homelab
+      APP_ID: ${SECRET_GH_APP_ID}
+      APP_PRIVATE_KEY: ${SECRET_GH_APP_PRIV_KEY}
+      RUNNER_SCOPE: 'repo'
+      LABELS: linux,x64
+      RUNNER_WORKDIR: "${SECRET_APPDATA}/action-runner/work"
+      GITHUB_HOST: github.com
+    restart: always

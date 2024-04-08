@@ -1,0 +1,7 @@
+include:
+  - socket-compose.yaml
+  - traefik-compose.yaml
+
+networks:
+  traefik-socket:
+    driver: bridge

@@ -1,0 +1,34 @@
+services:
+  plex:
+    container_name: plex
+    image: ghcr.io/onedr0p/plex:1.40.1.8227-c0dd5a73e@sha256:4ca8db0ffa1bee5a2976a0385cc43368112e81a2485b80d0fff3b04c9d5bd1ca
+    labels:
+      traefik.enable: true
+      traefik.docker.network: homelab_lan
+      traefik.http.routers.plex.rule: Host(`plex.${SECRET_DOMAIN}`)
+      traefik.http.routers.plex.entryPoints: websecure
+      traefik.http.services.plex.loadbalancer.server.port: 32400
+      traefik.http.services.plex.loadbalancer.server.scheme: http
+    volumes:
+      - "${SECRET_APPDATA}/plex/config:/config/Library/Application Support/Plex Media Server"
+      - "${SECRET_APPDATA}/plex/cache:/config/Library/Application Support/Plex Media Server/Cache"
+      - "plex-logs:/config/Library/Application Support/Plex Media Server/Logs"
+      - "transcode:/transcode"
+      - "${SECRET_DATADIR}/media:/media:ro"
+    user: ${UID}:${GID}
+    environment:
+      TZ: ${TZ}
+      PLEX_ADVERTISE_URL: https://plex.${SECRET_DOMAIN}:443
+    networks:
+      lan:
+        ipv4_address: 192.168.1.20
+    restart: always
+    depends_on:
+      traefik:
+        condition: service_started
+        restart: false
+
+volumes:
+  plex-logs:
+  transcode:
+

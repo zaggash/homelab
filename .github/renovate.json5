@@ -13,6 +13,10 @@
     "fileMatch": ["portainer-stacks/.+-compose\\.ya?ml$"],
   },
 
+  "docker-compose": {
+    "fileMatch": ["unraid-homelab/.+-compose\\.ya?ml$"],
+  },
+
   "customManagers": [
     {
       "description": "Bedrock Connect custom Regex",

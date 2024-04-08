@@ -1,0 +1,20 @@
+services:
+  postgres:
+    container_name: postgres
+    image: postgres:14@sha256:6779d7a308f3c9c518a644ad9326be6149dc50352c91927725936a1115e09b0d
+    volumes:
+      - "${SECRET_APPDATA}/postgresql14-data:/var/lib/postgresql/data"
+      #- ./create-db.sql:/docker-entrypoint-initdb.d/create_database.sql
+    environment:
+      POSTGRES_USER: ${SECRET_POSTGRESQL_POSTGRES_USER}
+      POSTGRES_PASSWORD: ${SECRET_POSTGRESQL_POSTGRES_PASSWORD}
+      POSTGRES_DB: postgres
+    networks:
+      - databases
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 5s

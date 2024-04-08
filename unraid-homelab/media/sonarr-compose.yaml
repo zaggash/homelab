@@ -1,0 +1,24 @@
+services:
+  sonarr:
+    container_name: sonarr
+    image: ghcr.io/onedr0p/sonarr:4.0.2.1183@sha256:bbfcda0754272515ce12972924652699934074b46b11d27bc515c8ea5fb870f5
+    labels:
+      traefik.enable: true
+      traefik.http.routers.sonarr.rule: Host(`sonarr.${SECRET_DOMAIN}`)
+      traefik.http.routers.sonarr.entryPoints: websecure
+      traefik.http.services.sonarr.loadbalancer.server.port: 8989
+    volumes:
+      - "${SECRET_APPDATA}/sonarr:/config"
+      - "${SECRET_DATADIR}:/data"
+    user: ${UID}:${GID}
+    environment:
+      TZ: ${TZ}
+      COMPlus_EnableDiagnostics: "0" # Fix the .Net CoreCLR crash on ReadOnly Filesystem
+    networks:
+      - proxy
+      - media
+    restart: always
+    depends_on:
+      traefik:
+        condition: service_started
+        restart: false

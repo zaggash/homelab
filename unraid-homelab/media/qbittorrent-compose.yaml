@@ -1,0 +1,27 @@
+services:
+  qbittorrent:
+    container_name: qbittorrent
+    image: ghcr.io/onedr0p/qbittorrent:4.6.4@sha256:85f185207a81ec03e84b8302db06f1694c533c99e0efdb2acf0316d554d332e3
+    ports:
+      - 192.168.1.50:6881:6881
+    labels:
+      traefik.enable: true
+      traefik.http.routers.qbittorrent.rule: Host(`dl.${SECRET_DOMAIN}`)
+      traefik.http.routers.qbittorrent.entryPoints: websecure
+      traefik.http.services.qbittorrent.loadbalancer.server.port: 8080
+    volumes:
+      - "${SECRET_APPDATA}/qbittorrent:/config"
+      - "${SECRET_DATADIR}/downloads:/data/downloads"
+    user: ${UID}:${GID}
+    environment:
+      TZ: ${TZ}
+      QBITTORRENT__BT_PORT: 6881
+      QBITTORRENT__PORT: 8080
+    networks:
+      - proxy
+      - media
+    restart: always
+    depends_on:
+      traefik:
+        condition: service_started
+        restart: false

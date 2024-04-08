@@ -1,0 +1,12 @@
+include: 
+  - server-compose.yaml
+  - machine-learning-compose.yaml
+  - microservices-compose.yaml
+  - redis-compose.yaml
+  - postgres-compose.yaml
+
+networks:
+  immich:
+    driver: bridge
+  immich-db:
+    driver: bridge

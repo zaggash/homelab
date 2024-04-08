@@ -1,0 +1,31 @@
+services:
+    immich-microservices:
+      container_name: immich_microservices
+      image: ghcr.io/immich-app/immich-server:v1.101.0@sha256:0097562444db38ebd2e5f98e71bd27dc6dd69b7f786207f7d323febbf99b8f93
+      command: ['start.sh', 'microservices']
+      devices:
+        - /dev/dri:/dev/dri
+      networks:
+        - immich-db
+        - immich
+      volumes:
+        - ${SECRET_IMMICH_UPLOAD_LOCATION}:/usr/src/app/upload
+        - /etc/localtime:/etc/localtime:ro
+      environment:
+        TZ: ${TZ}
+        LOG_LEVEL: log
+        IMMICH_METRICS: false
+        DB_HOSTNAME: immich_pg
+        DB_DATABASE_NAME: ${SECRET_IMMICH_DB_DATABASE_NAME}
+        DB_USERNAME: ${SECRET_IMMICH_DB_USERNAME}
+        DB_PASSWORD: ${SECRET_IMMICH_DB_PASSWORD}
+        REDIS_HOSTNAME: immich_redis
+        #REDIS_PASSWORD: ${SECRET_IMMICH_REDIS_PASSWORD}
+      depends_on:
+        immich-redis:
+          condition: service_started
+          restart: false
+        immich-pg:
+          condition: service_started
+          restart: true
+      restart: always

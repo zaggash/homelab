@@ -1,0 +1,25 @@
+services:
+  error-pages:
+    image: ghcr.io/tarampampam/error-pages:2.27@sha256:40e2631173b1a407c18fe7d1ba8104d995cf9e4780d123eeadfa1d57c68eaf4f
+    container_name: error-pages
+    labels:
+      traefik.enable: true
+      traefik.http.routers.errorpages.rule: HostRegexp(`{host:.+}`)
+      traefik.http.routers.errorpages.priority: 10
+      traefik.http.routers.errorpages.entryPoints: websecure
+      traefik.http.services.errorpages.loadbalancer.server.port: 8080
+      traefik.http.routers.errorpages.middlewares: error-pages-middleware
+      traefik.http.middlewares.error-pages-middleware.errors.service: errorpages
+      traefik.http.middlewares.error-pages-middleware.errors.status: 400-599
+      traefik.http.middlewares.error-pages-middleware.errors.query: /{status}.html
+    environment:
+      TZ: ${TZ}
+      TEMPLATE_NAME: "shuffle"
+      SHOW_DETAILS: "true" 
+    networks:
+      - proxy
+    restart: always
+    depends_on:
+      traefik:
+        condition: service_healthy
+        restart: false

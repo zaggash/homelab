@@ -1,0 +1,22 @@
+services:
+  authelia:
+    container_name: authelia
+    image: ghcr.io/authelia/authelia:4.38.7@sha256:1bfa7206c144f8cd184743a7ed629f4a02d2dceb50e7260588373fe6de4cd959
+    labels:
+      traefik.enable: true
+      traefik.http.routers.authelia.rule: Host(`login.${SECRET_DOMAIN}`)
+      traefik.http.routers.authelia.entryPoints: websecure
+      traefik.http.services.authelia.loadbalancer.server.port: 9091
+    volumes:
+      - "${SECRET_APPDATA}/authelia/config:/config"
+    environment:
+      TZ: ${TZ}
+    networks:
+      - proxy
+      - lldap
+      - authelia-db
+    restart: always
+    depends_on:
+      authelia-redis: 
+        condition: service_healthy
+        restart: false

@@ -1,0 +1,25 @@
+services:
+  prowlarr:
+    container_name: prowlarr
+    image: ghcr.io/onedr0p/prowlarr-develop:1.14.3.4333@sha256:60f146b93e846e543cac0e8d74412c45cd0112a0793ad48c8ae54125f6f990fe
+    labels:
+      traefik.enable: true
+      traefik.http.routers.prowlarr.rule: Host(`indexer.${SECRET_DOMAIN}`)
+      traefik.http.routers.prowlarr.entryPoints: websecure
+      traefik.http.services.prowlarr.loadbalancer.server.port: 9696
+    volumes:
+      - "${SECRET_APPDATA}/prowlarr:/config"
+    user: ${UID}:${GID}
+    environment:
+      TZ: ${TZ}
+      COMPlus_EnableDiagnostics: "0" # Fix the .Net CoreCLR crash on ReadOnly Filesystem
+      PROWLARR__ANALYTICS_ENABLED: false
+      PROWLARR__THEME: dark
+    networks:
+      - proxy
+      - media
+    restart: always
+    depends_on:
+      traefik:
+        condition: service_started
+        restart: false

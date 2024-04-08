@@ -1,0 +1,19 @@
+services:
+  traefik-socket:
+    container_name: traefik-socket
+    image: ghcr.io/tecnativa/docker-socket-proxy:edge@sha256:4959d0fe8a8a4c23649d2d7c415a154a48a0718bff464ca429e75e48263c04d3
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      CONTAINERS: 1
+      POST: 0
+    privileged: true
+    networks:
+      - traefik-socket
+    restart: unless-stopped
+    healthcheck:
+      test: wget --spider http://localhost:2375/version || exit 1
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 5s

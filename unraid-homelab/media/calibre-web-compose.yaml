@@ -1,0 +1,28 @@
+services:
+  calibre-web:
+    container_name: calibre-web
+    image: ghcr.io/bjw-s/calibre-web:0.6.21@sha256:9aef000820ef1b25705f7c573e285f03b79a50777d95f90748029ceb853f7cf0
+    labels:
+      traefik.enable: true
+      traefik.http.routers.calibre-web.rule: Host(`books.${SECRET_DOMAIN}`)
+      traefik.http.routers.calibre-web.entryPoints: websecure
+      traefik.http.services.calibre-web.loadbalancer.server.port: 8083
+    volumes:
+      - "${SECRET_APPDATA}/calibre-web:/config"
+      - "${SECRET_DATADIR}/ebooks:/data"
+      - calibre-web-cache:/cache
+    user: ${UID}:${GID}
+    environment:
+      TZ: ${TZ}
+      CACHE_DIR: /cache
+      COMPlus_EnableDiagnostics: "0" # Fix the .Net CoreCLR crash on ReadOnly Filesystem
+    networks:
+      - proxy
+    restart: always
+    depends_on:
+      traefik:
+        condition: service_started
+        restart: false
+
+volumes:
+  calibre-web-cache:
