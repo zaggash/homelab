@@ -1,7 +1,6 @@
 name: homelab
 
 include:
-  - ./action-runner/docker-compose.yaml
   - ./ingress/docker-compose.yaml
   #- ./databases/docker-compose.yaml
   - ./security/docker-compose.yaml
