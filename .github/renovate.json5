@@ -10,11 +10,10 @@
   ],
 
   "docker-compose": {
-    "fileMatch": ["portainer-stacks/.+-compose\\.ya?ml$"],
-  },
-
-  "docker-compose": {
-    "fileMatch": ["unraid-homelab/.+-compose\\.ya?ml$"],
+    "fileMatch": [
+      "portainer-stacks/.+-compose\\.ya?ml$",
+      "unraid-homelab/.+-compose\\.ya?ml$"
+      ],
   },
 
   "customManagers": [
