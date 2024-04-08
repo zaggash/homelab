@@ -1,7 +1,7 @@
 services:
   sonarr:
     container_name: sonarr
-    image: ghcr.io/onedr0p/sonarr:4.0.2.1183@sha256:42ba5af9b0ea20f4db4622991e0f1657be02c6e8747872c652fdac193c097b25
+    image: ghcr.io/onedr0p/sonarr:4.0.3.1413@sha256:4284def4b9fd2d3de2898ae3a6adc7aa84b9cd7f4407a35e7c61472519038396
     labels:
       traefik.enable: true
       traefik.http.routers.sonarr.rule: Host(`sonarr.${SECRET_DOMAIN}`)
