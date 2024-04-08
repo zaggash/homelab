@@ -39,13 +39,35 @@
       "separateMinorPatch": true
     },
 
+    {  
+      "description": "Group immich updates",
+      "groupName": "Immich",
+      "matchDatasources": ["docker", "github-tags"],
+      "matchPaths": ["unraid-homelab/**/immich/**"],
+      "group": {
+        "commitMessageTopic": "{{{groupName}}} group"
+      },
+      "separateMinorPatch": true
+    },
+
     {
-      description: "Set fixed version for bedrock-connect",
+      description: "Set fixed versionning for bedrock-connect",
       matchManagers: ["dockerfile"],
       matchDatasources: ["docker"],
       matchPaths: ["portainer-stacks/nuc4-stacks/bedrock-connect/**"],
       matchPackageNames: ["eclipse-temurin"],
       allowedVersions: "<=11.*"
+    },
+    {  
+      description: "Only update digest for Postgres and redis on Immich",
+      matchManagers: ["docker-compose"],
+      matchDatasources: ["docker"],
+      matchPaths: [
+          "unraid-homelab/**/immich/redis-compose.yaml",
+          "unraid-homelab/**/immich/postgres-compose.yaml"
+        ],
+      matchUpdateTypes: ["major", "minor", "patch"],
+      "enabled": false
     },
 
     {
