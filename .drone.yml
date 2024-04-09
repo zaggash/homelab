@@ -136,7 +136,8 @@ steps:
       webhook_token:
         from_secret: discord_webhook_token
       username: Drone
-    depends_on: deploy
+    depends_on: 
+      - deploy
     when:
       status: [ success, failure ]
 
