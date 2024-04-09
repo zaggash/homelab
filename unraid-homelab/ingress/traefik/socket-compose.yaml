@@ -1,7 +1,7 @@
 services:
   traefik-socket:
     container_name: traefik-socket
-    image: ghcr.io/tecnativa/docker-socket-proxy:edge@sha256:4959d0fe8a8a4c23649d2d7c415a154a48a0718bff464ca429e75e48263c04d3
+    image: ghcr.io/tecnativa/docker-socket-proxy:0.1.2@sha256:dc8ec925b1360c54e6bf350602d6faac4e33c5d8d809118e4c000c0b14a4529a
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     environment:
