@@ -10,7 +10,3 @@ services:
     networks:
       - drone
     restart: always
-    depends_on:
-      drone-server:
-        condition: service_started
-        restart: false

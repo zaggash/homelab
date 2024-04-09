@@ -31,7 +31,3 @@ services:
       - proxy
       - drone
     restart: always
-    depends_on:
-      traefik:
-        condition: service_started
-        restart: false

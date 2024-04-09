@@ -21,11 +21,4 @@ services:
         DB_PASSWORD: ${SECRET_IMMICH_DB_PASSWORD}
         REDIS_HOSTNAME: immich_redis
         #REDIS_PASSWORD: ${SECRET_IMMICH_REDIS_PASSWORD}
-      depends_on:
-        immich-redis:
-          condition: service_started
-          restart: false
-        immich-pg:
-          condition: service_started
-          restart: true
       restart: always

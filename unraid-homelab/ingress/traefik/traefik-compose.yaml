@@ -62,10 +62,10 @@ services:
       - proxy
       - traefik-socket
     restart: unless-stopped
-    depends_on:
-      traefik-socket:
-        condition: service_healthy
-        restart: false
+      # depends_on:
+      #   traefik-socket:
+      #     condition: service_healthy
+      #     restart: false
     healthcheck:
       test: ["CMD", "traefik", "healthcheck", "--ping"]
       interval: 10s

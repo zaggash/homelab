@@ -16,7 +16,3 @@ services:
       - lldap
       - authelia-db
     restart: always
-    depends_on:
-      authelia-redis: 
-        condition: service_healthy
-        restart: false
