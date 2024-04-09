@@ -44,6 +44,10 @@ steps:
       - apk update && apk add docker-compose sops
       - cd unraid-homelab/
       - sops exec-env secrets.encoded.env 'docker-compose -f docker-compose.yaml config' > /dev/null
+    when:
+      paths:    
+        include:
+          - unraid-homelab/**
     depends_on:      
       - git-leaks-check
 
@@ -121,8 +125,11 @@ steps:
       - apk update && apk add docker-compose sops
       - cd unraid-homelab/
       - sops exec-env secrets.encoded.env 'docker-compose -f docker-compose.yaml up --timestamps --remove-orphans -V -d -w'
+    when:
+      paths:    
+        include:
+          - unraid-homelab/**
     depends_on:              
-      - compose-config-check
       - move-recyclarr-config
       - move-authelia-config
       - move-traefik-config
