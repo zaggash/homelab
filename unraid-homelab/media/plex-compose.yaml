@@ -12,8 +12,8 @@ services:
     volumes:
       - "${SECRET_APPDATA}/plex/config:/config/Library/Application Support/Plex Media Server"
       - "${SECRET_APPDATA}/plex/cache:/config/Library/Application Support/Plex Media Server/Cache"
+      - "${SECRET_APPDATA}/plex/transcode:/transcode"
       - "plex-logs:/config/Library/Application Support/Plex Media Server/Logs"
-      - "transcode:/transcode"
       - "${SECRET_DATADIR}/media:/media:ro"
     user: ${UID}:${GID}
     environment:
@@ -26,5 +26,4 @@ services:
 
 volumes:
   plex-logs:
-  transcode:
 
