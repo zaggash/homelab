@@ -1,0 +1,21 @@
+services:
+  drone-runner:
+    container_name: drone-runner
+    image: drone/drone-runner-docker:1.8.3@sha256:513891eb6c8b920c48266f6881402b9df5e3f7ec874a12cd87146ebfd1105bed
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    environment:
+      TZ: ${TZ}
+      DRONE_RPC_HOST: drone-server
+      DRONE_RPC_PROTO: http
+      DRONE_RPC_SECRET: ${SECRET_DRONE_DRONE_RPC_SECRET}
+      DRONE_RUNNER_CAPACITY: 1
+      DRONE_DEBUG: false
+      DRONE_TRACE: false
+    networks:
+      - drone
+    restart: always
+    depends_on:
+      drone-server:
+        condition: service_started
+        restart: false

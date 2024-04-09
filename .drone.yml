@@ -1,0 +1,143 @@
+---
+kind: pipeline
+type: docker
+name: check-and-deploy
+
+trigger:
+  branch:
+    - main
+  event:
+    - push
+  paths:
+    include:
+      - .drone.yml
+      - unraid-homelab/**
+
+workspace:
+  path: /drone/src
+
+volumes:
+  - name: appdata
+    host:
+      path: /mnt/user/appdata/
+  - name: dockersock
+    host:
+      path: /var/run/docker.sock
+
+steps:
+  - name: git-leaks-check
+    image: ghcr.io/gitleaks/gitleaks:latest
+    commands:
+      - gitleaks detect --source ./
+      - gitleaks detect --no-git --source ./
+
+
+  - name: compose-config-check
+    image: alpine:edge
+    volumes:
+      - name: dockersock
+        path: /var/run/docker.sock
+    environment:
+      SOPS_AGE_KEY:
+        from_secret: age-key
+    commands:
+      - apk update && apk add docker-compose sops
+      - cd unraid-homelab/
+      - sops exec-env secrets.encoded.env 'docker-compose -f docker-compose.yaml config' > /dev/null
+    depends_on:      
+      - git-leaks-check
+
+
+
+  - name: move-recyclarr-config
+    image: alpine:edge
+    volumes: 
+      - name: appdata
+        path: /appdata
+    environment:                                      
+      SOPS_AGE_KEY:                                   
+        from_secret: age-key
+    commands:
+      - apk update && apk add sops envsubst
+      - cd unraid-homelab/
+      - sops exec-env secrets.encoded.env 'cat ./media/recyclarr/recyclarr.yaml | envsubst' > /appdata/recyclarr/recyclarr.yaml
+    when:
+      paths:
+        include:
+          - unraid-homelab/**/recyclarr/recyclarr.yaml
+    depends_on:
+      - compose-config-check
+
+  
+  - name: move-authelia-config
+    image: alpine:edge                                 
+    volumes:                                           
+      - name: appdata                                  
+        path: /appdata
+    environment:                                      
+      SOPS_AGE_KEY:                                   
+        from_secret: age-key
+    commands:                                          
+      - apk update && apk add sops envsubst            
+      - cd unraid-homelab/                             
+      - sops exec-env secrets.encoded.env 'cat ./security/authelia/configuration.yml | envsubst' > /appdata/authelia/config/configuration.yml
+    when:                                              
+      paths:                                             
+        include:                                         
+          - unraid-homelab/**/authelia/configuration.yml
+    depends_on:              
+      - compose-config-check
+
+  - name: move-traefik-config
+    image: alpine:edge                                 
+    volumes:                                           
+      - name: appdata                                  
+        path: /appdata
+    environment:                                      
+      SOPS_AGE_KEY:                                   
+        from_secret: age-key
+    commands:                                          
+      - apk update && apk add sops envsubst            
+      - cd unraid-homelab/                             
+      - sops exec-env secrets.encoded.env 'cat ./ingress/traefik/configFile.yaml | envsubst' > /appdata/traefik/configFile.yaml
+    when:                                              
+      paths:                                             
+        include:                                         
+          - unraid-homelab/**/traefik/configFile.yaml
+    depends_on:              
+      - compose-config-check
+
+
+
+  - name: deploy
+    image: alpine:edge
+    volumes:
+      - name: dockersock
+        path: /var/run/docker.sock
+    environment:                                      
+      SOPS_AGE_KEY:                                   
+        from_secret: age-key
+    commands:
+      - apk update && apk add docker-compose sops
+      - cd unraid-homelab/
+      - sops exec-env secrets.encoded.env 'docker-compose -f docker-compose.yaml up --timestamps --remove-orphans -V -d -w'
+    depends_on:              
+      - compose-config-check
+      - move-recyclarr-config
+      - move-authelia-config
+      - move-traefik-config
+
+
+  - name: send-notification
+    image: appleboy/drone-discord
+    settings:
+      webhook_id:
+        from_secret: discord_webhook_id
+      webhook_token:
+        from_secret: discord_webhook_token
+      username: Drone
+    depends_on: deploy
+    when:
+      status: [ success, failure ]
+
+

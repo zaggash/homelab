@@ -1,0 +1,8 @@
+include:
+  - drone-compose.yaml
+  - plugin-compose.yaml
+  - runner-compose.yaml
+
+networks:
+  drone:
+    driver: bridge
