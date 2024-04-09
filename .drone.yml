@@ -124,7 +124,7 @@ steps:
     commands:
       - apk update && apk add docker-compose sops
       - cd unraid-homelab/
-      - sops exec-env secrets.encoded.env 'docker-compose -f docker-compose.yaml up --timestamps --remove-orphans -V -d -w'
+      - sops exec-env secrets.encoded.env 'docker-compose -f docker-compose.yaml up --detach --quiet-pull --remove-orphans --wait'
     when:
       paths:    
         include:
