@@ -129,7 +129,8 @@ steps:
       paths:    
         include:
           - unraid-homelab/**
-    depends_on:              
+    depends_on:
+      - compose-config-check
       - move-recyclarr-config
       - move-authelia-config
       - move-traefik-config
