@@ -2,4 +2,5 @@ include:
   - drone/docker-compose.yaml
   - vaultwarden-compose.yaml
   - immich/docker-compose.yaml
+  - kopia-compose.yaml
 
