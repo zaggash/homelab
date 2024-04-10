@@ -12,7 +12,7 @@ services:
       - --server-username=${SECRET_KOPIA_UI_USERNAME}
       - --server-password=${SECRET_KOPIA_UI_PASSWORD}
     ports:
-      - 51515:51515
+      - 192.168.1.12:51515:51515
     volumes:
       - "${SECRET_APPDATA}/kopia/config:/app/config"
       - "${SECRET_APPDATA}/kopia/cache:/app/cache"
