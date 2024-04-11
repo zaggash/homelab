@@ -36,7 +36,6 @@
       "group": {
         "commitMessageTopic": "{{{groupName}}} group"
       },
-      "separateMinorPatch": true
     },
 
     {  
@@ -47,7 +46,6 @@
       "group": {
         "commitMessageTopic": "{{{groupName}}} group"
       },
-      "separateMinorPatch": true
     },
 
     {
@@ -68,6 +66,12 @@
         ],
       matchUpdateTypes: ["major", "minor", "patch"],
       "enabled": false
+    },
+
+    {
+      description: "Only check for Kopia release, not daily release",
+      "matchPackageNames": ["kopia/kopia"],
+      "allowedVersions": "<=1000.*"
     },
 
     {  
