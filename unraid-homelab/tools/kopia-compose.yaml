@@ -2,7 +2,7 @@ services:
   kopia:
     container_name: kopia
     hostname: kopia
-    image: kopia/kopia:0.16.1@sha256:566406c5be7b9e78cf50e51871899610ee1239eb550df023b51a4261fbebc692
+    image: kopia/kopia:20210413.0.124504@sha256:fba792d03325a763329c8f5c5bdcb6237cd5eb2ebe993644f080dfacb39d23eb
     command:
       - server
       - start
