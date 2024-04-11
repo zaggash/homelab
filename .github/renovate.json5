@@ -68,12 +68,6 @@
       "enabled": false
     },
 
-    {
-      description: "Only check for Kopia release, not daily release",
-      "matchPackageNames": ["kopia/kopia"],
-      "allowedVersions": "<=1000.*"
-    },
-
     {  
       "description": "Set azure-rest-api versioning",
       "matchDatasources": ["docker"],
