@@ -1,0 +1,16 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0  # the release, git tag, or commit you want to use
+    hooks:
+      - id: check-yaml
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.18.1  # Specify the desired version of Gitleaks
+    hooks:
+      - id: gitleaks-docker
+        name: Detect hardcoded secrets
+        description: Detect hardcoded secrets using Gitleaks
+        entry: zricethezav/gitleaks protect --verbose --redact --staged
+        language: docker_image
