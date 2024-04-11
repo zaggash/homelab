@@ -1,0 +1,25 @@
+services:
+  minio:
+    container_name: minio
+    image: quay.io/minio/minio:RELEASE.2024-04-06T05-26-02Z@sha256:178e05aba3a0dc967df3558aab43097f1427bbcda77264fc24e92f1bf09dfe02
+    command: server /data --console-address ":9001"
+    ports:
+      - "192.168.1.12:9000:9000"
+      - "192.168.1.12:9001:9001"
+    volumes:
+      - "${SECRET_APPDATA}/minio:/config"
+      - "${SECRET_ROOTDIR}/minio:/data"
+    user: ${UID}:${GID}
+    environment:
+      TZ: ${TZ}
+      MINIO_ROOT_USER: ${SECRET_MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${SECRET_MINIO_ROOT_PASSWORD}
+      MINIO_VOLUMES: /data
+      MINIO_SERVER_URL: "http://s3.${SECRET_HOME_DOMAIN}:9000"
+    networks:
+      - minio
+    restart: always
+
+networks:
+  minio:
+    driver: bridge
