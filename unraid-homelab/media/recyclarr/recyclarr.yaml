@@ -9,7 +9,7 @@ radarr:
 
     quality_definition:
       type: movie
-    
+
     quality_profiles:
       - name: 4K Multi+VFF Remux
         reset_unmatched_scores:
@@ -30,42 +30,42 @@ radarr:
               - WEBRip-2160p
 
       - name: 4K VFF Bluray
-        reset_unmatched_scores:  
-          enabled: true          
-        min_format_score: 0      
-        quality_sort: top        
-        upgrade:                 
-          allowed: true          
+        reset_unmatched_scores:
+          enabled: true
+        min_format_score: 0
+        quality_sort: top
+        upgrade:
+          allowed: true
           until_quality: Bluray-2160p
           until_score: 10000
         qualities:
           - name: Bluray-2160p
-          - name: Web-2160p   
-            qualities:        
-              - WEBDL-2160p   
-              - WEBRip-2160p  
+          - name: Web-2160p
+            qualities:
+              - WEBDL-2160p
+              - WEBRip-2160p
 
       - name: HD VFF Remux
-        reset_unmatched_scores:  
-          enabled: true          
-        min_format_score: 0      
-        quality_sort: top        
-        upgrade:                 
-          allowed: true          
+        reset_unmatched_scores:
+          enabled: true
+        min_format_score: 0
+        quality_sort: top
+        upgrade:
+          allowed: true
           until_quality: Remux-1080p
-          until_score: 10000 
+          until_score: 10000
         qualities:
           - name: Remux-1080p
           - name: Bluray-1080p
-          - name: Web-1080p   
-            qualities:        
-              - WEBDL-1080p   
+          - name: Web-1080p
+            qualities:
+              - WEBDL-1080p
               - WEBRip-1080p
           - name: Bluray-720p
 
 
     custom_formats:
-      - trash_ids:       
+      - trash_ids:
         # Audio
           - 496f355514737f7d83bf7aa4d24f8169  # TrueHD Atmos
           - 2f22d89048b01681dde8afe203bf2e95  # DTS X
@@ -120,18 +120,18 @@ radarr:
           - name: 4K Multi+VFF Remux
           - name: 4K VFF Bluray
           - name: HD VFF Remux
-     
 
-      - trash_ids:      
+
+      - trash_ids:
           - 72b1548df1ac3175ca105a9ce7043c91  # Multi-Audio
           - d5f3a1afdb77e6b95e489f7654532d04  # Multi-French
-        quality_profiles:                              
+        quality_profiles:
           - name: 4K Multi+VFF Remux
             score: 1000
 
       - trash_ids:
           - 6d27683346c78d6a3f772e30877910a7  # French Audio
-        quality_profiles:                              
+        quality_profiles:
           - name: 4K VFF Bluray
             score: 1000
           - name: HD VFF Remux
@@ -140,13 +140,23 @@ radarr:
 
       - trash_ids:
           - 404c08fd0bd67f39b4d8e5709319094e  # VFF
-        quality_profiles:                              
+        quality_profiles:
           - name: 4K Multi+VFF Remux
             score: 1000
           - name: 4K VFF Bluray
             score: 1000
           - name: HD VFF Remux
             score: 1000
+
+      - trash_ids:
+          - b6ace47331a1d3b77942fc18156f6df6 # VFQ
+        quality_profiles:
+          - name: 4K Multi+VFF Remux
+            score: -10000
+          - name: 4K VFF Bluray
+            score: -10000
+          - name: HD VFF Remux
+            score: -10000
 
 
       - trash_ids:
@@ -155,7 +165,7 @@ radarr:
           - name: 4K Multi+VFF Remux
             score: -10000
 
-      - trash_ids:  
+      - trash_ids:
           - 9172b2f683f6223e3a1846427b417a3d  # VOSTFR
         quality_profiles:
           - name: 4K Multi+VFF Remux
@@ -218,34 +228,34 @@ sonarr:
               - WEBDL-1080p
 
       - name: VOSTFR-WEB-2160p
-        reset_unmatched_scores:       
-          enabled: true               
-        min_format_score: 0           
-        quality_sort: top             
-        upgrade:                      
-          allowed: true               
+        reset_unmatched_scores:
+          enabled: true
+        min_format_score: 0
+        quality_sort: top
+        upgrade:
+          allowed: true
           until_quality: WEB 2160p
-          until_score: 10000   
-        qualities:             
+          until_score: 10000
+        qualities:
           - name: Bluray-2160p
           - name: WEB 2160p
-            qualities:       
+            qualities:
               - WEBRip-2160p
               - WEBDL-2160p
 
       - name: VFF-WEB-1080p
-        reset_unmatched_scores:       
-          enabled: true               
-        min_format_score: 0           
-        quality_sort: top             
-        upgrade:                      
-          allowed: true               
+        reset_unmatched_scores:
+          enabled: true
+        min_format_score: 0
+        quality_sort: top
+        upgrade:
+          allowed: true
           until_quality: WEB 1080p
-          until_score: 10000   
-        qualities:             
+          until_score: 10000
+        qualities:
           - name: Bluray-1080p
-          - name: WEB 1080p  
-            qualities:       
+          - name: WEB 1080p
+            qualities:
               - WEBRip-1080p
               - WEBDL-1080p
 
@@ -425,4 +435,4 @@ sonarr:
           - 44b6c964dad997577d793fd004a39224  # FR Anime FanSub
         quality_profiles:
           - name: ANIME-VOSTFR
-            score: 1000 
+            score: 1000

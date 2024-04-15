@@ -45,26 +45,27 @@ steps:
       - cd unraid-homelab/
       - sops exec-env secrets.encoded.env 'docker-compose -f docker-compose.yaml config' > /dev/null
     when:
-      paths:    
+      paths:
         include:
           - unraid-homelab/**
-    depends_on:      
+    depends_on:
       - git-leaks-check
 
 
 
   - name: move-recyclarr-config
     image: alpine:edge
-    volumes: 
+    volumes:
       - name: appdata
         path: /appdata
-    environment:                                      
-      SOPS_AGE_KEY:                                   
+    environment:
+      SOPS_AGE_KEY:
         from_secret: age-key
     commands:
       - apk update && apk add sops envsubst
       - cd unraid-homelab/
       - sops exec-env secrets.encoded.env 'cat ./media/recyclarr/recyclarr.yaml | envsubst' > /appdata/recyclarr/recyclarr.yaml
+      - echo "recyclarr" >> restart.containers
     when:
       paths:
         include:
@@ -72,45 +73,46 @@ steps:
     depends_on:
       - compose-config-check
 
-  
+
   - name: move-authelia-config
-    image: alpine:edge                                 
-    volumes:                                           
-      - name: appdata                                  
+    image: alpine:edge
+    volumes:
+      - name: appdata
         path: /appdata
-    environment:                                      
-      SOPS_AGE_KEY:                                   
+    environment:
+      SOPS_AGE_KEY:
         from_secret: age-key
-    commands:                                          
-      - apk update && apk add sops envsubst            
-      - cd unraid-homelab/                             
+    commands:
+      - apk update && apk add sops envsubst
+      - cd unraid-homelab/
       - sops exec-env secrets.encoded.env 'cat ./security/authelia/configuration.yml | envsubst' > /appdata/authelia/config/configuration.yml
-    when:                                              
-      paths:                                             
-        include:                                         
+      - echo "authelia" >> restart.containers
+    when:
+      paths:
+        include:
           - unraid-homelab/**/authelia/configuration.yml
-    depends_on:              
+    depends_on:
       - compose-config-check
 
   - name: move-traefik-config
-    image: alpine:edge                                 
-    volumes:                                           
-      - name: appdata                                  
+    image: alpine:edge
+    volumes:
+      - name: appdata
         path: /appdata
-    environment:                                      
-      SOPS_AGE_KEY:                                   
+    environment:
+      SOPS_AGE_KEY:
         from_secret: age-key
-    commands:                                          
-      - apk update && apk add sops envsubst            
-      - cd unraid-homelab/                             
+    commands:
+      - apk update && apk add sops envsubst
+      - cd unraid-homelab/
       - sops exec-env secrets.encoded.env 'cat ./ingress/traefik/configFile.yaml | envsubst' > /appdata/traefik/configFile.yaml
-    when:                                              
-      paths:                                             
-        include:                                         
+      - echo "traefik" >> restart.containers
+    when:
+      paths:
+        include:
           - unraid-homelab/**/traefik/configFile.yaml
-    depends_on:              
+    depends_on:
       - compose-config-check
-
 
 
   - name: deploy
@@ -118,15 +120,16 @@ steps:
     volumes:
       - name: dockersock
         path: /var/run/docker.sock
-    environment:                                      
-      SOPS_AGE_KEY:                                   
+    environment:
+      SOPS_AGE_KEY:
         from_secret: age-key
     commands:
       - apk update && apk add docker-compose sops
       - cd unraid-homelab/
       - sops exec-env secrets.encoded.env 'docker-compose -f docker-compose.yaml up --detach --quiet-pull --remove-orphans --wait'
+      - if [ -f ./restart.containers ]; then sops exec-env secrets.encoded.env 'docker-compose -f docker-compose.yaml restart $(cat restart.containers)'; fi
     when:
-      paths:    
+      paths:
         include:
           - unraid-homelab/**
     depends_on:
@@ -145,10 +148,8 @@ steps:
         from_secret: discord_webhook_token
       username: Drone
       message: "{{#success build.status}} ✅  Build #{{build.number}} of `{{repo.name}}` succeeded.\n\n📝 Commit by {{commit.author}} on `{{commit.branch}}`:\n``` {{commit.message}} ```\n🌐 {{ build.link }}\n\n ✅ duration: {{duration build.started build.finished}} \n ✅ started: {{datetime build.started \"2006/01/02 15:04\" \"Europe/Paris\"}} \n ✅ finished: {{datetime build.finished \"2006/01/02 15:04\" \"Europe/Paris\"}} {{else}} ❌  Build #{{build.number}} of `{{repo.name}}` failed.\n\n📝 Commit by {{commit.author}} on `{{commit.branch}}`:\n``` {{commit.message}} ```\n🌐 {{ build.link }}\n\n ✅ duration: {{duration build.started build.finished}} \n ✅ started: {{datetime build.started \"2006/01/02 15:04\" \"Europe/Paris\"}} \n ✅ finished: {{datetime build.finished \"2006/01/02 15:04\" \"Europe/Paris\"}}{{/success}}\n"
-    depends_on: 
+    depends_on:
       - deploy
     when:
       status:
         - failure
-
-

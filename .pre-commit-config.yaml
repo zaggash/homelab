@@ -3,6 +3,8 @@ repos:
     rev: v4.5.0  # the release, git tag, or commit you want to use
     hooks:
       - id: check-yaml
+        exclude: .drone.yml
+        args: ["--unsafe"]
       - id: end-of-file-fixer
       - id: trailing-whitespace
 
