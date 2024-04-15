@@ -149,17 +149,6 @@ radarr:
             score: 1000
 
       - trash_ids:
-          - b6ace47331a1d3b77942fc18156f6df6 # VFQ
-        quality_profiles:
-          - name: 4K Multi+VFF Remux
-            score: -10000
-          - name: 4K VFF Bluray
-            score: -10000
-          - name: HD VFF Remux
-            score: -10000
-
-
-      - trash_ids:
           - 02e48d30a176c91baf9e15de05e5dc6a  # FanSUB
         quality_profiles:
           - name: 4K Multi+VFF Remux
