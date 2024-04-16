@@ -1,0 +1,24 @@
+services:
+  backrest:
+    container_name: backrest
+    hostname: backrest
+    image: garethgeorge/backrest:v0.17.1@sha256:c2cf1897f5a6972516d7f9ce3adbbbb258fde79c9101d3d01edfaeca0a30ea6c
+    ports:
+      - "192.168.1.12:9898:9898"
+    volumes:
+      # Backrest app folders
+      - ${SECRET_APPDATA}/backrest/data:/data
+      - ${SECRET_APPDATA}/backrest/config:/config
+      - ${SECRET_APPDATA}/backrest/cache:/cache
+      # BAckrest Unraid backup folders
+      - ${SECRET_BACKUPDIR}:/local-backups
+      - /mnt:/mnt:ro
+    user: ${UID}:${GID}
+    environment:
+      TZ: ${TZ}
+      BACKREST_DATA: /data
+      BACKREST_CONFIG: /config/config.json
+      XDG_CACHE_HOME: /cache
+    networks:
+      - default
+    restart: always
