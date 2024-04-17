@@ -10,7 +10,7 @@ services:
     privileged: true
     networks:
       - traefik-socket
-    restart: unless-stopped
+    restart: always
     healthcheck:
       test: wget --spider http://localhost:2375/version || exit 1
       interval: 10s

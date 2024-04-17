@@ -61,7 +61,7 @@ services:
     networks:
       - proxy
       - traefik-socket
-    restart: unless-stopped
+    restart: always
       # depends_on:
       #   traefik-socket:
       #     condition: service_healthy
