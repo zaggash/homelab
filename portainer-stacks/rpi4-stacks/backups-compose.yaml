@@ -7,35 +7,33 @@ services:
     dns:
       - 192.168.1.10
     environment: &backup_env
-      AWS_ENDPOINT: "s3.home.lan:9000"
-      AWS_ENDPOINT_PROTO: "https"
-      AWS_ENDPOINT_INSECURE: "true"
-      AWS_ACCESS_KEY_ID: "docker-volumes-backup"
-      AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
-      AWS_S3_BUCKET_NAME: "docker-volumes-backup"
-      AWS_S3_PATH: "/pihole"
       BACKUP_FILENAME: "pihole-%Y-%m-%dT%H-%M-%S.tar.gz"
+      BACKUP_LATEST_SYMLINK: "pihole-latest.tar.gz"
+      BACKUP_ARCHIVE: "/archive/pihole"
       BACKUP_EXCLUDE_REGEXP: "(/.*pihole-FTL.db.*$$)|(/.*metrics.interim$$)"
-      BACKUP_CRON_EXPRESSION: "0 4 * * *"
-      BACKUP_RETENTION_DAYS: "14"
+      BACKUP_CRON_EXPRESSION: "15 0 * * *"
+      BACKUP_RETENTION_DAYS: "7"
       BACKUP_PRUNING_PREFIX: "pihole-"
       NOTIFICATION_URLS: $NOTIFICATION_URLS
       NOTIFICATION_LEVEL: "error"
     volumes:
       - "pihole_data:/backup/pihole/data:ro"
       - "pihole_dnsmasq:/backup/pihole/dnsmasq:ro"
-      
+      - "unraid_backups:/archive"
+
   unifi:
     <<: *backup_service
     environment:
       <<: *backup_env
-      AWS_S3_PATH: "/unifi"
       BACKUP_FILENAME: "unifi-%Y-%m-%dT%H-%M-%S.tar.gz"
-      BACKUP_CRON_EXPRESSION: "0 5 * * *"
-      BACKUP_RETENTION_DAYS: "14"
+      BACKUP_LATEST_SYMLINK: "unifi-latest.tar.gz"
+      BACKUP_ARCHIVE: "/archive/unifi"
+      BACKUP_CRON_EXPRESSION: "15 0 * * *"
+      BACKUP_RETENTION_DAYS: "7"
       BACKUP_PRUNING_PREFIX: "unifi-"
     volumes:
       - "unifi_data:/backup/unifi/data"
+      - "unraid_backups:/archive"
 
 volumes:
   pihole_data:
@@ -44,3 +42,9 @@ volumes:
     external: true
   unifi_data:
     external: true
+  unraid_backups:
+    driver: local
+    driver_opts:
+      type: nfs
+      o: addr=192.168.1.12,nfsvers=4
+      device: :/mnt/user/remote-backups
