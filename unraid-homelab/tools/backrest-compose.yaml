@@ -13,7 +13,6 @@ services:
       # BAckrest Unraid backup folders
       - ${SECRET_BACKUPDIR}:/local-backups
       - /mnt:/mnt:ro
-    user: ${UID}:${GID}
     environment:
       TZ: ${TZ}
       BACKREST_DATA: /data
