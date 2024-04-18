@@ -21,7 +21,7 @@ services:
       TRAEFIK_GLOBAL_SENDANONYMOUSUSAGE: false
       TRAEFIK_LOG: true
       TRAEFIK_LOG_LEVEL: INFO
-      TRAEFIK_ACCESSLOG: false
+      #TRAEFIK_ACCESSLOG: false
       TRAEFIK_API: true
       TRAEFIK_API_DASHBOARD: true
       TRAEFIK_API_INSECURE: true
