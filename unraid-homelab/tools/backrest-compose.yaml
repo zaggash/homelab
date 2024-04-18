@@ -11,8 +11,8 @@ services:
       - ${SECRET_APPDATA}/backrest/config:/config
       - ${SECRET_APPDATA}/backrest/cache:/cache
       # BAckrest Unraid backup folders
-      - ${SECRET_BACKUPDIR}:/local-backups
-      - /mnt:/mnt:ro
+      - ${SECRET_BACKUPDIR}:/local-backups:rw,rslave
+      - /mnt:/mnt:ro,rslave
     environment:
       TZ: ${TZ}
       BACKREST_DATA: /data
