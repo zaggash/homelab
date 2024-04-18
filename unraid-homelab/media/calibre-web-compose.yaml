@@ -4,8 +4,10 @@ services:
     image: ghcr.io/linuxserver/calibre-web:0.6.21@sha256:91de784bd006562b2929df9dff56d8d42a4beafc4eef6d5a7cdc6e84c268c4be
     labels:
       traefik.enable: true
+      traefik.http.middlewares.kobo-sync-headers.headers.customrequestheaders.X-Scheme: https
       traefik.http.routers.calibre-web.rule: Host(`books.${SECRET_DOMAIN}`)
       traefik.http.routers.calibre-web.entryPoints: websecure
+      traefik.http.routers.calibre-web.middlewares: kobo-sync-headers
       traefik.http.services.calibre-web.loadbalancer.server.port: 8083
     volumes:
       - "${SECRET_APPDATA}/calibre-web:/config"
