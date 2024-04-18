@@ -9,8 +9,8 @@ services:
       traefik.http.services.calibre-web.loadbalancer.server.port: 8083
     volumes:
       - "${SECRET_APPDATA}/calibre-web:/config"
+      - "${SECRET_APPDATA}/calibre-web/cache:/cache"
       - "${SECRET_DATADIR}/ebooks:/data"
-      - calibre-web-cache:/cache
     user: ${UID}:${GID}
     environment:
       TZ: ${TZ}
@@ -19,6 +19,3 @@ services:
     networks:
       - proxy
     restart: always
-
-volumes:
-  calibre-web-cache:
