@@ -1,7 +1,7 @@
 services:
   calibre-web:
     container_name: calibre-web
-    image: ghcr.io/linuxserver/calibre-web:0.6.21@sha256:91de784bd006562b2929df9dff56d8d42a4beafc4eef6d5a7cdc6e84c268c4be
+    image: ghcr.io/linuxserver/calibre-web:5.33.2@sha256:60f5cf63215a8511a906371ab34bff4c339d5f87c194324cb7d561845d2baae1
     labels:
       traefik.enable: true
       traefik.http.routers.calibre-web.rule: Host(`books.${SECRET_DOMAIN}`)
