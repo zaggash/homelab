@@ -3,6 +3,8 @@ services:
     container_name: plex
     image: ghcr.io/onedr0p/plex:1.40.2.8395-c67dce28e@sha256:a2a3149c1326e7777bfe9def135c687d884652f78d34e92264b0dab765908215
     labels:
+      folder.view: Media
+      net.unraid.docker.icon: ${SECRET_APPDATA}/icons/plex-server.png
       traefik.enable: true
       traefik.docker.network: homelab_lan
       traefik.http.routers.plex.rule: Host(`plex.${SECRET_DOMAIN}`)
@@ -26,4 +28,3 @@ services:
 
 volumes:
   plex-logs:
-

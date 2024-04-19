@@ -4,6 +4,9 @@ services:
     # For hardware acceleration, add one of -[armnn, cuda, openvino] to the image tag.
     # Example tag: ${IMMICH_VERSION:-release}-cuda
     image: ghcr.io/immich-app/immich-machine-learning:v1.101.0@sha256:b0a22ca87496019f495ed5ce89df08da237e0987d389376b435b2226a8c29463
+    labels:
+      folder.view: Immich
+      net.unraid.docker.icon: ${SECRET_APPDATA}/icons/immich.png
     # extends: # uncomment this section for hardware acceleration - see https://immich.app/docs/features/ml-hardware-acceleration
     #   file: hwaccel.ml.yml
     #   service: cpu # set to one of [armnn, cuda, openvino, openvino-wsl] for accelerated inference - use the `-wsl` version for WSL2 where applicable

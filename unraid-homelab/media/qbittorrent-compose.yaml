@@ -5,6 +5,8 @@ services:
     ports:
       - 192.168.1.50:6881:6881
     labels:
+      folder.view: Media
+      net.unraid.docker.icon: ${SECRET_APPDATA}/icons/qbittorrent.png
       traefik.enable: true
       traefik.http.routers.qbittorrent.rule: Host(`dl.${SECRET_DOMAIN}`)
       traefik.http.routers.qbittorrent.entryPoints: websecure

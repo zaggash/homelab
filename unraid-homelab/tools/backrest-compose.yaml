@@ -3,6 +3,9 @@ services:
     container_name: backrest
     hostname: backrest
     image: garethgeorge/backrest:v0.17.1@sha256:c2cf1897f5a6972516d7f9ce3adbbbb258fde79c9101d3d01edfaeca0a30ea6c
+    labels:
+      folder.view: Tools
+      net.unraid.docker.icon: ${SECRET_APPDATA}/icons/backrest.png
     ports:
       - "192.168.1.12:9898:9898"
     volumes:

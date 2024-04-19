@@ -8,6 +8,8 @@ services:
     volumes:
       - "${SECRET_APPDATA}/traefik:/etc/traefik/"
     labels:
+      folder.view: Ingress
+      net.unraid.docker.icon: ${SECRET_APPDATA}/icons/traefik.png
       traefik.enable: true
       traefik.http.routers.api.rule: Host(`traefik.${SECRET_DOMAIN}`)
       traefik.http.routers.api.entryPoints: websecure

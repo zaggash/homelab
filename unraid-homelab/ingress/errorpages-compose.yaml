@@ -3,6 +3,8 @@ services:
     image: ghcr.io/tarampampam/error-pages:2.27@sha256:40e2631173b1a407c18fe7d1ba8104d995cf9e4780d123eeadfa1d57c68eaf4f
     container_name: error-pages
     labels:
+      folder.view: Ingress
+      net.unraid.docker.icon: ${SECRET_APPDATA}/icons/error-pages.png
       traefik.enable: true
       traefik.http.routers.errorpages.rule: HostRegexp(`{host:.+}`)
       traefik.http.routers.errorpages.priority: 10
@@ -15,7 +17,7 @@ services:
     environment:
       TZ: ${TZ}
       TEMPLATE_NAME: "shuffle"
-      SHOW_DETAILS: "true" 
+      SHOW_DETAILS: "true"
     networks:
       - proxy
     restart: always

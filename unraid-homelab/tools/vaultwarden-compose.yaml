@@ -3,6 +3,8 @@ services:
     container_name: vaultwarden
     image: ghcr.io/dani-garcia/vaultwarden:1.30.5@sha256:edb8e2bab9cbca22e555638294db9b3657ffbb6e5d149a29d7ccdb243e3c71e0
     labels:
+      folder.view: Tools
+      net.unraid.docker.icon: ${SECRET_APPDATA}/icons/vaultwarden.png
       traefik.enable: true
       traefik.http.routers.vaultwarden.rule: Host(`pass.${SECRET_DOMAIN}`)
       traefik.http.routers.vaultwarden.entryPoints: websecure

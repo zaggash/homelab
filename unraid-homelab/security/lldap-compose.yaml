@@ -3,6 +3,8 @@ services:
     container_name: lldap
     image: ghcr.io/lldap/lldap:2024-04-01@sha256:c517795c68087faee1362777a440835e6b5735d8fdee74570faa4538240cd083
     labels:
+      folder.view: Tools
+      net.unraid.docker.icon: ${SECRET_APPDATA}/icons/lldap.png
       traefik.enable: true
       traefik.http.routers.lldap.rule: Host(`ldap.${SECRET_HOME_DOMAIN}`)
       traefik.http.routers.lldap.entryPoints: websecure

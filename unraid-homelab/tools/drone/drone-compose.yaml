@@ -3,6 +3,8 @@ services:
     container_name: drone-server
     image: drone/drone:2.22.0@sha256:4d5e7f98278d02808c63358a214c4eb787d54f0a2f1fb60fbac8f47828d3558e
     labels:
+      folder.view: Drone
+      net.unraid.docker.icon: ${SECRET_APPDATA}/icons/drone.png
       traefik.enable: true
       traefik.http.routers.drone.rule: Host(`drone.${SECRET_DOMAIN}`)
       traefik.http.routers.drone.entryPoints: websecure

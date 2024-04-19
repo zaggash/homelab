@@ -2,6 +2,9 @@ services:
   drone-plugin:
     container_name: drone-plugin
     image: meltwater/drone-convert-pathschanged:1.0.0@sha256:4e268f6cd556249556805ea11e7d31558de6bace706a9026278d5ca7090a07ce
+    labels:
+      folder.view: Drone
+      net.unraid.docker.icon: ${SECRET_APPDATA}/icons/drone.png
     environment:
       PROVIDER: github
       DRONE_SECRET: ${SECRET_DRONE_CONVERT_PLUGIN_SECRET}
