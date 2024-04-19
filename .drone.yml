@@ -1,7 +1,95 @@
 ---
 kind: pipeline
 type: docker
+name: gitleaks
+
+trigger:
+  branch:
+    - main
+  event:
+    - push
+
+steps:
+  - name: gitleaks-check
+    image: ghcr.io/gitleaks/gitleaks:latest
+    commands:
+      - gitleaks detect --source ./
+      - gitleaks detect --no-git --source ./
+
+  - name: send-notification
+    image: appleboy/drone-discord
+    settings:
+      webhook_id:
+        from_secret: discord_webhook_id
+      webhook_token:
+        from_secret: discord_webhook_token
+      username: Drone
+      message: "🚨 Gitleaks issue 🚨"
+    when:
+      status:
+        - failure
+
+---
+kind: pipeline
+type: docker
+name: manage-unraid-icons
+
+depends_on:
+  - gitleaks
+
+trigger:
+  branch:
+    - main
+  event:
+    - push
+  paths:
+    include:
+      - .drone.yml
+      - unraid-homelab/icons
+
+volumes:
+  - name: appdata
+    host:
+      path: /mnt/user/appdata/
+
+steps:
+  - name: sync-icons
+    image: alpine:edge
+    volumes:
+      - name: appdata
+        path: /appdata
+    commands:
+      - apk update && apk add rsync
+      - rsync -rv --delete --delete-excluded unraid-homelab/icons/ /appdata/icons/
+      - chown -R 1000:1000 /appdata/icons
+      - find /appdata/icons -type d -exec chmod 0755 {} \;
+      - find /appdata/icons -type f -exec chmod 0644 {} \;
+    when:
+      paths:
+        include:
+          - unraid-homelab/icons
+
+  - name: send-notification
+    image: appleboy/drone-discord
+    settings:
+      webhook_id:
+        from_secret: discord_webhook_id
+      webhook_token:
+        from_secret: discord_webhook_token
+      username: Drone
+      message: "❌ Failed to synchronise unraid docker icons folder 📷"
+    when:
+      status:
+        - failure
+
+
+---
+kind: pipeline
+type: docker
 name: check-and-deploy
+
+depends_on:
+  - gitleaks
 
 trigger:
   branch:
@@ -12,6 +100,8 @@ trigger:
     include:
       - .drone.yml
       - unraid-homelab/**
+    exclude:
+      - unraid-homelab/icons
 
 workspace:
   path: /drone/src
@@ -25,13 +115,6 @@ volumes:
       path: /var/run/docker.sock
 
 steps:
-  - name: git-leaks-check
-    image: ghcr.io/gitleaks/gitleaks:latest
-    commands:
-      - gitleaks detect --source ./
-      - gitleaks detect --no-git --source ./
-
-
   - name: compose-config-check
     image: alpine:edge
     volumes:
@@ -48,10 +131,6 @@ steps:
       paths:
         include:
           - unraid-homelab/**
-    depends_on:
-      - git-leaks-check
-
-
 
   - name: move-recyclarr-config
     image: alpine:edge
@@ -138,7 +217,6 @@ steps:
       - move-authelia-config
       - move-traefik-config
 
-
   - name: send-notification
     image: appleboy/drone-discord
     settings:
@@ -147,9 +225,42 @@ steps:
       webhook_token:
         from_secret: discord_webhook_token
       username: Drone
-      message: "{{#success build.status}} ✅  Build #{{build.number}} of `{{repo.name}}` succeeded.\n\n📝 Commit by {{commit.author}} on `{{commit.branch}}`:\n``` {{commit.message}} ```\n🌐 {{ build.link }}\n\n ✅ duration: {{duration build.started build.finished}} \n ✅ started: {{datetime build.started \"2006/01/02 15:04\" \"Europe/Paris\"}} \n ✅ finished: {{datetime build.finished \"2006/01/02 15:04\" \"Europe/Paris\"}} {{else}} ❌  Build #{{build.number}} of `{{repo.name}}` failed.\n\n📝 Commit by {{commit.author}} on `{{commit.branch}}`:\n``` {{commit.message}} ```\n🌐 {{ build.link }}\n\n ✅ duration: {{duration build.started build.finished}} \n ✅ started: {{datetime build.started \"2006/01/02 15:04\" \"Europe/Paris\"}} \n ✅ finished: {{datetime build.finished \"2006/01/02 15:04\" \"Europe/Paris\"}}{{/success}}\n"
+      message: "❌ 📦 Docker stack update failed"
     depends_on:
       - deploy
     when:
       status:
         - failure
+
+---
+kind: pipeline
+type: docker
+name: global-notification
+
+<<<<<<< HEAD
+depends:
+=======
+depends_on:
+>>>>>>> 1940d2d (feat: rework pipelines)
+  - gitleaks
+  - manage-unraid-icons
+  - check-and-deploy
+
+trigger:
+  branch:
+    - main
+  event:
+    - push
+  status:
+    - failure
+
+steps:
+  - name: send-notification
+    image: appleboy/drone-discord
+    settings:
+      webhook_id:
+        from_secret: discord_webhook_id
+      webhook_token:
+        from_secret: discord_webhook_token
+      username: Drone
+      message: "{{#success build.status}} ✅  Build #{{build.number}} from `{{repo.name}}` succeeded.\n\n📝 Commit by {{commit.author}} on `{{commit.branch}}`:\n``` {{commit.message}} ```\n🌐 {{ build.link }}\n\n ✅ duration: {{duration build.started build.finished}} \n ✅ started: {{datetime build.started \"2006/01/02 15:04\" \"Europe/Paris\"}} \n ✅ finished: {{datetime build.finished \"2006/01/02 15:04\" \"Europe/Paris\"}} {{else}} ❌  Build #{{build.number}} from `{{repo.name}}` failed.\n\n📝 Commit by {{commit.author}} on `{{commit.branch}}`:\n``` {{commit.message}} ```\n🌐 {{ build.link }}\n\n ✅ duration: {{duration build.started build.finished}} \n ✅ started: {{datetime build.started \"2006/01/02 15:04\" \"Europe/Paris\"}} \n ✅ finished: {{datetime build.finished \"2006/01/02 15:04\" \"Europe/Paris\"}}{{/success}}\n"
