@@ -45,7 +45,7 @@ trigger:
   paths:
     include:
       - .drone.yml
-      - unraid-homelab/icons
+      - unraid-homelab/icons/**
 
 volumes:
   - name: appdata
@@ -60,6 +60,7 @@ steps:
         path: /appdata
     commands:
       - apk update && apk add rsync
+      - mkdir -p /appdata/icons/
       - rsync -rv --delete --delete-excluded unraid-homelab/icons/ /appdata/icons/
       - chown -R 1000:1000 /appdata/icons
       - find /appdata/icons -type d -exec chmod 0755 {} \;
@@ -67,7 +68,7 @@ steps:
     when:
       paths:
         include:
-          - unraid-homelab/icons
+          - unraid-homelab/icons/**
 
   - name: send-notification
     image: appleboy/drone-discord
@@ -237,11 +238,7 @@ kind: pipeline
 type: docker
 name: global-notification
 
-<<<<<<< HEAD
-depends:
-=======
 depends_on:
->>>>>>> 1940d2d (feat: rework pipelines)
   - gitleaks
   - manage-unraid-icons
   - check-and-deploy
