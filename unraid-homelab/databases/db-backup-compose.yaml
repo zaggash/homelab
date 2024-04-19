@@ -13,6 +13,7 @@ services:
       - ${SECRET_IMMICH_UPLOAD_LOCATION}/database-backup:/immich-db
     environment:
       TIMEZONE: ${TZ}
+      CONTAINER_ENABLE_MONITORING: false
       #DEBUG_MODE=TRUE
       USER_DBBACKUP: ${UID}
       GROUP_DBBACKUP: ${GID}
