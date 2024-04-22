@@ -143,7 +143,7 @@ steps:
         from_secret: age-key
     commands:
       - apk update && apk add sops envsubst
-      - cd unraid-homelab/
+      - cd unraid-homelab/ && mkdir -p /appdata/recyclarr/
       - sops exec-env secrets.encoded.env 'cat ./media/recyclarr/recyclarr.yaml | envsubst' > /appdata/recyclarr/recyclarr.yaml
       - echo "recyclarr" >> restart.containers
     when:
@@ -164,7 +164,7 @@ steps:
         from_secret: age-key
     commands:
       - apk update && apk add sops envsubst
-      - cd unraid-homelab/
+      - cd unraid-homelab/ && mkdir -p /appdata/authelia/
       - sops exec-env secrets.encoded.env 'cat ./security/authelia/configuration.yml | envsubst' > /appdata/authelia/config/configuration.yml
       - echo "authelia" >> restart.containers
     when:
@@ -184,7 +184,7 @@ steps:
         from_secret: age-key
     commands:
       - apk update && apk add sops envsubst
-      - cd unraid-homelab/
+      - cd unraid-homelab/ && mkdir -p /appdata/traefik/
       - sops exec-env secrets.encoded.env 'cat ./ingress/traefik/configFile.yaml | envsubst' > /appdata/traefik/configFile.yaml
       - echo "traefik" >> restart.containers
     when:
@@ -193,7 +193,6 @@ steps:
           - unraid-homelab/**/traefik/configFile.yaml
     depends_on:
       - compose-config-check
-
 
   - name: deploy
     image: alpine:edge
