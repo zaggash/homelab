@@ -1,0 +1,12 @@
+include:
+  - postgres-compose.yaml
+  - redis-compose.yaml
+  - server-compose.yaml
+  - worker-compose.yaml
+  #- ldap-outpost-compose.yaml
+
+networks:
+  authentik:
+    driver: bridge
+  authentik-db:
+    driver: bridge

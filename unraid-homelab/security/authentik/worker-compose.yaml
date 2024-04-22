@@ -1,0 +1,17 @@
+services:
+  authentik-worker:
+    container_name: authentik-worker
+    image: ghcr.io/goauthentik/server:2024.2.3@sha256:07a07c26552fe777500700d0d3f2c9ba6d63dad3e81982f9e8232d5c6db44116
+    command: worker
+    networks:
+      - authentik-db
+    volumes:
+      - "${SECRET_APPDATA}/authentik/media:/media"
+    environment:
+      AUTHENTIK_SECRET_KEY: ${SECRET_AUTHENTIK_SECRET_KEY}
+      AUTHENTIK_REDIS__HOST: authentik-redis
+      AUTHENTIK_POSTGRESQL__HOST: authentik-pg
+      AUTHENTIK_POSTGRESQL__USER: ${SECRET_AUTHENTIK_DB_USERNAME}
+      AUTHENTIK_POSTGRESQL__NAME: ${SECRET_AUTHENTIK_DB_DATABASE_NAME}
+      AUTHENTIK_POSTGRESQL__PASSWORD: ${SECRET_AUTHENTIK_DB_PASSWORD}
+    restart: always
