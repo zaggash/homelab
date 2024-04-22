@@ -1,7 +1,7 @@
 services:
   authentik-pg:
     container_name: authentik-pg
-    image: docker.io/library/postgres:12@sha256:e0c94e74a256a9e129ef7f6ae17fe5b6e803c56d06ff6ed1057d4158e8b39ad3
+    image: docker.io/library/postgres:16@sha256:f4b0987cb4ba8bcc2b90aa33ad8b5786669bec4dc633fc93d1418275e3627b34
     networks:
       - authentik-db
     environment:
