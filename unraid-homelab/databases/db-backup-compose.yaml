@@ -30,7 +30,7 @@ services:
       DB01_NAME: ALL
       DB01_USER: ${SECRET_IMMICH_DB_USERNAME}
       DB01_PASS: ${SECRET_IMMICH_DB_PASSWORD}
-      DB01_SPLIT_DB: true
+      DB01_SPLIT_DB: false
       DB01_FILESYSTEM_PATH: /immich-db
       DB01_BACKUP_BEGIN: "45 01 * * *" # https://crontab.guru/#45_01_*_*_*
       DB01_CLEANUP_TIME: 43200 # 1 Mois
