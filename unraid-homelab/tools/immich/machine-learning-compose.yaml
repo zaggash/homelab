@@ -17,6 +17,7 @@ services:
     environment:
       LOG_LEVEL: log
       MACHINE_LEARNING_PRELOAD__CLIP: XLM-Roberta-Large-Vit-B-32
+      MACHINE_LEARNING_PRELOAD__FACIAL_RECOGNITION: buffalo_l
     restart: always
 
 volumes:
