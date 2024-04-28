@@ -1,0 +1,27 @@
+services:
+  jellyfin:
+    container_name: jellyfin
+    image: ghcr.io/linuxserver/jellyfin:10.8.13@sha256:118835d948e13fccba8c715d996e71cdfb74dc6a1ef9ec7634f55d2070b9688c
+    labels:
+      folder.view: Media
+      net.unraid.docker.icon: ${SECRET_APPDATA}/icons/jellyfin.png
+      traefik.enable: true
+      traefik.http.routers.jellyfin.rule: Host(`vod.${SECRET_DOMAIN}`)
+      traefik.http.routers.jellyfin.entryPoints: websecure
+      traefik.http.services.jellyfin.loadbalancer.server.port: 8096
+      traefik.http.services.jellyfin.loadbalancer.server.scheme: http
+    volumes:
+      - "${SECRET_APPDATA}/jellyfin:/config"
+      - "${SECRET_DATADIR}/media:/media:ro"
+    devices:
+      - /dev/dri:/dev/dri
+    environment:
+      TZ: ${TZ}
+      PUID: ${UID}
+      PGID: ${GID}
+      JELLYFIN_PublishedServerUrl: http://vod.${SECRET_HOME_DOMAIN}
+    networks:
+      proxy:
+      lan:
+        ipv4_address: 192.168.1.21
+    restart: always
