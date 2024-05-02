@@ -1,7 +1,7 @@
 services:
   pgadmin4:
     container_name: pgadmin4
-    image: dpage/pgadmin4:8.5@sha256:00998d19a230b66e30de4bc00a2c453b07c63016dc15e58d6f6b4fa3c688d4e5
+    image: dpage/pgadmin4:8.6@sha256:701f221dfc5da1fb3d4095ad4264ebb00ef4f7ecc6573007a49a59740019703d
     volumes:
       - "${SECRET_APPDATA}/pgamin4-data:/var/lib/pgadmin"
       #- ./create-db.sql:/docker-entrypoint-initdb.d/create_database.sql
