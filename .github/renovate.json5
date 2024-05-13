@@ -49,22 +49,22 @@
     },
 
     {
-      description: "Set fixed versionning for bedrock-connect",
-      matchManagers: ["dockerfile"],
-      matchDatasources: ["docker"],
-      matchPaths: ["portainer-stacks/nuc4-stacks/bedrock-connect/**"],
-      matchPackageNames: ["eclipse-temurin"],
-      allowedVersions: "<=11.*"
+      "description": "Set fixed versionning for bedrock-connect",
+      "matchManagers": ["dockerfile"],
+      "matchDatasources": ["docker"],
+      "matchPaths": ["portainer-stacks/nuc4-stacks/bedrock-connect/**"],
+      "matchPackageNames": ["eclipse-temurin"],
+      "allowedVersions": "<=11.*"
     },
     {
-      description: "Only update digest for Postgres and redis on Immich",
-      matchManagers: ["docker-compose"],
-      matchDatasources: ["docker"],
-      matchPaths: [
+      "description": "Only update digest for Postgres and redis on Immich",
+      "matchManagers": ["docker-compose"],
+      "matchDatasources": ["docker"],
+      "matchPaths": [
           "unraid-homelab/**/immich/redis-compose.yaml",
           "unraid-homelab/**/immich/postgres-compose.yaml"
         ],
-      matchUpdateTypes: ["major", "minor", "patch"],
+      "matchUpdateTypes": ["major", "minor", "patch"],
       "enabled": false
     },
 
@@ -82,10 +82,18 @@
     },
 
     {
-      "description": "Set Linuxserver semver compatible",
-      "packagePatterns": ["linuxserver\\/*"],
+      "description": "Set Linuxserver calibre-web semver compatible",
+      "matchPackageNames": ["linuxserver/calibre-web"],
       "versionCompatibility": "^(?<compatibility>version)-(?<version>.*)$",
-      "versioning": "semver"
+      "versioning": "semver",
+      "allowedVersions": "<5.0.0"
+    },
+    {
+      "description": "Set Linuxserver jellyfin semver compatible",
+      "matchPackageNames": ["linuxserver/jellyfin"],
+      "versionCompatibility": "^(?<compatibility>amd64)-(?<version>.*)$",
+      "versioning": "semver",
+      "allowedVersions": "<2000.0.0"
     },
 
     {
