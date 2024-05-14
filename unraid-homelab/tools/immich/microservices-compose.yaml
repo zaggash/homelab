@@ -1,7 +1,7 @@
 services:
     immich-microservices:
       container_name: immich_microservices
-      image: ghcr.io/immich-app/immich-server:v1.105.0@sha256:5aa1745048ecd84769e4c431231c73f6f5204e207427603c89c1a4ec8febe850
+      image: ghcr.io/immich-app/immich-server:v1.105.1@sha256:658b40420d7a39d6eb34c797cec8d36ff315f5adb168301aaf27dc4eafc8e228
       command: ['start.sh', 'microservices']
       labels:
         folder.view: Immich
