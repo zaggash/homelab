@@ -1,7 +1,7 @@
 services:
   immich-server:
     container_name: immich_server
-    image: ghcr.io/immich-app/immich-server:v1.104.0@sha256:ac459accdc93977e559da70beddb01a9736e98e8350f12381589a5bec91197bc
+    image: ghcr.io/immich-app/immich-server:v1.105.0@sha256:5aa1745048ecd84769e4c431231c73f6f5204e207427603c89c1a4ec8febe850
     command: ['start.sh', 'immich']
     labels:
       folder.view: Immich
