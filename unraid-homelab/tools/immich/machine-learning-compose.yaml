@@ -3,7 +3,7 @@ services:
     container_name: immich_machine_learning
     # For hardware acceleration, add one of -[armnn, cuda, openvino] to the image tag.
     # Example tag: ${IMMICH_VERSION:-release}-cuda
-    image: ghcr.io/immich-app/immich-machine-learning:v1.104.0@sha256:0dd0066f47c91fc69e4a9c4f3e70a7805d84d60e8eb5ffd7ec9c264e8d82cb70
+    image: ghcr.io/immich-app/immich-machine-learning:v1.105.0@sha256:69950a0441507b9ad9f00f883a56b71cc3e004bf337ab90846a765d5c8bd7eed
     labels:
       folder.view: Immich
       net.unraid.docker.icon: ${SECRET_APPDATA}/icons/immich.png
