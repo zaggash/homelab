@@ -1,7 +1,7 @@
 services:
   authelia-redis:
     container_name: authelia-redis
-    image: bitnami/redis:7.2.4@sha256:013b9b93deea86cda6e92f3c681ffd61c7f38843a0e94f30c93bd01aa61c2492
+    image: bitnami/redis:7.2.4@sha256:70cafc5a71e888fbdca2601051a2c8aa964132cf185b95cd0a1cb739b268bb56
     labels:
       folder.view: Ingress
       net.unraid.docker.icon: ${SECRET_APPDATA}/icons/redis.png
