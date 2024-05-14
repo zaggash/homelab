@@ -83,16 +83,12 @@
 
     {
       "description": "Set Linuxserver calibre-web semver compatible",
-      "matchPackageNames": ["linuxserver/calibre-web"],
-      "versionCompatibility": "^(?<compatibility>version)-(?<version>.*)$",
-      "versioning": "semver",
+      "matchPackagePatterns": ["linuxserver/calibre-web"],
       "allowedVersions": "<5.0.0"
     },
     {
       "description": "Set Linuxserver jellyfin semver compatible",
-      "matchPackageNames": ["linuxserver/jellyfin"],
-      "versionCompatibility": "^(?<compatibility>amd64)-(?<version>.*)$",
-      "versioning": "semver",
+      "matchPackagePatterns": ["linuxserver/jellyfin"],
       "allowedVersions": "<2000.0.0"
     },
 
