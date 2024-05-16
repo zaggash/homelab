@@ -17,6 +17,8 @@ services:
       PUSH_ENABLED: "true"
       PUSH_INSTALLATION_ID: "${SECRET_VAULTWARDEN_PUSH_ID}"
       PUSH_INSTALLATION_KEY: "${SECRET_VAULTWARDEN_PUSH_KEY}"
+      PUSH_RELAY_URI: "https://push.bitwarden.eu"
+      PUSH_IDENTITY_URI: "https://identity.bitwarden.eu"
       ROCKET_PORT: "8000"
       DATA_FOLDER: "/data"
       LOG_FILE: "/data/bitwarden.log"
