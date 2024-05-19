@@ -4,3 +4,4 @@ include:
   - immich/docker-compose.yaml
   #- minio-compose.yaml
   - backrest-compose.yaml
+  - sftpgo-compose.yaml

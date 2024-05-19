@@ -1,0 +1,34 @@
+services:
+  sftpgo:
+    container_name: sftpgo
+    image: ghcr.io/drakkan/sftpgo:v2.6.0
+    labels:
+      folder.view: Tools
+      net.unraid.docker.icon: ${SECRET_APPDATA}/icons/sftpgo.png
+      traefik.enable: true
+      traefik.http.routers.sftpgo-ui.rule: Host(`cloud.${SECRET_DOMAIN}`)
+      traefik.http.routers.sftpgo-ui.entryPoints: websecure
+      traefik.http.routers.sftpgo-ui.service: sftpgo-ui
+      traefik.http.services.sftpgo-ui.loadbalancer.server.port: 8080
+      traefik.http.routers.sftpgo-dav.rule: Host(`dav.${SECRET_DOMAIN}`)
+      traefik.http.routers.sftpgo-dav.entryPoints: websecure
+      traefik.http.routers.sftpgo-dav.service: sftpgo-dav
+      traefik.http.services.sftpgo-dav.loadbalancer.server.port: 8090
+    volumes:
+      - "${SECRET_APPDATA}/sftpgo/config:/var/lib/sftpgo"
+      - "${SECRET_APPDATA}/sftpgo/data:/srv/sftpgo/"
+    environment:
+      TZ: ${TZ}
+      SFTPGO_UPLOAD_MODE: 1
+      SFTPGO_GRACE_TIME: 8
+      SFTPGO_TEMP_PATH: "/srv/sftpgo/temp"
+      SFTPGO_SERVER_VERSION: "short"
+      SFTPGO_SFTPD__BINDINGS__0__PORT: 0      # Disable sftpd
+      SFTPGO_FTPD__BINDINGS__0__PORT: 0       # Disable ftpd
+      SFTPGO_WEBDAVD__BINDINGS__0__PORT: 8090 # Set Webdav port
+      SFTPGO_DATA_PROVIDER__CREATE_DEFAULT_ADMIN: true
+      SFTPGO_DEFAULT_ADMIN_USERNAME: ${SECRET_SFTPGO_ADMIN}
+      SFTPGO_DEFAULT_ADMIN_PASSWORD: ${SECRET_SFTPGO_PASSWORD}
+    networks:
+      - proxy
+    restart: always
