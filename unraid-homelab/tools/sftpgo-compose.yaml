@@ -17,6 +17,7 @@ services:
     volumes:
       - "${SECRET_APPDATA}/sftpgo/config:/var/lib/sftpgo"
       - "${SECRET_APPDATA}/sftpgo/data:/srv/sftpgo/"
+      - "/mnt/user:/shares"
     environment:
       TZ: ${TZ}
       SFTPGO_UPLOAD_MODE: 1
