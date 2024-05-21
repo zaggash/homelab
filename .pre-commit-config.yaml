@@ -14,5 +14,5 @@ repos:
       - id: gitleaks-docker
         name: Detect hardcoded secrets
         description: Detect hardcoded secrets using Gitleaks
-        entry: zricethezav/gitleaks protect --verbose --redact --staged
+        entry: ghcr.io/gitleaks/gitleaks protect --verbose --redact --staged
         language: docker_image
