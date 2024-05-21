@@ -1,7 +1,7 @@
 services:
   backrest:
     container_name: backrest
-    hostname: backrest
+    hostname: unraid-backrest
     image: garethgeorge/backrest:v0.17.2@sha256:8517210483be734ef89587e085e8860e071d6a6871cd773aa790f263346cbfb8
     labels:
       folder.view: Tools
