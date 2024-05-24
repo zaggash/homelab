@@ -1,7 +1,7 @@
 services:
   flaresolverr:
     container_name: flaresolverr
-    image: ghcr.io/flaresolverr/flaresolverr:v3.3.18@sha256:c23a84e849ccbaf4f6cafe53946395c195775cee10db0ffdbfb082e7852616b4
+    image: ghcr.io/flaresolverr/flaresolverr:v3.3.19@sha256:783aea63f04d7ca64baeb1ff2287ae4d6ac3fca7be31924c99a0dd9cc8299865
     labels:
       folder.view: Media
       net.unraid.docker.icon: ${SECRET_APPDATA}/icons/flaresolverr.png
