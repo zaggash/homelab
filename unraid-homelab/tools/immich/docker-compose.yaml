@@ -1,7 +1,6 @@
-include: 
+include:
   - server-compose.yaml
   - machine-learning-compose.yaml
-  - microservices-compose.yaml
   - redis-compose.yaml
   - postgres-compose.yaml
 
