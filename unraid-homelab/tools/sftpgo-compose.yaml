@@ -1,7 +1,7 @@
 services:
   sftpgo:
     container_name: sftpgo
-    image: ghcr.io/drakkan/sftpgo:v2.6.1
+    image: ghcr.io/drakkan/sftpgo:v2.6.2
     labels:
       folder.view: Tools
       net.unraid.docker.icon: ${SECRET_APPDATA}/icons/sftpgo.png
