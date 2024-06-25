@@ -6,7 +6,7 @@ include:
   - qbittorrent-compose.yaml
   - recyclarr/recyclarr-compose.yaml
   - calibre-web-compose.yaml
-  - plex-compose.yaml
+  #- plex-compose.yaml
   - jellyfin-compose.yaml
 
 networks:
