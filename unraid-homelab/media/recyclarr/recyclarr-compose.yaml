@@ -1,7 +1,7 @@
 services:
   recyclarr:
     container_name: recyclarr
-    image: ghcr.io/recyclarr/recyclarr:6.0.2@sha256:02add40feae0569401b5020528e06419b47046723d0bb4bef1e82325e9eefdad
+    image: ghcr.io/recyclarr/recyclarr:7.0.0@sha256:88d7ef8feb313398a98aafbc2966959f1689191864247f8be15572d5c67641d5
     labels:
       folder.view: Media
       net.unraid.docker.icon: ${SECRET_APPDATA}/icons/recyclarr.png
