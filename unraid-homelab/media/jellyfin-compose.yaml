@@ -21,7 +21,7 @@ services:
       PUID: ${UID}
       PGID: ${GID}
       JELLYFIN_PublishedServerUrl: http://vod.${SECRET_HOME_DOMAIN}
-      DOCKER_MODS: linuxserver/mods:jellyfin-amd|ghcr.io/jumoog/intro-skipper:latest
+      DOCKER_MODS: linuxserver/mods:jellyfin-amd
     networks:
       proxy:
       lan:
