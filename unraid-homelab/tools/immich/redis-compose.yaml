@@ -1,7 +1,7 @@
 services:
   immich-redis:
     container_name: immich_redis
-    image: redis:6.2-alpine@sha256:9d79dad3692bbc832a481581fbd4cdbd8c88d13069477e11a29166455f66a0d4
+    image: redis:6.2-alpine@sha256:06a42ae349c334f8cfea84d32f0f5ac89badd6b33648fc89da667e453832c1ff
     labels:
       folder.view: Immich
       net.unraid.docker.icon: ${SECRET_APPDATA}/icons/redis.png
