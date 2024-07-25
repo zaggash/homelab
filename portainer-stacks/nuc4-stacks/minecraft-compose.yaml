@@ -1,7 +1,7 @@
 version: "3"
 services:
   proxy:
-    image: ghcr.io/zaggash/bedrock-connect:v1.47@sha256:4b56d171b2a3cda6ed97d198a28c1490d8bb0baeb60c6cfa4ac34061b9c60883
+    image: ghcr.io/zaggash/bedrock-connect:v1.47@sha256:34442bcb66a70663b1dd203acd8a11b1efb780e1a772f1570fbabf151c366198
     init: true
     dns:
       - 192.168.1.10
