@@ -116,7 +116,7 @@ radarr:
           - 48f031e76111f17ea94898f4cdc34fdc  # FR LQ
           - bfd8eb01832d646a0a89c4deb46f8564  # Upscaled
           - 839bea857ed2c0a8e084f3cbdbd65ecb  # x265 (no HDR/DV)
-        quality_profiles:
+        assign_scores_to:
           - name: 4K Multi+VFF Remux
           - name: 4K VFF Bluray
           - name: HD VFF Remux
@@ -125,13 +125,13 @@ radarr:
       - trash_ids:
           - 72b1548df1ac3175ca105a9ce7043c91  # Multi-Audio
           - d5f3a1afdb77e6b95e489f7654532d04  # Multi-French
-        quality_profiles:
+        assign_scores_to:
           - name: 4K Multi+VFF Remux
             score: 1000
 
       - trash_ids:
           - 6d27683346c78d6a3f772e30877910a7  # French Audio
-        quality_profiles:
+        assign_scores_to:
           - name: 4K VFF Bluray
             score: 1000
           - name: HD VFF Remux
@@ -140,7 +140,7 @@ radarr:
 
       - trash_ids:
           - 404c08fd0bd67f39b4d8e5709319094e  # VFF
-        quality_profiles:
+        assign_scores_to:
           - name: 4K Multi+VFF Remux
             score: 1000
           - name: 4K VFF Bluray
@@ -150,13 +150,13 @@ radarr:
 
       - trash_ids:
           - 02e48d30a176c91baf9e15de05e5dc6a  # FanSUB
-        quality_profiles:
+        assign_scores_to:
           - name: 4K Multi+VFF Remux
             score: -10000
 
       - trash_ids:
           - 9172b2f683f6223e3a1846427b417a3d  # VOSTFR
-        quality_profiles:
+        assign_scores_to:
           - name: 4K Multi+VFF Remux
 
 
@@ -314,7 +314,7 @@ sonarr:
           - e6258996055b9fbab7e9cb2f75819294  # WEB Tier 01
           - 58790d4e2fdcd9733aa7ae68ba2bb503  # WEB Tier 02
           - d84935abd3f8556dcd51d4f27e22d0a6  # WEB Tier 03
-        quality_profiles:
+        assign_scores_to:
           - name: VOSTFR-WEB-1080p
           - name: VOSTFR-WEB-2160p
           - name: VFF-WEB-1080p
@@ -322,7 +322,7 @@ sonarr:
 
       - trash_ids:
             - 07a32f77690263bb9fda1842db7e273f  # VOSTFR
-        quality_profiles:
+        assign_scores_to:
           - name: VOSTFR-WEB-1080p
             score: 1000
           - name: VOSTFR-WEB-2160p
@@ -331,13 +331,13 @@ sonarr:
       - trash_ids:
             - 4721382d9ee05f1b4967a25e75072911  # French Audio
             - 2c29a39a4fdfd6d258799bc4c09731b9  # VFF
-        quality_profiles:
+        assign_scores_to:
           - name: VFF-WEB-1080p
             score: 1000
 
       - trash_ids:
           - 84f0acbda9c0c9de783894fb66df25aa  # FanSUB
-        quality_profiles:
+        assign_scores_to:
           - name: VOSTFR-WEB-1080p
             score: -10000
           - name: VOSTFR-WEB-2160p
@@ -380,48 +380,48 @@ sonarr:
           - 4e6134a384dbc0ef166234cc0e45d26d  # FR Anime Tier 02
           - db34d4357937fbfe89b63ba095f22155  # FR Anime Tier 03
           - 2f3422339d185eb227a324644a2fbfca  # FR Scene Groups
-        quality_profiles:
+        assign_scores_to:
           - name: ANIME-VOSTFR
 
       - trash_ids:
           - d660701077794679fd59e8bdf4ce3a29  # AMZN
-        quality_profiles:
+        assign_scores_to:
           - name: ANIME-VOSTFR
             score: 1
 
       - trash_ids:
           - 89358767a60cc28783cdc3d0be9388a4  # DSNP
-        quality_profiles:
+        assign_scores_to:
           - name: ANIME-VOSTFR
             score: 4
 
       - trash_ids:
           - d34870697c9db575f17700212167be23  # NF
-        quality_profiles:
+        assign_scores_to:
           - name: ANIME-VOSTFR
             score: 2
 
       - trash_ids:
           - 07a32f77690263bb9fda1842db7e273f  # VOSTFR
-        quality_profiles:
+        assign_scores_to:
           - name: ANIME-VOSTFR
             score: 101
 
       #### Optionals
       - trash_ids:
           - 026d5aadd1a6b4e550b134cb6c72b3ca  # Uncensored
-        quality_profiles:
+        assign_scores_to:
           - name: ANIME-VOSTFR
             score: 101
 
       - trash_ids:
           - 418f50b10f1907201b6cfdf881f467b7  # Anime Dual Audio
-        quality_profiles:
+        assign_scores_to:
           - name: ANIME-VOSTFR
             score: 101
 
       - trash_ids:
           - 44b6c964dad997577d793fd004a39224  # FR Anime FanSub
-        quality_profiles:
+        assign_scores_to:
           - name: ANIME-VOSTFR
             score: 1000
