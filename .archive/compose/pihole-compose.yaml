@@ -18,7 +18,7 @@ services:
       DHCP_START: 192.168.1.100
       DHCP_END: 192.168.1.254
       PIHOLE_DOMAIN: home.lan
-      VIRTUAL_HOST: pihole.home.lan 
+      VIRTUAL_HOST: pihole.home.lan
     # Volumes store your data between container upgrades
     volumes:
       - 'data:/etc/pihole'
@@ -26,7 +26,7 @@ services:
     cap_add:
       - NET_ADMIN
     restart: unless-stopped
-    
+
 volumes:
   data:
   dnsmasq:

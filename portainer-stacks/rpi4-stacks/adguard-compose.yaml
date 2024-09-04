@@ -1,0 +1,18 @@
+version: "3"
+services:
+  adguard:
+    hostname: adguard
+    domainname: home.lan
+    image: adguard/adguardhome:v0.107.52@sha256:d16cc7517ab96f843e7f8bf8826402dba98f5e6b175858920296243332391589
+    network_mode: "host"
+    environment:
+      TZ: 'Europe/Paris'
+    # Volumes store your data between container upgrades
+    volumes:
+      - 'conf:/opt/adguardhome/conf'
+      - 'work:/opt/adguardhome/work'
+    restart: unless-stopped
+
+volumes:
+  conf:
+  work:
