@@ -12,7 +12,7 @@ services:
     restart: always
 
   server:
-    image: itzg/minecraft-server:java17@sha256:04519e5365f4a1b6b6ba6185226e182262ac45be55cd35e3767cf3ed9fe2cf97
+    image: itzg/minecraft-server:java17@sha256:ee48fd376310dc5051f9799dc93a42f21205dc07c6e838b6513a16b603d81bbc
     init: true
     dns:
       - 192.168.1.10
