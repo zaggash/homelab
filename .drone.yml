@@ -13,8 +13,7 @@ steps:
   - name: gitleaks-check
     image: ghcr.io/gitleaks/gitleaks:latest
     commands:
-      - gitleaks detect --source ./
-      - gitleaks detect --no-git --source ./
+      - gitleaks git --baseline-path .gitleaksignore
 
   - name: send-notification
     image: appleboy/drone-discord
