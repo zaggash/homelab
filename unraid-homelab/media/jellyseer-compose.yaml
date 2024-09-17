@@ -1,0 +1,21 @@
+services:
+  jellyseer:
+    container_name: jellyseer
+    image: fallenbagel/jellyseerr:1.9.2@sha256:8f708df0ce3f202056bde5d7bff625eb59efe38f4ee47bdddc7560b6e4a5a214
+    labels:
+      folder.view: Media
+      net.unraid.docker.icon: ${SECRET_APPDATA}/icons/jellyseer.png
+      traefik.enable: true
+      traefik.http.routers.jellyseer.rule: Host(`req.${SECRET_DOMAIN}`)
+      traefik.http.routers.jellyseer.entryPoints: websecure
+      traefik.http.services.jellyseer.loadbalancer.server.port: 5055
+    volumes:
+      - "${SECRET_APPDATA}/jellyseer:/app/config"
+    user: ${UID}:${GID}
+    environment:
+      TZ: ${TZ}
+      LOG_LEVEL: INFO
+    networks:
+      proxy:
+      media:
+    restart: always
