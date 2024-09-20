@@ -3,7 +3,7 @@ services:
   controller:
     hostname: unifi
     domainname: home.lan
-    image: ghcr.io/jacobalberty/unifi-docker:v8.4.59@sha256:bc0e621f16baff8e45bf8bf1fd69a65961eeaaaeee9d132142b637f10bfd8170
+    image: ghcr.io/jacobalberty/unifi-docker:v8.4.62@sha256:a107953e86227abd2fee4eff85c674337a0c08f704b14d7fe5c707f3ee4fd19e
     init: true
     dns:
       - 192.168.1.10
