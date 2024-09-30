@@ -1,0 +1,21 @@
+services:
+  calibre:
+    container_name: calibre
+    image: ghcr.io/linuxserver/calibre:7.19.0@sha256:a1c75ef2de6d78eaa5bda0717df257eb9b574535f1d9d53b808bec0ebc46d98e
+    labels:
+      folder.view: Media
+      net.unraid.docker.icon: ${SECRET_APPDATA}/icons/calibre.png
+      traefik.enable: true
+      traefik.http.routers.calibre.rule: Host(`calibre.${SECRET_HOME_DOMAIN}`)
+      traefik.http.routers.calibre.entryPoints: websecure
+      traefik.http.services.calibre.loadbalancer.server.port: 8080
+    volumes:
+      - "${SECRET_APPDATA}/calibre:/config"
+      - "${SECRET_DATADIR}/ebooks:/books"
+    environment:
+      TZ: ${TZ}
+      PUID: ${UID}
+      PGID: ${GID}
+    networks:
+      - proxy
+    restart: always

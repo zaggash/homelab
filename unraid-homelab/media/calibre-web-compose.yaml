@@ -12,7 +12,7 @@ services:
       traefik.http.routers.calibre-web.middlewares: kobo-sync-headers
       traefik.http.services.calibre-web.loadbalancer.server.port: 8083
     volumes:
-      - "${SECRET_APPDATA}/calibre-web:/config"
+      - "${SECRET_APPDATA}/calibre-web/config:/config"
       - "${SECRET_APPDATA}/calibre-web/cache:/app/calibre-web/cps/cache"
       - "${SECRET_DATADIR}/ebooks:/books"
     environment:
