@@ -1,7 +1,7 @@
 services:
   lldap:
     container_name: lldap
-    image: ghcr.io/lldap/lldap:2024-09-26@sha256:9d9c91d8863d0d1e583d882d686a2b0d176eee3c198db8c83301b62f76408883
+    image: ghcr.io/lldap/lldap:2024-09-30@sha256:ffcd02d33cc2911789f64b1e5c30b963fb9219e1f4b291b113b043a9218c755a
     labels:
       folder.view: Tools
       net.unraid.docker.icon: ${SECRET_APPDATA}/icons/lldap.png
