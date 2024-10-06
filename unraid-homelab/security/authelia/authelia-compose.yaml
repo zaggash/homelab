@@ -1,7 +1,7 @@
 services:
   authelia:
     container_name: authelia
-    image: ghcr.io/authelia/authelia:4.38.15@sha256:5badc1ed57afef3fbe27eb021410d13c9995cae7307950762bc7b68a0fabc284
+    image: ghcr.io/authelia/authelia:4.38.16@sha256:172c9b2e4d7c25196404e4620f6018650cbd2124999aceaa812cf0c100ef8b23
     labels:
       folder.view: Ingress
       net.unraid.docker.icon: ${SECRET_APPDATA}/icons/authelia.png
