@@ -1,26 +1,32 @@
-version: "3"
 services:
-  proxy:
+  minecraft_proxy:
+    container_name: minecraft-proxy
     image: ghcr.io/zaggash/bedrock-connect:v1.50@sha256:f2d37e87dec3888e7430c012c42331b43a295de1567dcf19e837a56bd1ef11f6
+    labels:
+      folder.view: Minecraft
+      net.unraid.docker.icon: ${SECRET_APPDATA}/icons/bedrock-connect.png
     init: true
-    dns:
-      - 192.168.1.10
-      - 1.0.0.1
     ports:
       - 19132:19132/tcp
       - 19132:19132/udp
     restart: always
 
   server:
-    image: itzg/minecraft-server:java17@sha256:91d4befc175761173be1914f34706172c4361497a5fe104e57456482252ebdff
+    container_name: minecraft-server
+    image: itzg/minecraft-server:java21@sha256:14cf454a5d2771454f254981c1680df688f4f76e35c1fc938b3a3075072d0237
+    labels:
+      folder.view: Minecraft
+      net.unraid.docker.icon: ${SECRET_APPDATA}/icons/minecraft.png
+      traefik.enable: true
+      traefik.http.routers.vaultwarden.rule: Host(`mc.${SECRET_DOMAIN}`)
+      traefik.http.routers.vaultwarden.entryPoints: websecure
+      traefik.http.services.vaultwarden.loadbalancer.server.port: 8123
     init: true
-    dns:
-      - 192.168.1.10
-      - 1.0.0.1
     environment:
       ## Global settings ##
+      UID: "${UID}"
+      GID: "${GID}"
       TZ: 'Europe/Paris'
-      EULA: "TRUE"
       LOG_TIMESTAMP: true
       DEBUG_MEMORY: true
       DEBUG_EXEC: true
@@ -28,37 +34,35 @@ services:
       ENABLE_ROLLING_LOGS: true
       USE_AIKAR_FLAGS: true
       ## Minecraft settings ##
+      EULA: "TRUE"
       TYPE: PAPER # Download latest Paper Fork
-      VERSION: 1.19.2 # Set minecraft server version
-      # PLUGINS / MODS #
-      # ViaVersion(19254) [Allow user with newer version]
+      VERSION: 1.21.1 # Set minecraft server version
+      # PLUGINS / MODS
       # SleepMost(60623) [Ask players to skip night in a bed]
       SPIGET_RESOURCES: |
-        19254
         60623
-      # Geyser [Bridge between Bedrock and Java Edition]                                                                                                                                                    
+      # Geyser [Bridge between Bedrock and Java Edition]
       # FloodGate [Allow Bedrock to not have Paid Java account]
       PLUGINS: |
         https://download.geysermc.org/v2/projects/geyser/versions/latest/builds/latest/downloads/spigot
         https://download.geysermc.org/v2/projects/floodgate/versions/latest/builds/latest/downloads/spigot
-      # Dynmap (274)[Add Map in a browser]
       MODRINTH_PROJECTS: |
-        dynmap
-      # server.properties #
+        viaversion:release
+      ## server.properties ##
       OVERRIDE_ICON: TRUE
       ICON: "https://cdn-icons-png.flaticon.com/512/1409/1409036.png"
-      NOOPER_ENABLED: false
-      LEVEL: MyHomeWorld
-      SEED: "-266100150045570408"
+      SNOOPER_ENABLED: false
+      LEVEL: DefaultWorld
+      #SEED: ""
       SERVER_NAME: "Serveur Maison"
-      MOTD: "Bienvenue."
+      MOTD: "Bienvenue"
       MAX_PLAYERS: 6
       ANNOUNCE_PLAYER_ACHIEVEMENTS: true
       ENFORCE_WHITELIST: TRUE
-      WHITELIST: "Zaggash"
-      OPS: "Zaggash"
+      WHITELIST: "${SECRET_USERNAME}"
+      OPS: "${SECRET_USERNAME}"
       DIFFICULTY: easy
-      ONLINE_MODE: true
+      ONLINE_MODE: false
       ENABLE_RCON: false
       LEVEL_TYPE: "minecraft:normal"
       MODE: survival
@@ -76,16 +80,12 @@ services:
       SPAWN_NPCS: true
       PLAYER_IDLE_TIMEOUT: 5
     volumes:
-      - data:/data
+      - "${SECRET_APPDATA}/minecraft:/data"
     ports:
       - 25565:25565/tcp
       - 25565:25565/udp
       - 19133:19133/tcp
       - 19133:19133/udp
-      - 8123:8123/tcp
     tty: true
     stdin_open: true
     restart: always
-
-volumes:
-  data:

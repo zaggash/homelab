@@ -1,7 +1,8 @@
 include:
   - drone/docker-compose.yaml
-  - vaultwarden-compose.yaml
   - immich/docker-compose.yaml
+  - minecraft/minecraft-compose.yaml
   #- minio-compose.yaml
+  - vaultwarden-compose.yaml
   - backrest-compose.yaml
   - sftpgo-compose.yaml

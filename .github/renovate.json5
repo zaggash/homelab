@@ -32,10 +32,18 @@
       "description": "Group bedrock-connect updates",
       "groupName": "Bedrock-Connect",
       "matchDatasources": ["docker", "github-tags"],
-      "matchPaths": ["portainer-stacks/nuc4-stacks/bedrock-connect/**"],
+      "matchPaths": ["unraid-homelab/tools/minecraft/bedrock-connect/**"],
       "group": {
         "commitMessageTopic": "{{{groupName}}} group"
       },
+    },
+    {
+      "description": "Set fixed versionning for bedrock-connect",
+      "matchManagers": ["dockerfile"],
+      "matchDatasources": ["docker"],
+      "matchPaths": ["unraid-homelab/tools/minecraft/bedrock-connect/**"],
+      "matchPackageNames": ["eclipse-temurin"],
+      "allowedVersions": "<=11.*"
     },
 
     {
@@ -46,15 +54,6 @@
       "group": {
         "commitMessageTopic": "{{{groupName}}} group"
       },
-    },
-
-    {
-      "description": "Set fixed versionning for bedrock-connect",
-      "matchManagers": ["dockerfile"],
-      "matchDatasources": ["docker"],
-      "matchPaths": ["portainer-stacks/nuc4-stacks/bedrock-connect/**"],
-      "matchPackageNames": ["eclipse-temurin"],
-      "allowedVersions": "<=11.*"
     },
     {
       "description": "Only update digest for Postgres and redis on Immich",
