@@ -47,7 +47,7 @@ services:
       OPS: "${SECRET_USERNAME}"
       DIFFICULTY: easy
       ONLINE_MODE: false
-      ENABLE_RCON: false
+      ENABLE_RCON: true
       LEVEL_TYPE: "minecraft:normal"
       MODE: survival
       PVP: true
