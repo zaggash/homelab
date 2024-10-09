@@ -32,6 +32,7 @@ services:
         https://download.geysermc.org/v2/projects/floodgate/versions/latest/builds/latest/downloads/spigot
       MODRINTH_PROJECTS: |
         viaversion:release
+        grimac:release
       ## server.properties ##
       OVERRIDE_ICON: TRUE
       ICON: "https://cdn-icons-png.flaticon.com/512/1409/1409036.png"
