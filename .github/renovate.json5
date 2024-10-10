@@ -20,7 +20,7 @@
     {
       "description": "Bedrock Connect custom Regex",
       "customType": "regex",
-      "fileMatch": ["portainer-stacks\/.*\/bedrock-connect\/Dockerfile"],
+      "fileMatch": ["unraid-homelab\/.*\/bedrock-connect\/Dockerfile"],
       "matchStrings": [
         "renovate: datasource=(?<datasource>.*?) depName=(?<depName>.*?) versioning=(?<versioning>.*?)\\sENV BEDROCK_CONNECT=(?<currentValue>.*)"
       ]
