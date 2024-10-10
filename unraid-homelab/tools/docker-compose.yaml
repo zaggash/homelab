@@ -6,3 +6,4 @@ include:
   - vaultwarden-compose.yaml
   - backrest-compose.yaml
   - sftpgo-compose.yaml
+  - twitchdropsminer-compose.yaml
