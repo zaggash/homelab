@@ -1,6 +1,7 @@
 name: Bedrock-connect Build image
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - main
@@ -9,50 +10,41 @@ on:
       - "unraid-homelab/tools/minecraft/bedrock-connect/*"
 
 env:
-  context: "./unraid-homelab/tools/minecraft/bedrock-connect/"
-  dockerfile: "./unraid-homelab/tools/minecraft/bedrock-connect/Dockerfile"
-  image: "bedrock-connect"
+  ORG_ACCOUNT: "zaggash"
+  IMAGE_NAME: "bedrock-connect"
+  CONTEXT: "./unraid-homelab/tools/minecraft/bedrock-connect/"
+  DOCKERFILE: "./unraid-homelab/tools/minecraft/bedrock-connect/Dockerfile"
 
 jobs:
-  build_images:
-    name: Push Docker image to multiple registries
+  extract-tag:
+    name: Extract Application Tag
     runs-on: ubuntu-latest
     steps:
       - name: Check out the repo
-        uses: actions/checkout@eef61447b9ff4aafe5dcd4e0bbf5d482be7e7871 # v4
+        uses: actions/checkout@eef61447b9ff4aafe5dcd4e0bbf5d482be7e7871
 
       - name: Get Bedrock-connect version
         run: |
-         TAG=$(grep -Po 'CONNECT=\K.*' ${{ env.dockerfile }})
+         TAG=$(grep -Po 'CONNECT=\K.*' ${{ env.DOCKERFILE }} )
          echo "TAG_ENV=$TAG" >> $GITHUB_ENV
+    outputs:
+      org-account: ${{ env.ORG_ACCOUNT }}
+      image-name: ${{ env.IMAGE_NAME }}
+      tag: ${{ env.TAG_ENV }}
+      context: ${{ env.CONTEXT }}
+      dockerfile: ${{ env.DOCKERFILE}}
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
 
-      - name: Log in to the GitHub Container registry
-        if: ${{ github.event_name != 'pull_request' }}
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ secrets.gh_username }}
-          password: ${{ secrets.gh_token }}
-
-      - name: Extract metadata (tags, labels) for Docker
-        id: metadata
-        uses: docker/metadata-action@v5
-        with:
-          images: |
-            ghcr.io/${{ secrets.gh_username }}/${{ env.image }}
-          tags: |
-            type=raw,${{ env.TAG_ENV }}
-          flavor: |
-            latest=auto
-            prefix=v
-      - name: Build and push Docker images
-        uses: docker/build-push-action@v6
-        with:
-          context: ${{ env.context }}
-          file: ${{ env.dockerfile }}
-          push: ${{ github.event_name != 'pull_request' }}
-          tags: ${{ steps.metadata.outputs.tags }}
-          labels: ${{ steps.metadata.outputs.labels }}
+  build-push:
+    name: Build & Push
+    needs: extract-tag
+    uses: zaggash/gh-workflows/.github/workflows/action_docker-build-repo.yaml@main
+    with:
+      github-account: ${{ needs.extract-tag.outputs.org-account }}
+      image-name: ${{ needs.extract-tag.outputs.image-name }}
+      tag: ${{ needs.extract-tag.outputs.tag }}
+      context: ${{ needs.extract-tag.outputs.context }}
+      dockerfile: ${{ needs.extract-tag.outputs.dockerfile }}
+    secrets:
+      gh_username: ${{ secrets.GH_USERNAME }}
+      gh_token: ${{ secrets.GH_TOKEN }}
