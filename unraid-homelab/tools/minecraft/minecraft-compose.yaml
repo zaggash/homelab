@@ -37,8 +37,8 @@ services:
       OVERRIDE_ICON: TRUE
       ICON: "https://cdn-icons-png.flaticon.com/512/1409/1409036.png"
       SNOOPER_ENABLED: false
-      LEVEL: DefaultWorld
-      #SEED: ""
+      LEVEL: World
+      SEED: "-7211379020122738973"
       SERVER_NAME: "Serveur Maison"
       MOTD: "Bienvenue"
       MAX_PLAYERS: 6
