@@ -1,7 +1,7 @@
 services:
   vaultwarden:
     container_name: vaultwarden
-    image: ghcr.io/dani-garcia/vaultwarden:1.32.1@sha256:7899093c3d34eaf1c4f12cd4bb31b3cb4e0ccfa3823b3661feff4561be69c823
+    image: ghcr.io/dani-garcia/vaultwarden:1.32.2@sha256:c07f5319d20bdbd58a19d7d779a1e97159ce25cb95572baa947c70f58589937c
     labels:
       folder.view: Tools
       net.unraid.docker.icon: ${SECRET_APPDATA}/icons/vaultwarden.png
