@@ -8,3 +8,5 @@ services:
     networks:
       - immich-db
     restart: always
+    healthcheck:
+      test: redis-cli ping || exit 1

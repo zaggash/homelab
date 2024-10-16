@@ -19,6 +19,8 @@ services:
       MACHINE_LEARNING_PRELOAD__CLIP: XLM-Roberta-Large-Vit-B-32
       MACHINE_LEARNING_PRELOAD__FACIAL_RECOGNITION: buffalo_l
     restart: always
+    healthcheck:
+      disable: false
 
 volumes:
   model-cache:
