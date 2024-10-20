@@ -2,7 +2,7 @@ services:
   backrest:
     container_name: backrest
     hostname: unraid-backrest
-    image: garethgeorge/backrest:v1.5.1@sha256:cb184bb4006b6235f4d6ef42e0cac4ce1d20d8db9ee24432c5d31d4e1a6851fd
+    image: garethgeorge/backrest:v1.6.0@sha256:bd4c7bafd8d65097757e3ca627dc5cb3088b79576c388e9a6ec79ed30dfaa77e
     labels:
       folder.view: Tools
       net.unraid.docker.icon: ${SECRET_APPDATA}/icons/backrest.png
