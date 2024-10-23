@@ -1,7 +1,7 @@
 services:
   twitch-drops-miner:
     container_name: twitch-drops-miner
-    image: ghcr.io/zaggash/twitchdropsminer-updated:15.9.1@sha256:39b3bbfebed55db6edb57193633db6035b44a10d94316d403387a9a3687837fd
+    image: ghcr.io/zaggash/twitchdropsminer-updated:15.9.1@sha256:be8bcb03fb0f0db536f1ef935ec1405584673d08dcdf80388702425dd5095900
     labels:
       folder.view: Tools
       net.unraid.docker.icon: ${SECRET_APPDATA}/icons/twitchdropsminer.png
