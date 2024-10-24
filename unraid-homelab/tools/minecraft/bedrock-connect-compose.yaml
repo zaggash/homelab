@@ -1,7 +1,7 @@
 services:
   minecraft_proxy:
     container_name: minecraft-proxy
-    image: ghcr.io/zaggash/bedrock-connect:1.51@sha256:7888031770e0d4b71ed6d9f29a9929171eac07024aed842ea234420abc228157
+    image: ghcr.io/zaggash/bedrock-connect:1.51@sha256:bac359bd2f2d4d172dbc072234af26e59fa2b4a6d90538b7aab62971fb5b7471
     labels:
       folder.view: Minecraft
       net.unraid.docker.icon: ${SECRET_APPDATA}/icons/bedrock-connect.png
