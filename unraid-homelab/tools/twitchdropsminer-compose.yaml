@@ -11,7 +11,7 @@ services:
       traefik.http.services.twitch-drops-miner.loadbalancer.server.scheme: https
       traefik.http.services.twitch-drops-miner.loadbalancer.server.port: 5800
     volumes:
-      - "${SECRET_APPDATA}/twitchdropsminer:/TwitchDropsMiner/config"
+      - "${SECRET_APPDATA}/twitchdropsminer:/config"
     environment:
       TZ: ${TZ}
       SECURE_CONNECTION: 1
