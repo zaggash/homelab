@@ -1,8 +1,7 @@
 services:
   calibre-web:
     container_name: calibre-web
-    #image: ghcr.io/linuxserver/calibre-web:0.6.23@sha256:aa48e5e3eac521c7b916f9ee508f0ce3a0b14c96c607fa5b322cde53ec8ddc5c
-    image: crocodilestick/calibre-web-automated:v2.0.1@sha256:252be12743b4dae4c731a1c01ae2004a848cb8315c88998a97be69de7fd0e416
+    image: ghcr.io/linuxserver/calibre-web:0.6.23@sha256:aa48e5e3eac521c7b916f9ee508f0ce3a0b14c96c607fa5b322cde53ec8ddc5c
     labels:
       folder.view: Media
       net.unraid.docker.icon: ${SECRET_APPDATA}/icons/calibre-web.png
@@ -15,9 +14,7 @@ services:
     volumes:
       - "${SECRET_APPDATA}/calibre-web/config:/config"
       - "${SECRET_APPDATA}/calibre-web/cache:/app/calibre-web/cps/cache"
-      - "${SECRET_APPDATA}/calibre-web/calibre-library:/calibre-library"
       - "${SECRET_DATADIR}/ebooks:/books"
-      - "${SECRET_DATADIR}/downloads/complete/cwa-book-ingest:/cwa-book-ingest"
     environment:
       TZ: ${TZ}
       PUID: ${UID}
