@@ -1,102 +1,133 @@
 {
-  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-
-  "extends": [
-    "github>zaggash/gh-workflows//renovate-config/default"
+  $schema: 'https://docs.renovatebot.com/renovate-schema.json',
+  extends: [
+    'github>zaggash/gh-workflows//renovate-config/default',
   ],
-
-   "ignorePaths": [
-    ".archive/**"
+  ignorePaths: [
+    '.archive/**',
   ],
-
-  "docker-compose": {
-    "fileMatch": [
-      "portainer-stacks/.+-compose\\.ya?ml$",
-      "unraid-homelab/.+-compose\\.ya?ml$"
-      ],
+  'docker-compose': {
+    fileMatch: [
+      'portainer-stacks/.+-compose\\.ya?ml$',
+      'unraid-homelab/.+-compose\\.ya?ml$',
+    ],
   },
-
-  "customManagers": [
+  customManagers: [
     {
-      "description": "Bedrock Connect custom Regex",
-      "customType": "regex",
-      "fileMatch": ["unraid-homelab\/.*\/bedrock-connect\/Dockerfile"],
-      "matchStrings": [
-        "renovate: datasource=(?<datasource>.*?) depName=(?<depName>.*?) versioning=(?<versioning>.*?)\\sENV BEDROCK_CONNECT=(?<currentValue>.*)"
-      ]
+      description: 'Bedrock Connect custom Regex',
+      customType: 'regex',
+      fileMatch: [
+        'unraid-homelab/.*/bedrock-connect/Dockerfile',
+      ],
+      matchStrings: [
+        'renovate: datasource=(?<datasource>.*?) depName=(?<depName>.*?) versioning=(?<versioning>.*?)\\sENV BEDROCK_CONNECT=(?<currentValue>.*)',
+      ],
     },
   ],
-
-  "packageRules": [
+  packageRules: [
     {
-      "description": "Group bedrock-connect updates",
-      "groupName": "Bedrock-Connect",
-      "matchDatasources": ["docker", "github-tags"],
-      "matchPaths": ["unraid-homelab/tools/minecraft/bedrock-connect/**"],
-      "group": {
-        "commitMessageTopic": "{{{groupName}}} group"
+      description: 'Group bedrock-connect updates',
+      groupName: 'Bedrock-Connect',
+      matchDatasources: [
+        'docker',
+        'github-tags',
+      ],
+      matchFileNames: [
+        'unraid-homelab/tools/minecraft/bedrock-connect/**',
+      ],
+      group: {
+        commitMessageTopic: '{{{groupName}}} group',
       },
     },
     {
-      "description": "Set fixed versionning for bedrock-connect",
-      "matchManagers": ["dockerfile"],
-      "matchDatasources": ["docker"],
-      "matchPaths": ["unraid-homelab/tools/minecraft/bedrock-connect/**"],
-      "matchPackageNames": ["eclipse-temurin"],
-      "allowedVersions": "<=11.*"
+      description: 'Set fixed versionning for bedrock-connect',
+      matchManagers: [
+        'dockerfile',
+      ],
+      matchDatasources: [
+        'docker',
+      ],
+      matchFileNames: [
+        'unraid-homelab/tools/minecraft/bedrock-connect/**',
+      ],
+      matchPackageNames: [
+        'eclipse-temurin',
+      ],
+      allowedVersions: '<=11.*',
     },
-
     {
-      "description": "Group immich updates",
-      "groupName": "Immich",
-      "matchDatasources": ["docker", "github-tags"],
-      "matchPaths": ["unraid-homelab/**/immich/**"],
-      "group": {
-        "commitMessageTopic": "{{{groupName}}} group"
+      description: 'Group immich updates',
+      groupName: 'Immich',
+      matchDatasources: [
+        'docker',
+        'github-tags',
+      ],
+      matchFileNames: [
+        'unraid-homelab/**/immich/**',
+      ],
+      group: {
+        commitMessageTopic: '{{{groupName}}} group',
       },
     },
     {
-      "description": "Only update digest for Postgres and redis on Immich",
-      "matchManagers": ["docker-compose"],
-      "matchDatasources": ["docker"],
-      "matchPaths": [
-          "unraid-homelab/**/immich/redis-compose.yaml",
-          "unraid-homelab/**/immich/postgres-compose.yaml"
-        ],
-      "matchUpdateTypes": ["major", "minor", "patch"],
-      "enabled": false
-    },
-
-    {
-      "description": "Set minio semver compatible",
-      "packagePatterns": ["^minio"],
-      "versioning": "regex:^RELEASE\\.(?<major>\\d{4})-(?<minor>\\d{2})-(?<patch>\\d{2})"
-    },
-
-    {
-      "description": "Set time based azure-rest-api versioning",
-      "matchDatasources": ["docker"],
-      "versioning": "azure-rest-api",
-      "matchPackagePatterns": ["lldap/lldap"]
-    },
-
-    {
-      "description": "Set Linuxserver calibre-web semver compatible",
-      "matchPackagePatterns": ["linuxserver/calibre-web"],
-      "allowedVersions": "<5.0.0"
+      description: 'Only update digest for Postgres and redis on Immich',
+      matchManagers: [
+        'docker-compose',
+      ],
+      matchDatasources: [
+        'docker',
+      ],
+      matchFileNames: [
+        'unraid-homelab/**/immich/redis-compose.yaml',
+        'unraid-homelab/**/immich/postgres-compose.yaml',
+      ],
+      matchUpdateTypes: [
+        'major',
+        'minor',
+        'patch',
+      ],
+      enabled: false,
     },
     {
-      "description": "Set Linuxserver jellyfin semver compatible",
-      "matchPackagePatterns": ["linuxserver/jellyfin"],
-      "allowedVersions": "<2000.0.0"
+      description: 'Set minio semver compatible',
+      versioning: 'regex:^RELEASE\\.(?<major>\\d{4})-(?<minor>\\d{2})-(?<patch>\\d{2})',
+      matchPackageNames: [
+        '/^minio/',
+      ],
     },
-
     {
-      "description": "Loose versioning for non-semver packages",
-      "matchDatasources": ["docker"],
-      "versioning": "loose",
-      "matchPackagePatterns": ["plex"]
-    }
-
-  ]
+      description: 'Set time based azure-rest-api versioning',
+      matchDatasources: [
+        'docker',
+      ],
+      versioning: 'azure-rest-api',
+      matchPackageNames: [
+        '/lldap/lldap/',
+      ],
+    },
+    {
+      description: 'Set Linuxserver calibre-web semver compatible',
+      allowedVersions: '<5.0.0',
+      matchPackageNames: [
+        '/linuxserver/calibre-web/',
+      ],
+    },
+    {
+      description: 'Set Linuxserver jellyfin semver compatible',
+      allowedVersions: '<2000.0.0',
+      matchPackageNames: [
+        '/linuxserver/jellyfin/',
+      ],
+    },
+    {
+      description: 'Loose versioning for non-semver packages',
+      matchDatasources: [
+        'docker',
+      ],
+      versioning: 'loose',
+      matchPackageNames: [
+        '/plex/',
+      ],
+    },
+  ],
 }
