@@ -3,7 +3,7 @@ services:
     container_name: flaresolverr
     #image: ghcr.io/flaresolverr/flaresolverr:v3.3.21@sha256:1a30e1ad6bb3df626bfe3b9735a6d60e208c475c89bf18be0db4d4b121a3cb0e
     #image: ghcr.io/flaresolverr/flaresolverr:pr-1282@sha256:3bcfb2de4527f5f88c8103da01cab4c0983f75750aa2d138fe90a5e445cb336a
-    image: 21hsmw/flaresolverr:nodriver@sha256:506b7f26aaf10e8c07ab22f74a7eea31eca66e263fe52d570b7bc0ef29952db9
+    image: 21hsmw/flaresolverr:nodriver@sha256:21ade52a9dc85c1bc1592ccc994e41f3365a4603b3ca4a11328583aa6e99ace1
     labels:
       folder.view: Media
       net.unraid.docker.icon: ${SECRET_APPDATA}/icons/flaresolverr.png
