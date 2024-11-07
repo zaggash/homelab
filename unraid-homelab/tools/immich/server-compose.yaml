@@ -1,7 +1,7 @@
 services:
   immich-server:
     container_name: immich_server
-    image: ghcr.io/immich-app/immich-server:v1.119.1@sha256:d63feeee7a41095b3c1b18607d86a1264bcac53728a19f538a77a6e66043f492
+    image: ghcr.io/immich-app/immich-server:v1.120.1@sha256:4193f3cc99bb4d99f53007f07d45e2efbcd531f4e81a765470b2cce433f33131
     labels:
       folder.view: Immich
       net.unraid.docker.icon: ${SECRET_APPDATA}/icons/immich.png
