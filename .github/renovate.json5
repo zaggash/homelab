@@ -33,7 +33,7 @@
         'github-tags',
       ],
       matchFileNames: [
-        'unraid-homelab/tools/minecraft/bedrock-connect/**',
+        'unraid-homelab/**/minecraft/bedrock-connect/**',
       ],
       group: {
         commitMessageTopic: '{{{groupName}}} group',
@@ -48,7 +48,7 @@
         'docker',
       ],
       matchFileNames: [
-        'unraid-homelab/tools/minecraft/bedrock-connect/**',
+        'unraid-homelab/**/minecraft/bedrock-connect/**',
       ],
       matchPackageNames: [
         'eclipse-temurin',

@@ -6,6 +6,7 @@ include:
   - ./security/docker-compose.yaml
   - ./tools/docker-compose.yaml
   - ./media/docker-compose.yaml
+  - ./gaming/docker-compose.yaml
 
 networks:
   default:
