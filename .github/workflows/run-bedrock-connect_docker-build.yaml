@@ -7,13 +7,13 @@ on:
       - main
     paths:
       - ".github/workflows/run-bedrock-connect_docker-build.yaml"
-      - "unraid-homelab/tools/minecraft/bedrock-connect/*"
+      - "unraid-homelab/gaming/minecraft/bedrock-connect/*"
 
 env:
   ORG_ACCOUNT: "zaggash"
   IMAGE_NAME: "bedrock-connect"
-  CONTEXT: "./unraid-homelab/tools/minecraft/bedrock-connect/"
-  DOCKERFILE: "./unraid-homelab/tools/minecraft/bedrock-connect/Dockerfile"
+  CONTEXT: "./unraid-homelab/gaming/minecraft/bedrock-connect/"
+  DOCKERFILE: "./unraid-homelab/gaming/minecraft/bedrock-connect/Dockerfile"
 
 jobs:
   extract-tag:
