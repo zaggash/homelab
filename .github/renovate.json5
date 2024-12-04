@@ -26,20 +26,6 @@
   ],
   packageRules: [
     {
-      description: 'Group bedrock-connect updates',
-      groupName: 'Bedrock-Connect',
-      matchDatasources: [
-        'docker',
-        'github-tags',
-      ],
-      matchFileNames: [
-        'unraid-homelab/**/minecraft/bedrock-connect/**',
-      ],
-      group: {
-        commitMessageTopic: '{{{groupName}}} group',
-      },
-    },
-    {
       description: 'Set fixed versionning for bedrock-connect',
       matchManagers: [
         'dockerfile',
@@ -55,6 +41,30 @@
       ],
       allowedVersions: '<=11.*',
     },
+    {
+      description: 'Automerge bedrock-connect binary version on release',
+      matchManagers: [
+        'regex'
+      ],
+      matchDatasources: [
+        'github-tags',
+      ],
+      matchFileNames: [
+        'unraid-homelab/**/minecraft/bedrock-connect/**',
+      ],
+      matchPackageNames: [
+        'Pugmatt/BedrockConnect',
+      ],
+      automerge: true,
+      automergeType: 'branch',
+      matchUpdateTypes: [
+        'major',
+        'minor',
+        'patch',
+      ],
+      ignoreTests: true
+    },
+
     {
       description: 'Group immich updates',
       groupName: 'Immich',
