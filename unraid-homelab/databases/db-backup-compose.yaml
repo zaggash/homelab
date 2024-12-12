@@ -1,7 +1,7 @@
 services:
   db-backup:
     container_name: db-backup
-    image: ghcr.io/tiredofit/docker-db-backup:4.1.9@sha256:0b2d0dee38fbe5dbffd63df59afc2b812d36f31ff1213a0f45f7e8901ac9de87
+    image: ghcr.io/tiredofit/docker-db-backup:4.1.10@sha256:f1c7b08bae81c0c502ad2a66d101996ac68a1ad674aa0ce0f31bac7a35e8b6cb
     labels:
       folder.view: Tools
       net.unraid.docker.icon: ${SECRET_APPDATA}/icons/db-backup.png
