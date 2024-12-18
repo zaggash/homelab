@@ -8,7 +8,8 @@ services:
       traefik.enable: true
       traefik.http.routers.calibre.rule: Host(`calibre.${SECRET_HOME_DOMAIN}`)
       traefik.http.routers.calibre.entryPoints: websecure
-      traefik.http.services.calibre.loadbalancer.server.port: 8080
+      traefik.http.services.calibre.loadbalancer.server.port: 8181
+      traefik.http.services.calibre.loadbalancer.server.scheme: https
     volumes:
       - "${SECRET_APPDATA}/calibre:/config"
       - "${SECRET_DATADIR}/ebooks:/books"
