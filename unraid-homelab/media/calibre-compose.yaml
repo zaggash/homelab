@@ -12,6 +12,7 @@ services:
     volumes:
       - "${SECRET_APPDATA}/calibre:/config"
       - "${SECRET_DATADIR}/ebooks:/books"
+      - "${SECRET_DATADIR}/downloads/complete/ebooks_import:/import"
     environment:
       TZ: ${TZ}
       PUID: ${UID}
