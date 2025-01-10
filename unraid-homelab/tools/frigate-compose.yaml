@@ -1,0 +1,28 @@
+services:
+  frigate:
+    container_name: frigate
+    image: ghcr.io/blakeblackshear/frigate:stable
+    labels:
+      folder.view: Tools
+      net.unraid.docker.icon: ${SECRET_APPDATA}/icons/frigate.png
+      traefik.enable: true
+      traefik.http.routers.frigate.rule: Host(`frigate.${SECRET_DOMAIN}`)
+      traefik.http.routers.frigate.entryPoints: websecure
+      traefik.http.services.frigate.loadbalancer.server.port: 8971
+    devices:
+      - /dev/dri/renderD128:/dev/dri/renderD128
+    shm_size: "64mb"
+    volumes:
+      - "${SECRET_APPDATA}/frigate/config:/config"
+      - "${SECRET_APPDATA}/frigate/media:/media/frigate"
+      - type: tmpfs
+        target: /tmp/cache
+        tmpfs:
+          size: 1000000000
+    environment:
+      FRIGATE_RTSP_PASSWORD: "${SECRET_FRIGATE_RTSP_PASSWORD}"
+    networks:
+      proxy:
+      lan:
+        ipv4_address: 192.168.1.21
+    restart: always
