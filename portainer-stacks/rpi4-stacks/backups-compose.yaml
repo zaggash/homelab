@@ -1,24 +1,24 @@
 version: "3"
 
 services:
-  pihole: &backup_service
+  adguard: &backup_service
     image: offen/docker-volume-backup:v2.43.1@sha256:113d0aace06c83519a304e9b9c13fc65ebe2e52f5b027897886c8c0566a23d72
     restart: always
     dns:
       - 192.168.1.10
     environment: &backup_env
-      BACKUP_FILENAME: "pihole-%Y-%m-%dT%H-%M-%S.tar.gz"
-      BACKUP_LATEST_SYMLINK: "pihole-latest.tar.gz"
-      BACKUP_ARCHIVE: "/archive/pihole"
-      BACKUP_EXCLUDE_REGEXP: "(/.*pihole-FTL.db.*$$)|(/.*metrics.interim$$)"
+      BACKUP_FILENAME: "adguard-%Y-%m-%dT%H-%M-%S.tar.gz"
+      BACKUP_LATEST_SYMLINK: "adguard-latest.tar.gz"
+      BACKUP_ARCHIVE: "/archive/adguard"
+      BACKUP_SOURCE: "/backup/adguard"
       BACKUP_CRON_EXPRESSION: "15 0 * * *"
       BACKUP_RETENTION_DAYS: "7"
-      BACKUP_PRUNING_PREFIX: "pihole-"
-      NOTIFICATION_URLS: $NOTIFICATION_URLS
+      BACKUP_PRUNING_PREFIX: "adguard-"
+      NOTIFICATION_URLS: $PORTAINER_NOTIFICATION_URLS
       NOTIFICATION_LEVEL: "error"
     volumes:
-      - "pihole_data:/backup/pihole/data:ro"
-      - "pihole_dnsmasq:/backup/pihole/dnsmasq:ro"
+      - "adguard_conf:/backup/adguard/conf:ro"
+      - "adguard_work:/backup/adguard/work:ro"
       - "unraid_backups:/archive"
 
   unifi:
@@ -28,17 +28,18 @@ services:
       BACKUP_FILENAME: "unifi-%Y-%m-%dT%H-%M-%S.tar.gz"
       BACKUP_LATEST_SYMLINK: "unifi-latest.tar.gz"
       BACKUP_ARCHIVE: "/archive/unifi"
+      BACKUP_SOURCE: "/backup/unifi/data/backup/"
       BACKUP_CRON_EXPRESSION: "15 0 * * *"
       BACKUP_RETENTION_DAYS: "7"
       BACKUP_PRUNING_PREFIX: "unifi-"
     volumes:
-      - "unifi_data:/backup/unifi/data"
+      - "unifi_data:/backup/unifi"
       - "unraid_backups:/archive"
 
 volumes:
-  pihole_data:
+  adguard_conf:
     external: true
-  pihole_dnsmasq:
+  adguard_work:
     external: true
   unifi_data:
     external: true
