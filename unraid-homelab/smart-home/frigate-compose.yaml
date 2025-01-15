@@ -6,10 +6,15 @@ services:
       folder.view: Smart-Home
       net.unraid.docker.icon: ${SECRET_APPDATA}/icons/frigate.png
       traefik.enable: true
+      traefik.http.routers.frigate-hass.rule: ClientIP(`192.168.1.11`)
+      traefik.http.routers.frigate-hass.entryPoints: frigate
+      traefik.http.services.frigate-hass.loadbalancer.server.port: 5000
+      traefik.http.routers.frigate-hass.service: frigate-hass
       traefik.http.routers.frigate.rule: Host(`frigate.${SECRET_HOME_DOMAIN}`)
       traefik.http.routers.frigate.entryPoints: websecure
       traefik.http.services.frigate.loadbalancer.server.port: 8971
       traefik.http.services.frigate.loadbalancer.server.scheme: https
+      traefik.http.routers.frigate.service: frigate
     devices:
       - /dev/dri/renderD128:/dev/dri/renderD128
     shm_size: "64mb"
@@ -20,9 +25,9 @@ services:
         target: /tmp/cache
         tmpfs:
           size: 1000000000
+    ports:
+      - "8554:8554"
+      - "8555:8555"
     networks:
       proxy:
-      hassio:
-      lan:
-        ipv4_address: 192.168.1.21
     restart: always
