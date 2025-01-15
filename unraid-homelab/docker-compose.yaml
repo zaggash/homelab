@@ -7,16 +7,12 @@ include:
   - ./tools/docker-compose.yaml
   - ./media/docker-compose.yaml
   - ./gaming/docker-compose.yaml
-  - ./smart-home/docker-compose.yaml
 
 networks:
   default:
     driver: bridge
 
   proxy:
-    driver: bridge
-
-  hassio:
     driver: bridge
 
   lan:
