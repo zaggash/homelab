@@ -3,7 +3,7 @@ services:
     container_name: frigate
     image: ghcr.io/blakeblackshear/frigate:stable
     labels:
-      folder.view: Tools
+      folder.view: Smart-Home
       net.unraid.docker.icon: ${SECRET_APPDATA}/icons/frigate.png
       traefik.enable: true
       traefik.http.routers.frigate.rule: Host(`frigate.${SECRET_HOME_DOMAIN}`)
@@ -20,10 +20,9 @@ services:
         target: /tmp/cache
         tmpfs:
           size: 1000000000
-    environment:
-      FRIGATE_RTSP_PASSWORD: "${SECRET_FRIGATE_RTSP_PASSWORD}"
     networks:
       proxy:
+      hassio:
       lan:
         ipv4_address: 192.168.1.21
     restart: always

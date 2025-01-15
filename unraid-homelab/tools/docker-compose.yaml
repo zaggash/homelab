@@ -4,4 +4,3 @@ include:
   - vaultwarden-compose.yaml
   - backrest-compose.yaml
   - sftpgo-compose.yaml
-  - frigate-compose.yaml
