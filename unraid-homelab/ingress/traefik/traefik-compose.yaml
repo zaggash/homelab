@@ -58,12 +58,12 @@ services:
       TRAEFIK_PROVIDERS_DOCKER_WATCH: true
       TRAEFIK_PROVIDERS_DOCKER_ENDPOINT: "tcp://traefik-socket:2375"
       TRAEFIK_PROVIDERS_DOCKER_EXPOSEDBYDEFAULT: false
-      #TRAEFIK_PROVIDERS_DOCKER_NETWORK: homelab_proxy
       TRAEFIK_PROVIDERS_FILE_WATCH: true
       TRAEFIK_PROVIDERS_FILE_FILENAME: /etc/traefik/configFile.yaml
     networks:
       - traefik-socket
       - webserver
+      - authelia
       - lldap
       - drone-ui
       - immich
