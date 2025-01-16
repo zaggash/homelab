@@ -8,8 +8,7 @@ include:
   - calibre-web-compose.yaml
   - calibre-compose.yaml
   - jellyfin-compose.yaml
-  - jellyseerr-compose.yaml
 
 networks:
   media:
-    driver: bridge
+  media-backend:

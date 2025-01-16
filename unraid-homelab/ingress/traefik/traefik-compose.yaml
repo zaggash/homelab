@@ -11,6 +11,7 @@ services:
       folder.view: Ingress
       net.unraid.docker.icon: ${SECRET_APPDATA}/icons/traefik.png
       traefik.enable: true
+      traefik.docker.network: homelab_webserver
       traefik.http.routers.api.rule: Host(`traefik.${SECRET_DOMAIN}`)
       traefik.http.routers.api.entryPoints: websecure
       traefik.http.routers.api.service: api@internal
@@ -57,12 +58,17 @@ services:
       TRAEFIK_PROVIDERS_DOCKER_WATCH: true
       TRAEFIK_PROVIDERS_DOCKER_ENDPOINT: "tcp://traefik-socket:2375"
       TRAEFIK_PROVIDERS_DOCKER_EXPOSEDBYDEFAULT: false
-      TRAEFIK_PROVIDERS_DOCKER_NETWORK: homelab_proxy
+      #TRAEFIK_PROVIDERS_DOCKER_NETWORK: homelab_proxy
       TRAEFIK_PROVIDERS_FILE_WATCH: true
       TRAEFIK_PROVIDERS_FILE_FILENAME: /etc/traefik/configFile.yaml
     networks:
-      - proxy
       - traefik-socket
+      - webserver
+      - lldap
+      - drone-ui
+      - immich
+      - tools
+      - media
     restart: always
       # depends_on:
       #   traefik-socket:

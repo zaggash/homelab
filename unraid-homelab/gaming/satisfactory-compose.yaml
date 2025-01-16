@@ -16,6 +16,8 @@ services:
       STEAMBETA: false
     volumes:
       - "${SECRET_APPDATA}/satisfactory:/config"
+    networks:
+      - gaming
     ports:
       - "7777:7777/udp"
       - "7777:7777/tcp"

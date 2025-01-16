@@ -1,7 +1,7 @@
-include: 
+include:
   - authelia-compose.yaml
   - redis-compose.yaml
 
 networks:
+  authelia:
   authelia-db:
-    driver: bridge

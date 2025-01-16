@@ -6,6 +6,7 @@ services:
       folder.view: Drone
       net.unraid.docker.icon: ${SECRET_APPDATA}/icons/drone.png
       traefik.enable: true
+      traefik.docker.network: homelab_drone-ui
       traefik.http.routers.drone.rule: Host(`drone.${SECRET_DOMAIN}`)
       traefik.http.routers.drone.entryPoints: websecure
       traefik.http.services.drone.loadbalancer.server.port: 80
@@ -30,6 +31,6 @@ services:
       DRONE_LOGS_PRETTY: true
       DRONE_LOGS_COLOR: true
     networks:
-      - proxy
+      - drone-ui
       - drone
     restart: always

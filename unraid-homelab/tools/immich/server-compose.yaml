@@ -6,14 +6,15 @@ services:
       folder.view: Immich
       net.unraid.docker.icon: ${SECRET_APPDATA}/icons/immich.png
       traefik.enable: true
+      traefik.docker.network: homelab_immich
       traefik.http.routers.immich.rule: Host(`photos.${SECRET_DOMAIN}`)
       traefik.http.routers.immich.entryPoints: websecure
       traefik.http.services.immich.loadbalancer.server.port: 2283
     devices:
       - /dev/dri:/dev/dri
     networks:
-      - proxy
       - immich
+      - immich-ml
       - immich-db
     volumes:
       - ${SECRET_IMMICH_UPLOAD_LOCATION}:/usr/src/app/upload

@@ -6,6 +6,7 @@ services:
       folder.view: Ingress
       net.unraid.docker.icon: ${SECRET_APPDATA}/icons/error-pages.png
       traefik.enable: true
+      traefik.docker.network: homelab_webserver
       traefik.http.routers.errorpages.rule: HostRegexp(`.+`)
       traefik.http.routers.errorpages.priority: 10
       traefik.http.routers.errorpages.entryPoints: websecure
@@ -19,5 +20,5 @@ services:
       TEMPLATE_NAME: "shuffle"
       SHOW_DETAILS: "true"
     networks:
-      - proxy
+      - webserver
     restart: always

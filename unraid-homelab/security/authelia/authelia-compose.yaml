@@ -6,6 +6,7 @@ services:
       folder.view: Ingress
       net.unraid.docker.icon: ${SECRET_APPDATA}/icons/authelia.png
       traefik.enable: true
+      traefik.docker.network: homelab_authelia
       traefik.http.routers.authelia.rule: Host(`login.${SECRET_DOMAIN}`)
       traefik.http.routers.authelia.entryPoints: websecure
       traefik.http.services.authelia.loadbalancer.server.port: 9091
@@ -14,7 +15,7 @@ services:
     environment:
       TZ: ${TZ}
     networks:
-      - proxy
+      - authelia
       - lldap
       - authelia-db
     restart: always

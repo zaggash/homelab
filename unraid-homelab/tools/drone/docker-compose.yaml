@@ -4,5 +4,5 @@ include:
   - runner-compose.yaml
 
 networks:
+  drone-ui:
   drone:
-    driver: bridge

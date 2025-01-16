@@ -6,6 +6,5 @@ include:
 
 networks:
   immich:
-    driver: bridge
+  immich-ml:
   immich-db:
-    driver: bridge

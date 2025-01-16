@@ -15,7 +15,7 @@ services:
       RADARR_API_KEY: ${SECRET_RADARR_API_KEY}
       SONARR_API_KEY: ${SECRET_SONARR_API_KEY}
     networks:
-      - media
+      - media-backend
     restart: always
     depends_on:
       radarr:

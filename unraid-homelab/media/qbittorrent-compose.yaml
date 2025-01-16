@@ -8,6 +8,7 @@ services:
       folder.view: Media
       net.unraid.docker.icon: ${SECRET_APPDATA}/icons/qbittorrent.png
       traefik.enable: true
+      traefik.docker.network: homelab_media
       traefik.http.routers.qbittorrent.rule: Host(`dl.${SECRET_DOMAIN}`)
       traefik.http.routers.qbittorrent.entryPoints: websecure
       traefik.http.services.qbittorrent.loadbalancer.server.port: 8080
@@ -20,6 +21,5 @@ services:
       QBITTORRENT__BT_PORT: 6881
       QBITTORRENT__PORT: 8080
     networks:
-      - proxy
       - media
     restart: always

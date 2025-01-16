@@ -11,7 +11,7 @@ services:
     #   file: hwaccel.ml.yml
     #   service: cpu # set to one of [armnn, cuda, openvino, openvino-wsl] for accelerated inference - use the `-wsl` version for WSL2 where applicable
     networks:
-      - immich
+      - immich-ml
     volumes:
       - model-cache:/cache
     environment:

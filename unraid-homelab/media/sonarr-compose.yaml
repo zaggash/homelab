@@ -6,6 +6,7 @@ services:
       folder.view: Media
       net.unraid.docker.icon: ${SECRET_APPDATA}/icons/sonarr.png
       traefik.enable: true
+      traefik.docker.network: homelab_media
       traefik.http.routers.sonarr.rule: Host(`sonarr.${SECRET_DOMAIN}`)
       traefik.http.routers.sonarr.entryPoints: websecure
       traefik.http.services.sonarr.loadbalancer.server.port: 8989
@@ -17,6 +18,6 @@ services:
       TZ: ${TZ}
       COMPlus_EnableDiagnostics: "0" # Fix the .Net CoreCLR crash on ReadOnly Filesystem
     networks:
-      - proxy
       - media
+      - media-backend
     restart: always

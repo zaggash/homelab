@@ -1,4 +1,6 @@
 include:
-  - twitchdropsminer-compose.yaml
   #- minecraft/docker-compose.yaml
   #- satisfactory-compose.yaml
+
+networks:
+  gaming:

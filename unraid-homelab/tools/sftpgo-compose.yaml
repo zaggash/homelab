@@ -6,6 +6,7 @@ services:
       folder.view: Tools
       net.unraid.docker.icon: ${SECRET_APPDATA}/icons/sftpgo.png
       traefik.enable: true
+      traefik.docker.network: homelab_tools
       traefik.http.routers.sftpgo-ui.rule: Host(`cloud.${SECRET_DOMAIN}`)
       traefik.http.routers.sftpgo-ui.entryPoints: websecure
       traefik.http.routers.sftpgo-ui.service: sftpgo-ui
@@ -31,5 +32,5 @@ services:
       SFTPGO_DEFAULT_ADMIN_USERNAME: ${SECRET_SFTPGO_ADMIN}
       SFTPGO_DEFAULT_ADMIN_PASSWORD: ${SECRET_SFTPGO_PASSWORD}
     networks:
-      - proxy
+      - tools
     restart: always

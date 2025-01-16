@@ -11,5 +11,5 @@ services:
       TZ: ${TZ}
       LOG_LEVEL: info
     networks:
-      - media
+      - media-backend
     restart: always

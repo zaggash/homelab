@@ -9,12 +9,6 @@ include:
   - ./gaming/docker-compose.yaml
 
 networks:
-  default:
-    driver: bridge
-
-  proxy:
-    driver: bridge
-
   lan:
     driver: ipvlan
     driver_opts:

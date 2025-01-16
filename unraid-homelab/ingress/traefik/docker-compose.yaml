@@ -4,4 +4,3 @@ include:
 
 networks:
   traefik-socket:
-    driver: bridge

@@ -1,5 +1,5 @@
 services:
-  server:
+  minecraft-server:
     container_name: minecraft-server
     image: itzg/minecraft-server:java21@sha256:295b4779ca5a8b391b364d5cb022fa0c2f916897a195fecbbde9774cf8f809d9
     labels:
@@ -66,6 +66,8 @@ services:
       PLAYER_IDLE_TIMEOUT: 5
     volumes:
       - "${SECRET_APPDATA}/minecraft:/data"
+    networks:
+      - gaming
     ports:
       - 25565:25565/tcp
       - 25565:25565/udp

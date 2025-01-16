@@ -3,9 +3,10 @@ services:
     container_name: twitch-drops-miner
     image: ghcr.io/zaggash/twitchdropsminer-updated:15.10.0@sha256:d2084e0e7be43b7d1637ccfa503b78521be2dc40dff0688de7ff70353ef86780
     labels:
-      folder.view: Gaming
+      folder.view: Tools
       net.unraid.docker.icon: ${SECRET_APPDATA}/icons/twitchdropsminer.png
       traefik.enable: true
+      traefik.docker.network: homelab_tools
       traefik.http.routers.twitch-drops-miner.rule: Host(`tdm.${SECRET_DOMAIN}`)
       traefik.http.routers.twitch-drops-miner.entryPoints: websecure
       traefik.http.services.twitch-drops-miner.loadbalancer.server.scheme: https
@@ -19,5 +20,5 @@ services:
       WEB_AUTHENTICATION_USERNAME: "${SECRET_USERNAME}"
       WEB_AUTHENTICATION_PASSWORD: "${SECRET_DROPS_MINER_PASSWORD}"
     networks:
-      - proxy
+      - tools
     restart: always
