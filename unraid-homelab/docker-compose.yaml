@@ -7,6 +7,7 @@ include:
   - ./tools/docker-compose.yaml
   - ./media/docker-compose.yaml
   - ./gaming/docker-compose.yaml
+  #- ./hassio/docker-compose.yaml
 
 networks:
   lan:

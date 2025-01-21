@@ -16,6 +16,6 @@ services:
       TZ: ${TZ}
     networks:
       - authelia
-      - lldap
+      - lldap-internal
       - authelia-db
     restart: always

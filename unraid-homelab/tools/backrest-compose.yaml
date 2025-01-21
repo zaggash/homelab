@@ -21,5 +21,8 @@ services:
       BACKREST_CONFIG: /config/config.json
       XDG_CACHE_HOME: /cache
     networks:
-    - tools
+    - backrest
     restart: always
+
+networks:
+  backrest:

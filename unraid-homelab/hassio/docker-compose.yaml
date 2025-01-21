@@ -1,0 +1,12 @@
+include:
+  #- hassio-compose.yaml
+  #- frigate-compose.yaml
+  #- esphome-compose.yaml
+  #- z2m-compose.yaml
+  #- mqtt-compose.yaml
+  #- somfyprotect-compose.yaml
+
+networks:
+  hassio:
+  hassio-internal:
+    internal: true

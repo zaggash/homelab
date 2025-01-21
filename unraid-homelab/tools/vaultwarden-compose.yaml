@@ -6,7 +6,7 @@ services:
       folder.view: Tools
       net.unraid.docker.icon: ${SECRET_APPDATA}/icons/vaultwarden.png
       traefik.enable: true
-      traefik.docker.network: homelab_tools
+      traefik.docker.network: homelab_vaultwarden
       traefik.http.routers.vaultwarden.rule: Host(`pass.${SECRET_DOMAIN}`)
       traefik.http.routers.vaultwarden.entryPoints: websecure
       traefik.http.services.vaultwarden.loadbalancer.server.port: 8000
@@ -40,5 +40,8 @@ services:
       SMTP_USERNAME: "${SECRET_OVH_SMTP_USERNAME}"
       SMTP_PASSWORD: "${SECRET_OVH_SMTP_PASSWORD}"
     networks:
-      - tools
+      - vaultwarden
     restart: always
+
+networks:
+  vaultwarden:

@@ -5,6 +5,7 @@ include:
   - postgres-compose.yaml
 
 networks:
-  immich:
+  immich-front:
   immich-ml:
   immich-db:
+    internal: true

@@ -6,7 +6,7 @@ services:
       folder.view: Tools
       net.unraid.docker.icon: ${SECRET_APPDATA}/icons/lldap.png
       traefik.enable: true
-      traefik.docker.network: homelab_lldap
+      traefik.docker.network: homelab_lldap-internal
       traefik.http.routers.lldap.rule: Host(`ldap.${SECRET_HOME_DOMAIN}`)
       traefik.http.routers.lldap.entryPoints: websecure
       traefik.http.services.lldap.loadbalancer.server.port: 17170
@@ -32,8 +32,9 @@ services:
       LLDAP_SMTP_OPTIONS__REPLY_TO: "Ne pas Repondre <noreply@${SECRET_DOMAIN}>"
       LLDAP_VERBOSE: false
     networks:
-      - lldap
+      - lldap-internal
     restart: always
 
 networks:
-  lldap:
+  lldap-internal:
+    internal: true

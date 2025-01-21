@@ -5,3 +5,4 @@ include:
 networks:
   authelia:
   authelia-db:
+    internal: true

@@ -3,4 +3,5 @@ include:
   - errorpages-compose.yaml
 
 networks:
-  webserver:
+  webserver-internal:
+    internal: true

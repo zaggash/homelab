@@ -4,3 +4,4 @@ include:
 
 networks:
   traefik-socket:
+    internal: true
