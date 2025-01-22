@@ -11,13 +11,5 @@ include:
 
 networks:
   lan:
-    driver: ipvlan
-    driver_opts:
-      parent: br0
-    ipam:
-      driver: default
-      config:
-        - subnet: 192.168.1.0/24
-          gateway: 192.168.1.1
-          aux_addresses:
-            server: 192.168.1.12
+    name: br0
+    external: true

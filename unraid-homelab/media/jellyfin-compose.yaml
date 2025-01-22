@@ -21,10 +21,8 @@ services:
       TZ: ${TZ}
       PUID: ${UID}
       PGID: ${GID}
-      JELLYFIN_PublishedServerUrl: http://vod.${SECRET_HOME_DOMAIN}
+      #JELLYFIN_PublishedServerUrl: http://vod.${SECRET_HOME_DOMAIN} # Unused unless Macvlan
       DOCKER_MODS: linuxserver/mods:jellyfin-amd
     networks:
       media:
-      lan:
-        ipv4_address: 192.168.1.20
     restart: always
