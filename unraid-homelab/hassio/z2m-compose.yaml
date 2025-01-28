@@ -1,0 +1,20 @@
+services:
+  hassio-z2m:
+    container_name: hassio-z2m
+    image: ghcr.io/koenkk/zigbee2mqtt:2.0.0@sha256:6105a3a01a66bbfb98909a7c309d0707ec7b41728ac15d399747077225231545
+    labels:
+      folder.view: Hassio
+      net.unraid.docker.icon: ${SECRET_APPDATA}/icons/z2m.png
+    user: ${UID}:${GID}
+    group_add:
+      - 16
+    devices:
+      - "/dev/serial/by-id/usb-ITead_Sonoff_Zigbee_3.0_USB_Dongle_Plus_74d5faddf3d8eb119d560815b9da5f8b-if00-port0:/dev/ttyUSB0"
+    volumes:
+      - "${SECRET_APPDATA}/hassio/z2m:/app/data"
+      - "/run/udev:/run/udev:ro"
+    environment:
+      TZ: ${TZ}
+    networks:
+      - hassio-net
+    restart: always

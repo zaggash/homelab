@@ -63,6 +63,7 @@ services:
     networks:
       - traefik-socket
       - webserver-internal
+      - hassio-front
       - authelia
       - lldap-internal
       - drone-front

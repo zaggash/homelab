@@ -1,12 +1,27 @@
 include:
-  #- hassio-compose.yaml
+  - server-compose.yaml
   #- frigate-compose.yaml
-  #- esphome-compose.yaml
-  #- z2m-compose.yaml
-  #- mqtt-compose.yaml
-  #- somfyprotect-compose.yaml
+  - esphome-compose.yaml
+  - z2m-compose.yaml
+  - mqtt-compose.yaml
+  - somfyprotect2mqtt-compose.yaml
 
 networks:
-  hassio:
+  lan:
+    external: true
+    name: br0
+
+  hassio-front:
+
+  hassio-net:
+    driver: bridge
+    driver_opts:
+      com.docker.network.bridge.name: br-hassio
+    ipam:
+      config:
+        - subnet: 172.30.0.0/16
+          ip_range: 172.30.0.0/24
+          gateway: 172.30.0.1
+
   hassio-internal:
     internal: true
