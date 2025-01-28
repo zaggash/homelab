@@ -13,6 +13,7 @@ services:
       traefik.http.services.hassio-server.loadbalancer.server.port: 8123
     volumes:
       - "${SECRET_APPDATA}/hassio/config:/config"
+      - "${SECRET_APPDATA}/hassio/media:/media"
     user: ${UID}:${GID}
     environment:
       TZ: ${TZ}
