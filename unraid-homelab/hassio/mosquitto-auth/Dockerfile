@@ -8,7 +8,7 @@ ARG LIBWEBSOCKET_VERSION=4.3.2
 # renovate: datasource=github-tags depName=eclipse-mosquitto/mosquitto versioning=semver
 ARG MOSQUITTO_VERSION=2.0.18
 # renovate: datasource=github-tags depName=iegomez/mosquitto-go-auth versioning=semver
-ARG MOSQUITTO_AUTH_VERSION=2.0.1
+ARG MOSQUITTO_AUTH_VERSION=2.1.0
 
 RUN apt-get update \
     && apt-get install -qy --no-install-recommends \
