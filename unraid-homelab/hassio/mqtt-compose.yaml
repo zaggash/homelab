@@ -5,6 +5,8 @@ services:
     labels:
       folder.view: Hassio
       net.unraid.docker.icon: ${SECRET_APPDATA}/icons/mqtt.png
+    ports:
+      - "8883:8883"
     volumes:
       - "${SECRET_APPDATA}/hassio/mqtt:/mosquitto"
     user: "1883:1883"
