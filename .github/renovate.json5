@@ -70,6 +70,22 @@
     },
 
     {
+      description: 'Group Mosquitto+Auth Dockerfile updates',
+      groupName: 'Mosquitto+Auth Dockerfile',
+      matchFileNames: [
+        'unraid-homelab/**/mosquitto-auth/**',
+      ],
+      group: {
+        commitMessageTopic: '{{{groupName}}} group',
+      },
+      matchUpdateTypes: [
+        'major',
+        'minor',
+        'patch',
+      ],
+    },
+
+    {
       description: 'Group immich updates',
       groupName: 'Immich',
       matchDatasources: [
