@@ -14,13 +14,17 @@
   },
   customManagers: [
     {
-      description: 'Bedrock Connect custom Regex',
+      description: 'Custom Regex',
       customType: 'regex',
       fileMatch: [
         'unraid-homelab/.*/bedrock-connect/Dockerfile',
+        'unraid-homelab/.*/mosquitto-auth/Dockerfile',
       ],
       matchStrings: [
         'renovate: datasource=(?<datasource>.*?) depName=(?<depName>.*?) versioning=(?<versioning>.*?)\\sENV BEDROCK_CONNECT=(?<currentValue>.*)',
+        'renovate: datasource=(?<datasource>.*?) depName=(?<depName>.*?) versioning=(?<versioning>.*?)\\sARG LIBWEBSOCKET_VERSION=(?<currentValue>.*)',
+        'renovate: datasource=(?<datasource>.*?) depName=(?<depName>.*?) versioning=(?<versioning>.*?)\\sARG MOSQUITTO_VERSION=(?<currentValue>.*)',
+        'renovate: datasource=(?<datasource>.*?) depName=(?<depName>.*?) versioning=(?<versioning>.*?)\\sARG MOSQUITTO_AUTH_VERSION=(?<currentValue>.*)',
       ],
     },
   ],

@@ -1,0 +1,50 @@
+name: Mosquitto Auth Build image
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/run-mosquitto-auth_docker-build.yaml"
+      - "unraid-homelab/gaming/minecraft/bedrock-connect/*"
+
+env:
+  ORG_ACCOUNT: "zaggash"
+  IMAGE_NAME: "mosquitto-auth"
+  CONTEXT: "./unraid-homelab/hassio/mosquitto-auth/"
+  DOCKERFILE: "./unraid-homelab/hassio/mosquitto-auth/Dockerfile"
+
+jobs:
+  extract-tag:
+    name: Extract Application Tag
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@85e6279cec87321a52edac9c87bce653a07cf6c2
+
+      - name: Get Mosquitto version
+        run: |
+         TAG=$(grep -Po 'MOSQUITTO_VERSION=\K.*' ${{ env.DOCKERFILE }} )
+         echo "TAG_ENV=$TAG" >> $GITHUB_ENV
+    outputs:
+      org-account: ${{ env.ORG_ACCOUNT }}
+      image-name: ${{ env.IMAGE_NAME }}
+      tag: ${{ env.TAG_ENV }}
+      context: ${{ env.CONTEXT }}
+      dockerfile: ${{ env.DOCKERFILE}}
+
+
+  build-push:
+    name: Build & Push
+    needs: extract-tag
+    uses: zaggash/gh-workflows/.github/workflows/action_docker-build-repo.yaml@main
+    with:
+      github-account: ${{ needs.extract-tag.outputs.org-account }}
+      image-name: ${{ needs.extract-tag.outputs.image-name }}
+      tag: ${{ needs.extract-tag.outputs.tag }}
+      context: ${{ needs.extract-tag.outputs.context }}
+      dockerfile: ${{ needs.extract-tag.outputs.dockerfile }}
+    secrets:
+      gh_username: ${{ secrets.GH_USERNAME }}
+      gh_token: ${{ secrets.GH_TOKEN }}
