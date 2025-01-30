@@ -95,6 +95,8 @@
       group: {
         commitMessageTopic: '{{{groupName}}} group',
       },
+      separateMajorMinor: false,
+      separateMinorPatch: false,
     },
     {
       description: 'Only update digest for Postgres and redis on Immich',
@@ -114,13 +116,6 @@
         'patch',
       ],
       enabled: false,
-    },
-    {
-      description: 'Set minio semver compatible',
-      versioning: 'regex:^RELEASE\\.(?<major>\\d{4})-(?<minor>\\d{2})-(?<patch>\\d{2})',
-      matchPackageNames: [
-        '/^minio/',
-      ],
     },
     {
       description: 'Set time based azure-rest-api versioning',
