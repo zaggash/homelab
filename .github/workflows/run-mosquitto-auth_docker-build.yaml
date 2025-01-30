@@ -7,7 +7,7 @@ on:
       - main
     paths:
       - ".github/workflows/run-mosquitto-auth_docker-build.yaml"
-      - "unraid-homelab/gaming/minecraft/bedrock-connect/*"
+      - "unraid-homelab/hassio/mosquitto-auth/*"
 
 env:
   ORG_ACCOUNT: "zaggash"
