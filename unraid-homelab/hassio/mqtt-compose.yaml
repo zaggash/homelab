@@ -1,7 +1,7 @@
 services:
   hassio-mqtt:
     container_name: hassio-mqtt
-    image: docker.io/eclipse-mosquitto:2.0.20@sha256:deae95623b9d5c6ca5e264380629db53b992106d436b56d42f7c8df46b41b96f
+    image: ghcr.io/zaggash/mosquitto-auth:2.0.20@sha256:8c7b150e82718305e46002b1bdbc7cd949d530e33717d8a36f167255f676c61e
     labels:
       folder.view: Hassio
       net.unraid.docker.icon: ${SECRET_APPDATA}/icons/mqtt.png
@@ -9,7 +9,7 @@ services:
       - "8883:8883"
     volumes:
       - "${SECRET_APPDATA}/hassio/mqtt:/mosquitto"
-    user: "1883:1883"
+    user: ${UID}:${GID}
     environment:
       TZ: ${TZ}
     networks:
