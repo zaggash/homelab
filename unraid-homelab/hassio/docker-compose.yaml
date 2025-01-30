@@ -1,6 +1,6 @@
 include:
   - server-compose.yaml
-  #- frigate-compose.yaml
+  - frigate-compose.yaml
   - esphome-compose.yaml
   - z2m-compose.yaml
   - mqtt-compose.yaml

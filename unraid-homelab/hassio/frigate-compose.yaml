@@ -1,0 +1,20 @@
+services:
+  frigate:
+    container_name: hassio-frigate
+    image: ghcr.io/blakeblackshear/frigate:0.14.1@sha256:22e3d0b486df52c3d669682254c2b1bf4205fa6ad8bd8f8c9f7fe76b1517005d
+    labels:
+      folder.view: Hassio
+      net.unraid.docker.icon: ${SECRET_APPDATA}/icons/frigate.png
+    devices:
+      - /dev/dri/renderD128:/dev/dri/renderD128
+    shm_size: "64mb"
+    volumes:
+      - "${SECRET_APPDATA}/hassio/frigate/config:/config"
+      - "${SECRET_APPDATA}/hassio/frigate/media:/media/frigate"
+      - type: tmpfs
+        target: /tmp/cache
+        tmpfs:
+          size: 1000000000
+    networks:
+      - hassio-internal
+    restart: always
