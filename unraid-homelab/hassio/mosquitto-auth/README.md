@@ -67,10 +67,24 @@ CREATE TABLE Users (Name STRING, Password STRING);
 .exit
 ```
 
+Use the `pw` binary from the container to get the required password encrypted version.
+```
+$ pw -p password
+PBKDF2$sha512$100000$wQ5MDv53lQSfxYJfXo7C6A==$Vj1ev0AlGwWdEeQgS0Ya2NC/j4qf970wQZkxJ0TME6OFGydOqRkshWfPAFWxJtPFLFX7pLEeOlnDL8xOK77Nng==
+```
+
 Populate authentication.db with auth credentials
 ```
 sqlite3 authentication.db
 
-INSERT INTO Users VALUES ('the-user', 'the-password');
+INSERT INTO Users VALUES ('the-user', 'the-hashed-password');
+.exit
+```
+
+Update a user password
+```
+sqlite3 authentication.db
+
+UPDATE Users SET Password = '' WHERE Name = 'my-user';
 .exit
 ```
