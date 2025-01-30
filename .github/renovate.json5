@@ -48,7 +48,7 @@
     {
       description: 'Automerge bedrock-connect binary version on release',
       matchManagers: [
-        'regex'
+        'custom.regex',
       ],
       matchDatasources: [
         'github-tags',
@@ -66,9 +66,8 @@
         'minor',
         'patch',
       ],
-      ignoreTests: true
+      ignoreTests: true,
     },
-
     {
       description: 'Group Mosquitto+Auth Dockerfile updates',
       groupName: 'Mosquitto+Auth Dockerfile',
@@ -81,7 +80,6 @@
       separateMajorMinor: false,
       separateMinorPatch: false,
     },
-
     {
       description: 'Group immich updates',
       groupName: 'Immich',
