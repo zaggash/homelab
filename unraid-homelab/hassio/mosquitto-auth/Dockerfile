@@ -4,11 +4,11 @@ FROM debian:stable-slim
 WORKDIR /usr/src
 
 # renovate: datasource=github-tags depName=warmcat/libwebsockets versioning=semver
-ARG LIBWEBSOCKET_VERSION=4.3.2
+ARG LIBWEBSOCKET_VERSION=4.3.3
 # renovate: datasource=github-tags depName=eclipse-mosquitto/mosquitto versioning=semver
-ARG MOSQUITTO_VERSION=2.0.18
+ARG MOSQUITTO_VERSION=2.0.20
 # renovate: datasource=github-tags depName=iegomez/mosquitto-go-auth versioning=semver
-ARG MOSQUITTO_AUTH_VERSION=2.0.1
+ARG MOSQUITTO_AUTH_VERSION=2.1.0
 
 RUN apt-get update \
     && apt-get install -qy --no-install-recommends \
