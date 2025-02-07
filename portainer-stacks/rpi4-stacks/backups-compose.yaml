@@ -2,7 +2,7 @@ version: "3"
 
 services:
   adguard: &backup_service
-    image: offen/docker-volume-backup:v2.43.1@sha256:113d0aace06c83519a304e9b9c13fc65ebe2e52f5b027897886c8c0566a23d72
+    image: offen/docker-volume-backup:v2.43.2@sha256:3f477b6cd246d63292800746e1dc417034cf9d9977145028f7fbda4e25c24211
     restart: always
     dns:
       - 192.168.1.10
