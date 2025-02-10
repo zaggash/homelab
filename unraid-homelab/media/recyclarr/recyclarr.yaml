@@ -94,14 +94,11 @@ radarr:
           - 08d6d8834ad9ec87b1dc7ec8148e7a1f  # PQ
           - 9364dd386c9b4a1100dde8264690add7  # HLG
           #
-          - b17886cb4158d9fea189859409975758  # HDR10+ Boost
           - 55a5b50cb416dea5a50c4955896217ab  # DV HDR10+ Boost
         # Version
           - 0f12c086e289cf966fa5948eac571f44  # Hybrid
           - 570bc9ebecd92723d2d21500f4be314c  # Remaster
           - eca37840c13c6ef2dd0262b141a5482f  # 4K Remaster
-          - eecf3a857724171f968a66cb5719e152  # IMAX
-          - 9f6cbff8cfe4ebbc1bde14c7b7bec0de  # IMAX Enhanced
         # HQ Source Groups
           - 5583260016e0b9f683f53af41fb42e4a  # FR Remux Tier 01
           - 9019d81307e68cd4a7eb06a567e833b8  # FR Remux Tier 02
@@ -115,30 +112,44 @@ radarr:
           - 90a6f9a284dff5103f6346090e6280c8  # LQ
           - 48f031e76111f17ea94898f4cdc34fdc  # FR LQ
           - bfd8eb01832d646a0a89c4deb46f8564  # Upscaled
+        assign_scores_to:
+          - name: 4K Multi+VFF Remux
+          - name: 4K VFF Bluray
+          - name: HD VFF Remux
+
+      - trash_ids:
+          - eecf3a857724171f968a66cb5719e152  # IMAX
+          - 9f6cbff8cfe4ebbc1bde14c7b7bec0de  # IMAX Enhanced
+        assign_scores_to:
+          - name: 4K Multi+VFF Remux
+            score: 1000
+          - name: 4K VFF Bluray
+            score: 1000
+          - name: HD VFF Remux
+            score: 1000
+
+      - trash_ids:
           - 839bea857ed2c0a8e084f3cbdbd65ecb  # x265 (no HDR/DV)
         assign_scores_to:
           - name: 4K Multi+VFF Remux
+            score: -10000
           - name: 4K VFF Bluray
+            score: -10000
           - name: HD VFF Remux
-
+            score: -10000
 
       - trash_ids:
-          - 72b1548df1ac3175ca105a9ce7043c91  # Multi-Audio
-          - d5f3a1afdb77e6b95e489f7654532d04  # Multi-French
+          - 0542a48746585dc4444bbbb8a6bdf6ea  # Language: Original Plus French
         assign_scores_to:
           - name: 4K Multi+VFF Remux
             score: 1000
-
-      - trash_ids:
-          - 6d27683346c78d6a3f772e30877910a7  # French Audio
-        assign_scores_to:
           - name: 4K VFF Bluray
-            score: 1000
           - name: HD VFF Remux
-            score: 1000
 
       - trash_ids:
           - 404c08fd0bd67f39b4d8e5709319094e  # VFF
+          - 4cafa20d5584f6ba1871d1b8941aa3cb  # VOF
+          - 52772f1cad6b5d26c2551f79bc538a50  # VFI
         assign_scores_to:
           - name: 4K Multi+VFF Remux
             score: 1000
@@ -292,7 +303,6 @@ sonarr:
           - 85c61753df5da1fb2aab6f2a47426b09  # BR-DISK
           - 3ba797e5dc13af4b8d9bb25e83d90de2  # FR LQ
           - 9c11cd3f07101cdba90a2d81cf0e56b4  # LQ
-          - 9b64dff695c2115facf1b6ea59c9bd07  # x265 (no HDR/DV)
           - fbcb31d8dabd2a319072b84fc0b7249c  # Extra
           - ea0bb4b6ba388992fad1092703b5ff7b  # FastSUB
           # HDR
@@ -308,7 +318,6 @@ sonarr:
           - 2a7e3be05d3861d6df7171ec74cad727  # PQ
           - 17e889ce13117940092308f48b48b45b  # HLG
           #
-          - 0dad0a507451acddd754fe6dc3a7f5e7  # HDR10+ Boost
           - 385e9e8581d33133c3961bdcdeffb7b4  # DV HDR10+ Boost
           # Misc.
           - ec8fa7296b64e8cd390a1600981f3923  # Repack/Proper
@@ -356,19 +365,41 @@ sonarr:
 
 
       - trash_ids:
+          - 10e77b96ae4770a7de645a91a53ce29a  # Language: Original Plus French
+        assign_scores_to:
+          - name: VOSTFR-WEB-1080p
+            score: 1000
+          - name: VOSTFR-WEB-2160p
+            score: 1000
+          - name: VFF-WEB-1080p
+
+      - trash_ids:
             - 07a32f77690263bb9fda1842db7e273f  # VOSTFR
         assign_scores_to:
           - name: VOSTFR-WEB-1080p
             score: 1000
           - name: VOSTFR-WEB-2160p
             score: 1000
+          - name: VFF-WEB-1080p
+            score: -1000
 
       - trash_ids:
-            - 4721382d9ee05f1b4967a25e75072911  # French Audio
+            - 7ae924ee9b2f39df3283c6c0beb8a2aa  # VOF
+            - b6816a0e1d4b64bf3550ad3b74b009b6  # VFI
             - 2c29a39a4fdfd6d258799bc4c09731b9  # VFF
         assign_scores_to:
           - name: VFF-WEB-1080p
             score: 1000
+
+      - trash_ids:
+            - 7a7f4e4f58bd1058440236d033a90b67  # VFQ
+        assign_scores_to:
+          - name: VFF-WEB-1080p
+            score: -5000
+          - name: VFF-WEB-1080p
+            score: -5000
+          - name: VFF-WEB-1080p
+            score: -5000
 
       ####################
       ###### ANIME #######
@@ -401,7 +432,6 @@ sonarr:
           # Misc.
           - b2550eb333d27b75833e25b8c2557b38  # 10bit
           - cddfb4e32db826151d97352b8e37c648  # x264
-          - c9eafd50846d299b862ca9bb6ea91950  # x265
           # HQ Source Groups
           - db13a377f7afb29975ea39470434d2ef  # FR Anime Tier 01
           - 4e6134a384dbc0ef166234cc0e45d26d  # FR Anime Tier 02
