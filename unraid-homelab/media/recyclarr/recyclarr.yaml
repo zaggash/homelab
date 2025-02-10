@@ -162,11 +162,11 @@ radarr:
           - b6ace47331a1d3b77942fc18156f6df6  # VFQ
         assign_scores_to:
           - name: 4K Multi+VFF Remux
-            score: -5000
+            score: -10000
           - name: 4K VFF Bluray
-            score: -5000
+            score: -10000
           - name: HD VFF Remux
-            score: -5000
+            score: -10000
 
       - trash_ids:
           - 02e48d30a176c91baf9e15de05e5dc6a  # FanSUB
@@ -381,7 +381,7 @@ sonarr:
           - name: VOSTFR-WEB-2160p
             score: 1000
           - name: VFF-WEB-1080p
-            score: -1000
+            score: -10000
 
       - trash_ids:
             - 7ae924ee9b2f39df3283c6c0beb8a2aa  # VOF
@@ -395,11 +395,11 @@ sonarr:
             - 7a7f4e4f58bd1058440236d033a90b67  # VFQ
         assign_scores_to:
           - name: VFF-WEB-1080p
-            score: -5000
+            score: -10000
           - name: VFF-WEB-1080p
-            score: -5000
+            score: -10000
           - name: VFF-WEB-1080p
-            score: -5000
+            score: -10000
 
       ####################
       ###### ANIME #######
@@ -465,7 +465,7 @@ sonarr:
           - name: ANIME-VOSTFR
             score: 1000
           - name: ANIME-Multi-FR
-            score: -1000
+            score: -10000
 
       - trash_ids:
           - 10e77b96ae4770a7de645a91a53ce29a  # Language: Original Plus French
