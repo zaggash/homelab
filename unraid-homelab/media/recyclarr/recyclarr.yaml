@@ -208,6 +208,32 @@ sonarr:
               - WEBDL-720p
               - HDTV-720p
 
+      - name: ANIME-Multi-FR
+        reset_unmatched_scores:
+          enabled: true
+        min_format_score: 0
+        quality_sort: top
+        upgrade:
+          allowed: true
+          until_quality: Bluray 1080p
+          until_score: 10000
+        qualities:
+          - name: Bluray 1080p
+            qualities:
+              - Bluray-1080p
+              - Bluray-1080p Remux
+          - name: WEB 1080p
+            qualities:
+              - WEBRip-1080p
+              - WEBDL-1080p
+              - HDTV-1080p
+          - name: Bluray-720p
+          - name: Web 720p
+            qualities:
+              - WEBRip-720p
+              - WEBDL-720p
+              - HDTV-720p
+
       # TVSHOWS
       - name: VOSTFR-WEB-1080p
         reset_unmatched_scores:
@@ -383,47 +409,51 @@ sonarr:
           - 2f3422339d185eb227a324644a2fbfca  # FR Scene Groups
         assign_scores_to:
           - name: ANIME-VOSTFR
+          - name: ANIME-Multi-FR
 
       - trash_ids:
           - d660701077794679fd59e8bdf4ce3a29  # AMZN
         assign_scores_to:
           - name: ANIME-VOSTFR
-            score: 1
+          - name: ANIME-Multi-FR
 
       - trash_ids:
           - 89358767a60cc28783cdc3d0be9388a4  # DSNP
         assign_scores_to:
           - name: ANIME-VOSTFR
-            score: 4
+          - name: ANIME-Multi-FR
 
       - trash_ids:
           - d34870697c9db575f17700212167be23  # NF
         assign_scores_to:
           - name: ANIME-VOSTFR
-            score: 2
+          - name: ANIME-Multi-FR
 
       - trash_ids:
           - 07a32f77690263bb9fda1842db7e273f  # VOSTFR
+        assign_scores_to:
+          - name: ANIME-VOSTFR
+            score: 1000
+          - name: ANIME-Multi-FR
+            score: -1000
+
+      - trash_ids:
           - 10e77b96ae4770a7de645a91a53ce29a  # Language: Original Plus French
         assign_scores_to:
           - name: ANIME-VOSTFR
+          - name: ANIME-Multi-FR
             score: 1000
 
       #### Optionals
       - trash_ids:
-          - 026d5aadd1a6b4e550b134cb6c72b3ca  # Uncensored
+          - 44b6c964dad997577d793fd004a39224  # FR Anime FanSub
         assign_scores_to:
           - name: ANIME-VOSTFR
-            score: 101
 
       - trash_ids:
           - 418f50b10f1907201b6cfdf881f467b7  # Anime Dual Audio
         assign_scores_to:
           - name: ANIME-VOSTFR
-            score: 101
-
-      - trash_ids:
-          - 44b6c964dad997577d793fd004a39224  # FR Anime FanSub
-        assign_scores_to:
-          - name: ANIME-VOSTFR
-            score: 1000
+            score: -10000
+          - name: ANIME-Multi-FR
+            score: -10000
