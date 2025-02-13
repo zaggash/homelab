@@ -1,10 +1,5 @@
 http:
   routers:
-    hassio:
-      entryPoints:
-        - websecure
-      rule: 'Host(`hassio.${SECRET_DOMAIN}`)'
-      service: hassio
     unifi:
       entryPoints:
         - websecure
@@ -12,10 +7,6 @@ http:
       service: unifi
 
   services:
-    hassio:
-      loadBalancer:
-        servers:
-          - url: http://hassio.${SECRET_HOME_DOMAIN}:8123/
     unifi:
       loadBalancer:
         servers:
