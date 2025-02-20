@@ -304,7 +304,6 @@ sonarr:
           - 3ba797e5dc13af4b8d9bb25e83d90de2  # FR LQ
           - 9c11cd3f07101cdba90a2d81cf0e56b4  # LQ
           - fbcb31d8dabd2a319072b84fc0b7249c  # Extra
-          - ea0bb4b6ba388992fad1092703b5ff7b  # FastSUB
           # HDR
           - 2b239ed870daba8126a53bd5dc8dc1c8  # DV HDR10+
           - 7878c33f1963fefb3d6c8657d46c2f0a  # DV HDR10
