@@ -16,8 +16,10 @@ services:
       - model-cache:/cache
     environment:
       LOG_LEVEL: log
-      MACHINE_LEARNING_PRELOAD__CLIP: XLM-Roberta-Large-Vit-B-32
-      MACHINE_LEARNING_PRELOAD__FACIAL_RECOGNITION: buffalo_l
+      MACHINE_LEARNING_PRELOAD__CLIP__TEXTUAL: XLM-Roberta-Large-Vit-B-16Plus
+      MACHINE_LEARNING_PRELOAD__CLIP__VISUAL: XLM-Roberta-Large-Vit-B-16Plus
+      MACHINE_LEARNING_PRELOAD__FACIAL_RECOGNITION__RECOGNITION: buffalo_l
+      MACHINE_LEARNING_PRELOAD__FACIAL_RECOGNITION__DETECTION: buffalo_l
     restart: always
     healthcheck:
       disable: false
