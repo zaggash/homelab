@@ -14,7 +14,9 @@ services:
       - immich-ml
     volumes:
       - model-cache:/cache
+      - /etc/localtime:/etc/localtime:ro
     environment:
+      TZ: ${TZ}
       LOG_LEVEL: log
       MACHINE_LEARNING_PRELOAD__CLIP__TEXTUAL: XLM-Roberta-Large-Vit-B-16Plus
       MACHINE_LEARNING_PRELOAD__CLIP__VISUAL: XLM-Roberta-Large-Vit-B-16Plus
