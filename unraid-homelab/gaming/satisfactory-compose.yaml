@@ -1,7 +1,7 @@
 services:
   satisfactory-server:
     container_name: satisfactory-server
-    image: ghcr.io/wolveix/satisfactory-server:v1.9.7@sha256:1138363d4bf5a865dbadb6b6140f2cd30113674ce9ac6e566d606f88ef2feb24
+    image: ghcr.io/wolveix/satisfactory-server:v1.9.7@sha256:b2c6c80c497407803ad87b0b14121ac84b976fcc01adc273367a83fdee49c764
     labels:
       folder.view: Gaming
       net.unraid.docker.icon: ${SECRET_APPDATA}/icons/satisfactory.png
