@@ -1,8 +1,3 @@
-FROM debian:stable-slim
-
-# Install mosquitto + auth plugin
-WORKDIR /usr/src
-
 # renovate: datasource=github-tags depName=warmcat/libwebsockets versioning=semver
 ARG LIBWEBSOCKET_VERSION=4.3.5
 # renovate: datasource=github-tags depName=eclipse-mosquitto/mosquitto versioning=semver
@@ -10,90 +5,109 @@ ARG MOSQUITTO_VERSION=2.0.21
 # renovate: datasource=github-tags depName=iegomez/mosquitto-go-auth versioning=semver
 ARG MOSQUITTO_AUTH_VERSION=3.0.0
 
-RUN apt-get update \
-    && apt-get install -qy --no-install-recommends \
-        pwgen \
-        tini \
-        bash \
-        jq \
-        tzdata \
-        curl \
-        ca-certificates \
-        xz-utils \
-        build-essential \
-        cmake \
-        git \
-        ca-certificates \
-        openssl \
-        libssl-dev \
-        libc-ares2 \
-        libc-ares-dev \
-        libcjson1 \
-        libcjson-dev \
-        xsltproc \
-        docbook-xsl \
-        golang-go \
-    \
 
-    # Compile and install libwebsocket
-    #
-    # DLWS_WITHOUT_TESTAPPS is just a workaround, see
-    # https://github.com/warmcat/libwebsockets/issues/2790 for more
-    && git clone --depth 1 -b "v${LIBWEBSOCKET_VERSION}" \
-       https://libwebsockets.org/repo/libwebsockets \
-    \
-    && cd libwebsockets \
-    && mkdir build \
-    && cd build \
-    && cmake -DLWS_WITH_EXTERNAL_POLL=ON -DLWS_WITHOUT_TESTAPPS=ON .. \
-    && make install \
-    && ldconfig \
-    && cd ../.. \
+#### Use debian:stable-slim as a builder for Mosquitto and libwebsockets.
+FROM debian:stable-slim as mosquitto_builder
+ARG LIBWEBSOCKET_VERSION
+ARG MOSQUITTO_VERSION
+# Build libwebsockets
+RUN set -ex \
+  && apt-get update \
+  && apt-get install -y \
+       wget \
+       git \
+       build-essential \
+       cmake \
+       libssl-dev \
+       libcjson-dev \
+  && wget --inet4-only https://github.com/warmcat/libwebsockets/archive/v${LIBWEBSOCKET_VERSION}.tar.gz \
+       -O /tmp/lws.tar.gz \
+  && mkdir -p /build/lws \
+  && tar --strip=1 -xf /tmp/lws.tar.gz -C /build/lws \
+  && cd /build/lws \
+  && cmake . \
+       -DCMAKE_BUILD_TYPE=MinSizeRel \
+       -DCMAKE_INSTALL_PREFIX=/usr \
+       -DLWS_IPV6=ON \
+       -DLWS_WITHOUT_BUILTIN_GETIFADDRS=ON \
+       -DLWS_WITHOUT_CLIENT=ON \
+       -DLWS_WITHOUT_EXTENSIONS=ON \
+       -DLWS_WITHOUT_TESTAPPS=ON \
+       -DLWS_WITH_HTTP2=OFF \
+       -DLWS_WITH_SHARED=OFF \
+       -DLWS_WITH_ZIP_FOPS=OFF \
+       -DLWS_WITH_ZLIB=OFF \
+       -DLWS_WITH_EXTERNAL_POLL=ON \
+  && make -j "$(nproc)"
 
-    # Compile and install mosquitto
-    && git clone --depth 1 -b "v${MOSQUITTO_VERSION}" \
-       https://github.com/eclipse/mosquitto \
-    \
-    && cd mosquitto \
-    && make WITH_WEBSOCKETS=yes WITH_SRV=yes \
-    && make install \
-    && cd .. \
+RUN set -ex \
+  && mkdir -p /app \
+  && cd /app \
+  && wget --inet4-only http://mosquitto.org/files/source/mosquitto-${MOSQUITTO_VERSION}.tar.gz \
+  && tar xzvf mosquitto-${MOSQUITTO_VERSION}.tar.gz \
+  && cd mosquitto-${MOSQUITTO_VERSION} \
+  && make CFLAGS="-Wall -O2 -I/build/lws/include" LDFLAGS="-L/build/lws/lib" WITH_WEBSOCKETS=yes \
+  && make install
 
-    # Compile and install mosquitto-go-auth
-    && git clone --depth 1 -b "${MOSQUITTO_AUTH_VERSION}" \
-       https://github.com/iegomez/mosquitto-go-auth \
-    \
-    && cd mosquitto-go-auth \
-    && sed -i 's/-I\/usr\/local\/include/-I\/usr\/include/' Makefile \
-    && sed -i 's/LDFLAGS := .*$/& -Wl,-unresolved-symbols=ignore-all/' Makefile \
-    && make \
-    && mkdir -p /usr/share/mosquitto \
-    && cp -f go-auth.so /usr/share/mosquitto \
-    && cp -f pw /usr/local/bin \
-    \
 
-    && apt-get purge -y --auto-remove \
-        build-essential \
-        git \
-        cmake \
-        libssl-dev \
-        libc-ares-dev \
-        libcjson-dev \
-        xsltproc \
-        docbook-xsl \
-        golang-go \
-    && apt-get clean \
-    && rm -fr \
-        /etc/logrotate.d \
-        /etc/mosquitto/* \
-        /usr/src/libwebsockets \
-        /usr/src/mosquitto \
-        /usr/src/mosquitto-go-auth \
-        /var/www \
-        /var/lib/apt/lists/* \
-	      /root/.cache \
-	      /root/go
+#### Use golang:latest as a builder for the Mosquitto Go Auth plugin.
+FROM golang:latest AS go_auth_builder
+ARG MOSQUITTO_AUTH_VERSION
+ENV CGO_CFLAGS="-I/usr/local/include -fPIC"
+ENV CGO_LDFLAGS="-shared -Wl,-unresolved-symbols=ignore-all"
+ENV CGO_ENABLED=1
 
+COPY --from=mosquitto_builder /usr/local/include/ /usr/local/include/
+
+RUN set -ex \
+  && apt-get update \
+  && mkdir /app \
+  && cd /app \
+  && wget --inet4-only \
+       https://github.com/iegomez/mosquitto-go-auth/archive/refs/tags/${MOSQUITTO_AUTH_VERSION}.tar.gz \
+       -O /tmp/mosquitto-go-auth-${MOSQUITTO_AUTH_VERSION}.tar.gz \
+  && tar xvzf /tmp/mosquitto-go-auth-${MOSQUITTO_AUTH_VERSION}.tar.gz -C /app --strip-components=1 \
+  && go build -buildmode=c-archive go-auth.go \
+  && go build -buildmode=c-shared -o go-auth.so \
+  && go build pw-gen/pw.go
+
+
+#### Create from a new image.
+FROM debian:stable-slim
+RUN set -ex \
+  && apt update \
+  && apt install -y \
+       bash \
+       tzdata \
+       openssl \
+       ca-certificates \
+       libc-ares2 \
+       openssl \
+       uuid \
+       tini \
+       wget \
+       libssl-dev \
+       libcjson-dev \
+
+  && mkdir -p /var/lib/mosquitto /var/log/mosquitto /mosquitto/conf.d \
+  && wget https://raw.githubusercontent.com/eclipse-mosquitto/mosquitto/refs/heads/master/docker/generic/mosquitto-no-auth.conf \
+       -O /mosquitto/conf.d/mosquitto.conf \
+  && groupadd mosquitto \
+  && useradd -s /sbin/nologin mosquitto -g mosquitto -d /var/lib/mosquitto \
+  && chown -R mosquitto:mosquitto /var/lib/mosquitto /var/log/mosquitto
+
+COPY --from=mosquitto_builder /usr/local/sbin/mosquitto /usr/sbin/mosquitto
+COPY --from=mosquitto_builder /usr/local/lib/libmosquitto* /usr/local/lib/
+
+COPY --from=mosquitto_builder /usr/local/bin/mosquitto_passwd /usr/bin/mosquitto_passwd
+COPY --from=mosquitto_builder /usr/local/bin/mosquitto_sub /usr/bin/mosquitto_sub
+COPY --from=mosquitto_builder /usr/local/bin/mosquitto_pub /usr/bin/mosquitto_pub
+COPY --from=mosquitto_builder /usr/local/bin/mosquitto_rr /usr/bin/mosquitto_rr
+
+COPY --from=go_auth_builder /app/pw /mosquitto/pw
+COPY --from=go_auth_builder /app/go-auth.so /mosquitto/go-auth.so
+
+RUN ldconfig
 WORKDIR /mosquitto
 ENTRYPOINT ["/usr/bin/tini", "--"]
-CMD [ "/usr/local/sbin/mosquitto" ,"-c", "/mosquitto/config/mosquitto.conf" ]
+CMD [ "/usr/sbin/mosquitto" ,"-c", "/mosquitto/conf.d/mosquitto.conf" ]
