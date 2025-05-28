@@ -8,7 +8,8 @@ services:
     ports:
       - "8883:8883"
     volumes:
-      - "${SECRET_APPDATA}/hassio/mqtt:/mosquitto"
+      - "${SECRET_APPDATA}/hassio/mqtt/config/:/mosquitto/conf.d"
+      - "${SECRET_APPDATA}/hassio/mqtt/data/:/mosquitto/data/"
     user: ${UID}:${GID}
     environment:
       TZ: ${TZ}
