@@ -27,8 +27,8 @@ socket_domain ipv4
 protocol mqtt
 
 require_certificate false
-certfile /mosquitto/config/mqtt.crt
-keyfile /mosquitto/config/mqtt.key
+certfile /mosquitto/conf.d/mqtt.crt
+keyfile /mosquitto/conf.d/mqtt.key
 
 # Save the in-memory database to disk
 persistence true
@@ -44,7 +44,7 @@ max_queued_messages 8192
 allow_anonymous false
 
 # Authentication plugin
-auth_plugin /usr/share/mosquitto/go-auth.so
+auth_plugin /mosquitto/go-auth.so
 auth_opt_backends sqlite
 auth_opt_hasher pbkdf2
 auth_opt_cache true
@@ -55,7 +55,7 @@ auth_opt_acl_jitter_seconds 30
 auth_opt_log_level info
 
 # Auth Sqlite plugin config
-auth_opt_sqlite_source /mosquitto/config/authentication.db
+auth_opt_sqlite_source /mosquitto/conf.d/authentication.db
 auth_opt_sqlite_userquery SELECT Password FROM Users WHERE Name = ? LIMIT 1
 ```
 
@@ -86,5 +86,13 @@ Update a user password
 sqlite3 authentication.db
 
 UPDATE Users SET Password = '' WHERE Name = 'my-user';
+.exit
+```
+
+Delete a user entry
+```
+sqlite3 authentication.db
+
+DELETE FROM Users WHERE Name = 'my-user';
 .exit
 ```
