@@ -53,7 +53,7 @@ volumes:
 
 steps:
   - name: sync-icons
-    image: alpine:3.21
+    image: alpine:3.22
     volumes:
       - name: appdata
         path: /appdata
@@ -116,7 +116,7 @@ volumes:
 
 steps:
   - name: compose-config-check
-    image: alpine:3.21
+    image: alpine:3.22
     volumes:
       - name: dockersock
         path: /var/run/docker.sock
@@ -134,7 +134,7 @@ steps:
           - unraid-homelab/**
 
   - name: move-recyclarr-config
-    image: alpine:3.21
+    image: alpine:3.22
     volumes:
       - name: appdata
         path: /appdata
@@ -155,7 +155,7 @@ steps:
 
 
   - name: move-authelia-config
-    image: alpine:3.21
+    image: alpine:3.22
     volumes:
       - name: appdata
         path: /appdata
@@ -175,7 +175,7 @@ steps:
       - compose-config-check
 
   - name: move-traefik-config
-    image: alpine:3.21
+    image: alpine:3.22
     volumes:
       - name: appdata
         path: /appdata
@@ -195,7 +195,7 @@ steps:
       - compose-config-check
 
   - name: deploy
-    image: alpine:3.21
+    image: alpine:3.22
     volumes:
       - name: dockersock
         path: /var/run/docker.sock
