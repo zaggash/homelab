@@ -1,7 +1,7 @@
 services:
   immich-pg:
     container_name: immich_pg
-    image: ghcr.io/immich-app/postgres:14-vectorchord0.3.0-pgvectors0.2.0@sha256:4882ac6977ac2cecd4d9f555f955937e777fd8b4dd35d29bef5677f39d9db32d
+    image: ghcr.io/immich-app/postgres:14-vectorchord0.3.0-pgvectors0.2.0@sha256:b8a840254e8e2db8720db3700a104623da372056347e80b598f00dd4da8df568
     labels:
       folder.view: Immich
       net.unraid.docker.icon: ${SECRET_APPDATA}/icons/postgresql.png
