@@ -4,6 +4,7 @@ services:
     #image: ghcr.io/flaresolverr/flaresolverr:v3.3.21@sha256:1a30e1ad6bb3df626bfe3b9735a6d60e208c475c89bf18be0db4d4b121a3cb0e
     #image: 21hsmw/flaresolverr:nodriver@sha256:3d99be35f845750adba3b9aa23844b7f585eeac6b1b45157bf14aaa8f7d16e20
     image: ghcr.io/thephaseless/byparr:1.2.0@sha256:8dc9d10b541af39bfe1eecfa7733c776025ab88471c3a429e6f7e2d7699e7932
+    shm_size: 2gb
     labels:
       folder.view: Media
       net.unraid.docker.icon: ${SECRET_APPDATA}/icons/flaresolverr.png
