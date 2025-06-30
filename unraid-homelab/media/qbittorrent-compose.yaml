@@ -1,7 +1,7 @@
 services:
   qbittorrent:
     container_name: qbittorrent
-    image: ghcr.io/linuxserver/qbittorrent:5.1.0@sha256:ca6325989299ff807ab94c9505c138b6cadfe8a77c4ef14c5690094cbbe40d7d
+    image: ghcr.io/linuxserver/qbittorrent:5.1.1@sha256:1afa9ee70f38adaebb4b2ade4e720d9add5b7d4f0ef4e679f17d94ca002f00bc
     labels:
       folder.view: Media
       net.unraid.docker.icon: ${SECRET_APPDATA}/icons/qbittorrent.png
