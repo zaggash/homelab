@@ -1,0 +1,31 @@
+services:
+  gluetun:
+    container_name: gluetun
+    image: docker.io/qmcgaw/gluetun:v3.40@sha256:2b42bfa046757145a5155acece417b65b4443c8033fb88661a8e9dcf7fda5a00
+    cap_add:
+      - NET_ADMIN
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    labels:
+      folder.view: Security
+      net.unraid.docker.icon: ${SECRET_APPDATA}/icons/gluetun.png
+      traefik.enable: true
+      traefik.docker.network: homelab_gluetun
+      traefik.http.routers.qbittorrent.rule: Host(`dl.${SECRET_DOMAIN}`)
+      traefik.http.routers.qbittorrent.entryPoints: websecure
+      traefik.http.services.qbittorrent.loadbalancer.server.port: 8080
+    environment:
+      TZ: ${TZ}
+      VPN_SERVICE_PROVIDER: ${VPN_PROVIDER}
+      VPN_TYPE: wireguard
+      WIREGUARD_PRIVATE_KEY: ${VPN_PRIVATE_KEY}
+      WIREGUARD_PRESHARED_KEY: ${VPN_PRESHARED_KEY}
+      WIREGUARD_ADDRESSES: ${VPN_ADDRESSES}
+      SERVER_COUNTRIES: ${VPN_COUNTRIES}
+      FIREWALL_VPN_INPUT_PORTS: ${VPN_FORWARDED_PORT}
+    networks:
+      - gluetun
+    restart: always
+
+networks:
+  gluetun:

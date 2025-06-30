@@ -1,3 +1,4 @@
-include: 
+include:
   - authelia/docker-compose.yaml
   - lldap-compose.yaml
+  - gluetun-compose.yaml

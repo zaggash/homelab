@@ -1,25 +1,19 @@
 services:
   qbittorrent:
     container_name: qbittorrent
-    image: ghcr.io/home-operations/qbittorrent:5.1.1@sha256:539688bd5de1d3d7e9b5b91e306635ce2ae3d9aa423cd5fea4d47eebd5c46356
-    ports:
-      - 192.168.1.50:6881:6881
+    image: ghcr.io/linuxserver/qbittorrent:5.1.0@sha256:ca6325989299ff807ab94c9505c138b6cadfe8a77c4ef14c5690094cbbe40d7d
     labels:
       folder.view: Media
       net.unraid.docker.icon: ${SECRET_APPDATA}/icons/qbittorrent.png
-      traefik.enable: true
-      traefik.docker.network: homelab_media
-      traefik.http.routers.qbittorrent.rule: Host(`dl.${SECRET_DOMAIN}`)
-      traefik.http.routers.qbittorrent.entryPoints: websecure
-      traefik.http.services.qbittorrent.loadbalancer.server.port: 8080
     volumes:
       - "${SECRET_APPDATA}/qbittorrent:/config"
       - "${SECRET_DATADIR}/downloads:/data/downloads"
     user: ${UID}:${GID}
     environment:
+      PUID:
+      PGID:
       TZ: ${TZ}
-      QBITTORRENT__BT_PORT: 6881
-      QBITTORRENT__PORT: 8080
-    networks:
-      - media
+      WEBUI_PORT: 8080
+      TORRENTING_PORT: ${VPN_FORWARDED_PORT}
+    network_mode: service:gluetun
     restart: always

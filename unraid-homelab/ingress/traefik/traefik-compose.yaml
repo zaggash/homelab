@@ -63,9 +63,10 @@ services:
     networks:
       - traefik-socket
       - webserver-internal
+      - gluetun
+      - lldap-internal
       - hassio-front
       - authelia
-      - lldap-internal
       - drone-front
       - immich-front
       - vaultwarden
@@ -73,10 +74,6 @@ services:
       - tools
       - media
     restart: always
-      # depends_on:
-      #   traefik-socket:
-      #     condition: service_healthy
-      #     restart: false
     healthcheck:
       test: ["CMD", "traefik", "healthcheck", "--ping"]
       interval: 10s
