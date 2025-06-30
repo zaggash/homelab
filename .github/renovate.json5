@@ -140,6 +140,13 @@
       ],
     },
     {
+      description: 'Set Linuxserver qbittorrent semver compatible',
+      allowedVersions: '<14.0.0',
+      matchPackageNames: [
+        '/linuxserver/qbittorrent/',
+      ],
+    },
+    {
       description: 'Loose versioning for non-semver packages',
       matchDatasources: [
         'docker',
