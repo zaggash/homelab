@@ -24,7 +24,9 @@ services:
       SERVER_COUNTRIES: ${VPN_COUNTRIES}
       FIREWALL_VPN_INPUT_PORTS: ${VPN_FORWARDED_PORT}
     networks:
-      - gluetun
+      gluetun:
+        aliases:
+          - qbittorrent
     restart: always
 
 networks:
