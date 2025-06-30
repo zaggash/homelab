@@ -20,4 +20,5 @@ services:
     networks:
       - media
       - media-backend
+      - gluetun
     restart: always
