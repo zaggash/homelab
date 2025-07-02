@@ -1,7 +1,7 @@
 services:
   hassio-server:
     container_name: hassio-server
-    image: homeassistant/home-assistant:2025.6.3@sha256:e207929bdf5dc95db43c618b877364e99f7ad506ec5440aeef80d5c9c1cae668
+    image: homeassistant/home-assistant:2025.7.0@sha256:77723dbee4ea658ff1df2d16c40242be5a171eb55785eba11df1f4d143850fef
     labels:
       folder.view: Hassio
       net.unraid.docker.icon: ${SECRET_APPDATA}/icons/hassio.png
