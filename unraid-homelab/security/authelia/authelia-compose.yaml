@@ -3,7 +3,7 @@ services:
     container_name: authelia
     image: ghcr.io/authelia/authelia:4.39.4@sha256:64b356c30fd817817a4baafb4dbc0f9f8702e46b49e1edb92ff42e19e487b517
     labels:
-      folder.view: Ingress
+      folder.view2: Ingress
       net.unraid.docker.icon: ${SECRET_APPDATA}/icons/authelia.png
       traefik.enable: true
       traefik.docker.network: homelab_authelia

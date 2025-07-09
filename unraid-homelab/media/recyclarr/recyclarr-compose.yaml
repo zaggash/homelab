@@ -3,7 +3,7 @@ services:
     container_name: recyclarr
     image: ghcr.io/recyclarr/recyclarr:7.4.1@sha256:759540877f95453eca8a26c1a93593e783a7a824c324fbd57523deffb67f48e1
     labels:
-      folder.view: Media
+      folder.view2: Media
       net.unraid.docker.icon: ${SECRET_APPDATA}/icons/recyclarr.png
     volumes:
       - "${SECRET_APPDATA}/recyclarr:/config"
@@ -11,7 +11,7 @@ services:
     environment:
       TZ: ${TZ}
       COMPlus_EnableDiagnostics: "0" # Fix the .Net CoreCLR crash on ReadOnly Filesystem
-      CRON_SCHEDULE: '@daily'
+      CRON_SCHEDULE: "@daily"
       RADARR_API_KEY: ${SECRET_RADARR_API_KEY}
       SONARR_API_KEY: ${SECRET_SONARR_API_KEY}
     networks:

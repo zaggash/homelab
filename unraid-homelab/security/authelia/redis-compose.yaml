@@ -3,7 +3,7 @@ services:
     container_name: authelia-redis
     image: docker.io/redis:8.0@sha256:a1e0a3b3a6cedd74d8ba44805b2497b93851a296f08a44962fedc03f1c490b47
     labels:
-      folder.view: Ingress
+      folder.view2: Ingress
       net.unraid.docker.icon: ${SECRET_APPDATA}/icons/redis.png
     volumes:
       - "${SECRET_APPDATA}/authelia/redis:/bitnami/redis/"
@@ -14,7 +14,7 @@ services:
       REDIS_PASSWORD: ${SECRET_AUTHELIA_REDIS_PASSWORD}
     restart: always
     healthcheck:
-      test: ["CMD", "redis-cli", "ping" ]
+      test: ["CMD", "redis-cli", "ping"]
       interval: 10s
       timeout: 3s
       retries: 3

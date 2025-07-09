@@ -3,7 +3,7 @@ services:
     container_name: sftpgo
     image: ghcr.io/drakkan/sftpgo:v2.6.6
     labels:
-      folder.view: Tools
+      folder.view2: Tools
       net.unraid.docker.icon: ${SECRET_APPDATA}/icons/sftpgo.png
       traefik.enable: true
       traefik.docker.network: homelab_tools
@@ -25,8 +25,8 @@ services:
       SFTPGO_GRACE_TIME: 8
       SFTPGO_TEMP_PATH: "/srv/sftpgo/temp"
       SFTPGO_SERVER_VERSION: "short"
-      SFTPGO_SFTPD__BINDINGS__0__PORT: 0      # Disable sftpd
-      SFTPGO_FTPD__BINDINGS__0__PORT: 0       # Disable ftpd
+      SFTPGO_SFTPD__BINDINGS__0__PORT: 0 # Disable sftpd
+      SFTPGO_FTPD__BINDINGS__0__PORT: 0 # Disable ftpd
       SFTPGO_WEBDAVD__BINDINGS__0__PORT: 8090 # Set Webdav port
       SFTPGO_DATA_PROVIDER__CREATE_DEFAULT_ADMIN: true
       SFTPGO_DEFAULT_ADMIN_USERNAME: ${SECRET_SFTPGO_ADMIN}

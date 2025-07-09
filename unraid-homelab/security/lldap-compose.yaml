@@ -3,7 +3,7 @@ services:
     container_name: lldap
     image: ghcr.io/lldap/lldap:2025-07-08@sha256:f033a4fb7ab45b1cc988f446641443b389ef217df9a143b5440f85e645ba0d41
     labels:
-      folder.view: Tools
+      folder.view2: Tools
       net.unraid.docker.icon: ${SECRET_APPDATA}/icons/lldap.png
       traefik.enable: true
       traefik.docker.network: homelab_lldap-internal

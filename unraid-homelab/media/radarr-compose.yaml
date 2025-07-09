@@ -3,7 +3,7 @@ services:
     container_name: radarr
     image: ghcr.io/home-operations/radarr:5.27.0@sha256:f1a47717f5792d82becbe278c9502d756b898d63b2c637da131172c4adf1ffc7
     labels:
-      folder.view: Media
+      folder.view2: Media
       net.unraid.docker.icon: ${SECRET_APPDATA}/icons/radarr.png
       traefik.enable: true
       traefik.docker.network: homelab_media

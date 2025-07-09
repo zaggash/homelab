@@ -5,7 +5,7 @@ services:
     # Example tag: ${IMMICH_VERSION:-release}-cuda
     image: ghcr.io/immich-app/immich-machine-learning:v1.135.3@sha256:9f2f61d86af82d04926f9b896c995c502303052905517c5485dd26bf1e42a44e
     labels:
-      folder.view: Immich
+      folder.view2: Immich
       net.unraid.docker.icon: ${SECRET_APPDATA}/icons/immich.png
     # extends: # uncomment this section for hardware acceleration - see https://immich.app/docs/features/ml-hardware-acceleration
     #   file: hwaccel.ml.yml

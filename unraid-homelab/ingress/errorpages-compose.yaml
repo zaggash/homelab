@@ -3,7 +3,7 @@ services:
     image: ghcr.io/tarampampam/error-pages:3.3@sha256:e7133e4faf97675c00ad9150c98ec1a867ae91ece5131a7eb218b868ce5a628d
     container_name: error-pages
     labels:
-      folder.view: Ingress
+      folder.view2: Ingress
       net.unraid.docker.icon: ${SECRET_APPDATA}/icons/error-pages.png
       traefik.enable: true
       traefik.docker.network: homelab_webserver-internal

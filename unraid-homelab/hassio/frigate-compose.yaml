@@ -3,7 +3,7 @@ services:
     container_name: hassio-frigate
     image: ghcr.io/blakeblackshear/frigate:0.15.1@sha256:c4e02d2c511847eebbda8e0e370b41c78e7b51247353de79340e06c3e95f11be
     labels:
-      folder.view: Hassio
+      folder.view2: Hassio
       net.unraid.docker.icon: ${SECRET_APPDATA}/icons/frigate.png
     devices:
       - /dev/dri/renderD128:/dev/dri/renderD128
