@@ -1,4 +1,4 @@
-FROM eclipse-temurin:11.0.27_6-jre@sha256:fd3f36a716a445a4692596e75f39ad99f6f545163dc0402113975948e7c628cc
+FROM eclipse-temurin:11.0.27_6-jre@sha256:176adb5b3504ef4f6c31b4019e690129381fa2d6f43f63b01138ddb4bc394426
 # renovate: datasource=github-tags depName=Pugmatt/BedrockConnect versioning=loose
 ENV BEDROCK_CONNECT=1.58
 RUN mkdir -p /app
