@@ -13,6 +13,7 @@ services:
       POSTGRES_PASSWORD: ${SECRET_IMMICH_DB_PASSWORD}
       POSTGRES_USER: ${SECRET_IMMICH_DB_USERNAME}
       POSTGRES_INITDB_ARGS: "--data-checksums"
+    shm_size: 128mb
     volumes:
       - ${SECRET_APPDATA}/immich/postgres:/var/lib/postgresql/data
       - /etc/localtime:/etc/localtime:ro
