@@ -7,9 +7,9 @@ services:
       net.unraid.docker.icon: ${SECRET_APPDATA}/icons/calibre-web-book-downloader.png
       traefik.enable: true
       traefik.docker.network: homelab_media
-      traefik.http.routers.calibre-web.rule: Host(`booksdl.${SECRET_DOMAIN}`)
-      traefik.http.routers.calibre-web.entryPoints: websecure
-      traefik.http.services.calibre-web.loadbalancer.server.port: 8084
+      traefik.http.routers.calibre-web-book-downloader.rule: Host(`booksdl.${SECRET_DOMAIN}`)
+      traefik.http.routers.calibre-web-book-downloader.entryPoints: websecure
+      traefik.http.services.calibre-web-book-downloader.loadbalancer.server.port: 8084
     volumes:
       - "${SECRET_APPDATA}/calibre-web/config/app.db:/auth/app.db:ro"
       - "${SECRET_DATADIR}/downloads/complete/ebooks_import:/cwa-book-ingest"
