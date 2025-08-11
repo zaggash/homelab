@@ -1,6 +1,6 @@
 services:
   error-pages:
-    image: ghcr.io/tarampampam/error-pages:3.3@sha256:df7d8d24740316f3918b8c280eff61c30c4055daeef2041d3f557bb54187133d
+    image: ghcr.io/tarampampam/error-pages:3.4@sha256:fadd887eb57a9763198eb434bfddaa52a15a33b9a12c1cfb69304ca9fc4536d9
     container_name: error-pages
     labels:
       folder.view2: Ingress
