@@ -1,7 +1,7 @@
 services:
   calibre:
     container_name: calibre
-    image: ghcr.io/linuxserver/calibre:8.8.0@sha256:839cf7c54b0dab413e92cde27093f4c378c9c87911f6686fc9d579af196b0c1e
+    image: ghcr.io/linuxserver/calibre:8.8.0@sha256:269c2751b5ca945d5dfad5ace5bd0a4d4bb929c9bd4c47b0d6cef244dd2e2d13
     labels:
       folder.view2: Media
       net.unraid.docker.icon: ${SECRET_APPDATA}/icons/calibre.png
