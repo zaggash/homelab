@@ -7,7 +7,7 @@ services:
       net.unraid.docker.icon: ${SECRET_APPDATA}/icons/frigate.png
     devices:
       - /dev/dri/renderD128:/dev/dri/renderD128
-    shm_size: "200mb"
+    shm_size: "512mb"
     volumes:
       - "${SECRET_APPDATA}/hassio/frigate/config:/config"
       - "${SECRET_APPDATA}/hassio/frigate/media:/media/frigate"
