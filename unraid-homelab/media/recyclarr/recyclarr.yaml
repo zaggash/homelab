@@ -371,6 +371,7 @@ sonarr:
           - name: VOSTFR-WEB-2160p
             score: 1000
           - name: VFF-WEB-1080p
+            score: 1000
 
       - trash_ids:
             - 07a32f77690263bb9fda1842db7e273f  # VOSTFR
@@ -395,9 +396,9 @@ sonarr:
         assign_scores_to:
           - name: VFF-WEB-1080p
             score: -10000
-          - name: VFF-WEB-1080p
+          - name: VOSTFR-WEB-1080p
             score: -10000
-          - name: VFF-WEB-1080p
+          - name: VOSTFR-WEB-2160p
             score: -10000
 
       ####################
@@ -470,6 +471,7 @@ sonarr:
           - 10e77b96ae4770a7de645a91a53ce29a  # Language: Original Plus French
         assign_scores_to:
           - name: ANIME-VOSTFR
+            score: 1000
           - name: ANIME-Multi-FR
             score: 1000
 
