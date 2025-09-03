@@ -1,7 +1,7 @@
 services:
   calibre-web-book-downloader:
     container_name: calibre-web-book-downloader
-    image: ghcr.io/calibrain/calibre-web-automated-book-downloader:v0.2.0@sha256:99e8d42199dd69cfb36498e4ca99c13c93ab513980ee33c1b9837aa1ab163fb9
+    image: ghcr.io/calibrain/calibre-web-automated-book-downloader-extbp:0.2.0@sha256:a535e0c69e4ba0460449fd4a66ec0f26750b1e997016c6302ddb51d79349379d
     labels:
       folder.view2: Media
       net.unraid.docker.icon: ${SECRET_APPDATA}/icons/calibre-web-book-downloader.png
@@ -20,11 +20,12 @@ services:
       CWA_DB_PATH: /auth/app.db
       APP_ENV: prod
       LOG_LEVEL: info
-      BOOK_LANGUAGE: fr,en
+      BOOK_LANGUAGE: fr
       USE_BOOK_TITLE: true
       USE_CF_BYPASS: true
       AA_BASE_URL: "https://annas-archive.org"
       AA_ADDITIONAL_URLS: ""
+      EXT_BYPASSER_URL: "http://flaresolverr:8191"
     networks:
       - media
     restart: always
