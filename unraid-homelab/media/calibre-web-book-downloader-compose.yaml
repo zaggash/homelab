@@ -28,4 +28,5 @@ services:
       EXT_BYPASSER_URL: "http://flaresolverr:8191"
     networks:
       - media
+      - media-backend
     restart: always
