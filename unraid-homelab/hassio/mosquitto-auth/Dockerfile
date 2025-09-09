@@ -73,7 +73,7 @@ RUN set -ex \
 
 
 #### Create from a new image.
-FROM debian:stable-slim@sha256:8e0160d170355835ee3e2bf51f5e526ebe8681712dce89a379d3cf3ba4d64aca
+FROM debian:stable-slim@sha256:0c80836db6d5bd1f89ed3c1300bbd888fc8a415130a52fd86e501ce38471fe5b
 RUN set -ex \
   && apt update \
   && apt install -y \
