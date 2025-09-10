@@ -15,7 +15,7 @@ services:
     environment:
       TZ: ${TZ}
       ABR_APP__DEFAULT_REGION: fr
-      ABR_APP__FORCE_LOGIN_TYPE: forms
+      ABR_APP__LOG_LEVEL: INFO
     networks:
       - media
     restart: always
