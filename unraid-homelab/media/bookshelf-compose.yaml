@@ -1,0 +1,19 @@
+services:
+  bookshelf:
+    container_name: bookshelf
+    image: ghcr.io/pennydreadful/bookshelf:hardcover-v0.4.20
+    labels:
+      folder.view2: Media
+      net.unraid.docker.icon: ${SECRET_APPDATA}/icons/bookshelf.png
+      traefik.enable: true
+      traefik.docker.network: homelab_media
+      traefik.http.routers.bookshelf.rule: Host(`dl.audiobooks.${SECRET_DOMAIN}`)
+      traefik.http.routers.bookshelf.entryPoints: websecure
+      traefik.http.services.bookshelf.loadbalancer.server.port: 8787
+    volumes:
+      - "${SECRET_APPDATA}/bookshelf/config:/config"
+    environment:
+      TZ: ${TZ}
+    networks:
+      - media
+    restart: always
