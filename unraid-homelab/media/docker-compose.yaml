@@ -4,7 +4,6 @@ include:
   - radarr-compose.yaml
   - sonarr-compose.yaml
   - audiobookshelf-compose.yaml
-  - audiobookrequest-compose.yaml
   - qbittorrent-compose.yaml
   - recyclarr/recyclarr-compose.yaml
   - calibre-web-compose.yaml
