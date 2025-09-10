@@ -12,6 +12,7 @@ services:
       traefik.http.services.bookshelf.loadbalancer.server.port: 8787
     volumes:
       - "${SECRET_APPDATA}/bookshelf/config:/config"
+      - "${SECRET_DATADIR}:/data"
     environment:
       TZ: ${TZ}
     networks:
