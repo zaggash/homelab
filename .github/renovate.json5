@@ -126,13 +126,6 @@
       ],
     },
     {
-      description: 'Set Linuxserver calibre-web semver compatible',
-      allowedVersions: '<5.0.0',
-      matchPackageNames: [
-        '/linuxserver/calibre-web/',
-      ],
-    },
-    {
       description: 'Set Linuxserver jellyfin semver compatible',
       allowedVersions: '<2000.0.0',
       matchPackageNames: [
@@ -147,14 +140,16 @@
       ],
     },
     {
-      description: 'Loose versioning for non-semver packages',
+      description: 'Set semver for bookshelf',
       matchDatasources: [
         'docker',
       ],
       versioning: 'loose',
       matchPackageNames: [
-        '/plex/',
+        'pennydreadful/bookshelf',
       ],
+      "versionCompatibility": "^(?<compatibility>.*)-(?<version>.*)$",
+      "versioning": "semver"
     },
   ],
 }
