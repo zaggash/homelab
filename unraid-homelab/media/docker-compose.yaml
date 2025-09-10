@@ -3,7 +3,6 @@ include:
   - prowlarr-compose.yaml
   - radarr-compose.yaml
   - sonarr-compose.yaml
-  - bookshelf-compose.yaml
   - audiobookshelf-compose.yaml
   - qbittorrent-compose.yaml
   - recyclarr/recyclarr-compose.yaml
