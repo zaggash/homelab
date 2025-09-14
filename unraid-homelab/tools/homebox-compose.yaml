@@ -19,7 +19,7 @@ services:
       HBOX_LOG_FORMAT: text
       HBOX_WEB_MAX_FILE_UPLOAD: 10
       HBOX_OPTIONS_ALLOW_ANALYTICS: false
-      HBOX_OPTIONS_ALLOW_REGISTRATION: true
+      HBOX_OPTIONS_ALLOW_REGISTRATION: false
     networks:
       - tools
     restart: always
