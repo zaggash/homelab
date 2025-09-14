@@ -1,0 +1,25 @@
+services:
+  homebox:
+    container_name: homebox
+    image: ghcr.io/sysadminsmedia/homebox:0.21.0@sha256:cd5ab1669c37625b55be7758bd54dc2d2d6146db61c510322d0378312783a9b7
+    labels:
+      folder.view2: Tools
+      net.unraid.docker.icon: ${SECRET_APPDATA}/icons/homebox.png
+      traefik.enable: true
+      traefik.docker.network: homelab_tools
+      traefik.http.routers.homebox.rule: Host(`homebox.${SECRET_DOMAIN}`)
+      traefik.http.routers.homebox.entryPoints: websecure
+      traefik.http.services.homebox.loadbalancer.server.port: 7745
+    volumes:
+      - "${SECRET_APPDATA}/homebox:/data/"
+    user: ${UID}:${GID}
+    environment:
+      TZ: ${TZ}
+      HBOX_LOG_LEVEL: info
+      HBOX_LOG_FORMAT: text
+      HBOX_WEB_MAX_FILE_UPLOAD: 10
+      HBOX_OPTIONS_ALLOW_ANALYTICS: false
+      HBOX_OPTIONS_ALLOW_REGISTRATION: true
+    networks:
+      - tools
+    restart: always

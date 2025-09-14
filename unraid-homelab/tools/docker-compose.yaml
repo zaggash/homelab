@@ -5,6 +5,7 @@ include:
   - backrest-compose.yaml
   - sftpgo-compose.yaml
   - twitchdropsminer-compose.yaml
+  - homebox-compose.yaml
 
 networks:
   tools:
