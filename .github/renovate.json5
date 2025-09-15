@@ -116,16 +116,6 @@
       enabled: false,
     },
     {
-      description: 'Set time based azure-rest-api versioning',
-      matchDatasources: [
-        'docker',
-      ],
-      versioning: 'azure-rest-api',
-      matchPackageNames: [
-        '/lldap/lldap/',
-      ],
-    },
-    {
       description: 'Set Linuxserver jellyfin semver compatible',
       allowedVersions: '<2000.0.0',
       matchPackageNames: [
