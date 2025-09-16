@@ -145,6 +145,10 @@ Rg26Hvk5j3aC5Q==
         inline: |
           core ALL=(ALL:ALL) NOPASSWD: ALL
 
+  links:
+    - path: /etc/localtime
+      target: ../usr/share/zoneinfo/Europe/Paris
+
 systemd:
   units:
     - name: rpm-ostree-countme.timer
