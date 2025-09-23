@@ -1,0 +1,25 @@
+services:
+  books-db:
+    container_name: books-db
+    image: ghcr.io/linuxserver/mariadb:11.4.8@sha256:64cdbbec61e9bf26521fb73fa8546b3eeb45fb104290ddb4cda9c81cec467a51
+    labels:
+      folder.view2: Media
+      net.unraid.docker.icon: ${SECRET_APPDATA}/icons/mariadb.png
+    volumes:
+      - "${SECRET_APPDATA}/booklore/db:/config"
+    environment:
+      TZ: ${TZ}
+      PUID: ${UID}
+      GUID: ${GID}
+      MYSQL_ROOT_PASSWORD: ${BOOKLORE_MARIADB_ROOTPW}
+      MYSQL_DATABASE: booklore
+      MYSQL_USER: ${BOOKLORE_MARIADB_USERNAME}
+      MYSQL_PASSWORD: ${BOOKLORE_MARIADB_PASSWORD}
+    networks:
+      - media-backend
+    healthcheck:
+      test: ["CMD", "mariadb-admin", "ping", "-h", "localhost"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: always

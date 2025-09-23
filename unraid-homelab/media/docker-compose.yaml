@@ -1,4 +1,5 @@
 include:
+  - booklore/docker-compose.yaml
   - flaresolver-compose.yaml
   - prowlarr-compose.yaml
   - radarr-compose.yaml
