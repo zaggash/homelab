@@ -13,7 +13,7 @@ services:
     volumes:
       - "${SECRET_APPDATA}/audiobookshelf/config:/config"
       - "${SECRET_APPDATA}/audiobookshelf/metadata:/metadata"
-      - "${SECRET_DATADIR}/audiobooks:/audiobooks"
+      - "${SECRET_DATADIR}/media/audiobooks:/audiobooks"
     environment:
       TZ: ${TZ}
     networks:

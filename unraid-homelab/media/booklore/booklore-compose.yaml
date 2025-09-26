@@ -11,14 +11,14 @@ services:
       traefik.enable: true
       traefik.docker.network: homelab_media
       traefik.http.middlewares.kobo-sync-headers.headers.customrequestheaders.X-Scheme: https
-      traefik.http.routers.booklore.rule: Host(`booklore.${SECRET_DOMAIN}`)
+      traefik.http.routers.booklore.rule: Host(`books.${SECRET_DOMAIN}`)
       traefik.http.routers.booklore.entryPoints: websecure
       traefik.http.routers.booklore.middlewares: kobo-sync-headers
       traefik.http.services.booklore.loadbalancer.server.port: 6060
     volumes:
       - "${SECRET_APPDATA}/booklore/data:/app/data"
-      - "${SECRET_DATADIR}/downloads/complete/ebooks_import-test:/bookdrop"
-      - "${SECRET_DATADIR}/ebooks-test:/books"
+      - "${SECRET_DATADIR}/downloads/complete/ebooks_import:/bookdrop"
+      - "${SECRET_DATADIR}/media/ebooks:/books"
     environment:
       TZ: ${TZ}
       USER_ID: ${UID}

@@ -9,17 +9,17 @@ services:
       traefik.docker.network: homelab_media
       traefik.http.routers.calibre-web-book-downloader.rule: Host(`books-dl.${SECRET_DOMAIN}`)
       traefik.http.routers.calibre-web-book-downloader.entryPoints: websecure
+      traefik.http.routers.calibre-web-book-downloader.middlewares: authelia@file
       traefik.http.services.calibre-web-book-downloader.loadbalancer.server.port: 8084
     volumes:
-      - "${SECRET_APPDATA}/calibre-web/config/app.db:/auth/app.db:ro"
-      - "${SECRET_DATADIR}/downloads/complete/ebooks_import:/cwa-book-ingest"
+      - "${SECRET_DATADIR}/downloads/complete/ebooks_import:/books-ingest"
     environment:
       TZ: ${TZ}
       UID: ${UID}
       GID: ${GID}
-      CWA_DB_PATH: /auth/app.db
       APP_ENV: prod
       LOG_LEVEL: info
+      INGEST_DIR: /books-ingest
       BOOK_LANGUAGE: fr
       USE_BOOK_TITLE: true
       USE_CF_BYPASS: true
