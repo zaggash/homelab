@@ -9,31 +9,28 @@ services:
       # Default Volumes
       - ${SECRET_APPDATA}/db-backup/scripts:/assets/scripts
       - ${SECRET_BACKUPSHARE}/databases:/backup
-      # Immich Postgres
-      - ${SECRET_IMMICH_UPLOAD_LOCATION}/database-backup:/immich-db
     environment:
       TIMEZONE: ${TZ}
       CONTAINER_ENABLE_MONITORING: false
       #DEBUG_MODE=TRUE
       USER_DBBACKUP: ${UID}
       GROUP_DBBACKUP: ${GID}
-      BACKUP_JOB_CONCURRENCY: 1
+      BACKUP_JOB_CONCURRENCY: 3
       DEFAULT_BACKUP_BEGIN: "00 00 * * *" # Default backup everyday at midnight
       DEFAULT_CLEANUP_TIME: 8640 # Cleanup backups after a week
       DEFAULT_BACKUP_LOCATION: FILESYSTEM
       DEFAULT_FILESYSTEM_PATH: /backup
       DEFAULT_COMPRESSION: GZ
       DEFAULT_GZ_RSYNCABLE: true
-      ### Immich PgSQL
-      DB01_TYPE: pgsql
-      DB01_HOST: immich-pg
+      ### Booklore DB
+      DB01_TYPE: mysql
+      DB01_HOST: books-db
       DB01_NAME: ALL
-      DB01_USER: ${SECRET_IMMICH_DB_USERNAME}
-      DB01_PASS: ${SECRET_IMMICH_DB_PASSWORD}
-      DB01_SPLIT_DB: true
-      DB01_FILESYSTEM_PATH: /immich-db
+      DB01_BACKUP_LOCATION: /backup/booklore
+      DB01_USER: ${BOOKLORE_MARIADB_USERNAME}
+      DB01_PASS: ${BOOKLORE_MARIADB_PASSWORD}
       DB01_BACKUP_BEGIN: "45 01 * * *" # https://crontab.guru/#45_01_*_*_*
       DB01_CLEANUP_TIME: 43200 # 1 Mois
     networks:
-      - immich-db
+      - media-backend
     restart: always
