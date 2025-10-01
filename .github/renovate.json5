@@ -7,18 +7,18 @@
     '.archive/**',
   ],
   'docker-compose': {
-    fileMatch: [
-      'portainer-stacks/.+-compose\\.ya?ml$',
-      'unraid-homelab/.+-compose\\.ya?ml$',
+    managerFilePatterns: [
+      '/portainer-stacks/.+-compose\\.ya?ml$/',
+      '/unraid-homelab/.+-compose\\.ya?ml$/',
     ],
   },
   customManagers: [
     {
       description: 'Custom Regex',
       customType: 'regex',
-      fileMatch: [
-        'unraid-homelab/.*/bedrock-connect/Dockerfile',
-        'unraid-homelab/.*/mosquitto-auth/Dockerfile',
+      managerFilePatterns: [
+        '/unraid-homelab/.*/bedrock-connect/Dockerfile/',
+        '/unraid-homelab/.*/mosquitto-auth/Dockerfile/',
       ],
       matchStrings: [
         'renovate: datasource=(?<datasource>.*?) depName=(?<depName>.*?) versioning=(?<versioning>.*?)\\sENV BEDROCK_CONNECT=(?<currentValue>.*)',
@@ -134,12 +134,11 @@
       matchDatasources: [
         'docker',
       ],
-      versioning: 'loose',
+      versioning: 'semver',
       matchPackageNames: [
         'pennydreadful/bookshelf',
       ],
-      "versionCompatibility": "^(?<compatibility>.*)-(?<version>.*)$",
-      "versioning": "semver"
+      versionCompatibility: '^(?<compatibility>.*)-(?<version>.*)$',
     },
   ],
 }
