@@ -20,7 +20,8 @@ services:
       N8N_PORT: 5678
       N8N_RUNNERS_ENABLED: true
       NODE_ENV: production
-      WEBHOOK_URL: https://flow.${SECRET_DOMAIN}/
+      WEBHOOK_URL: https://flow.${SECRET_DOMAIN}
+      N8N_COMMUNITY_PACKAGES_ALLOW_TOOL_USAGE: true
       DB_SQLITE_POOL_SIZE: 20
       N8N_SMTP_HOST: ${SECRET_OVH_SMTP_HOST}
       N8N_SMTP_PORT: 465
