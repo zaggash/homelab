@@ -4,7 +4,7 @@ services:
     depends_on:
      books-db:
         condition: service_healthy
-    image: ghcr.io/booklore-app/booklore:v1.6.0@sha256:cb341e32d2754d57e2720821d3d9d824e70d4b510f739fef836ec97c3f44df0f
+    image: ghcr.io/booklore-app/booklore:v1.7.0@sha256:07c8827bf26880cba373d7cab1f68c2717adffef66988d253ee50f720c0dd4fd
     labels:
       folder.view2: Media
       net.unraid.docker.icon: ${SECRET_APPDATA}/icons/booklore.png
