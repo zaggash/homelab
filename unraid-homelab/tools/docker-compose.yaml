@@ -1,12 +1,11 @@
 include:
-  - drone/docker-compose.yaml
-  - immich/docker-compose.yaml
   - vaultwarden-compose.yaml
   - backrest-compose.yaml
   - sftpgo-compose.yaml
   - twitchdropsminer-compose.yaml
   - homebox-compose.yaml
   - n8n-compose.yaml
+  - db-backup-compose.yaml
 
 networks:
   tools:

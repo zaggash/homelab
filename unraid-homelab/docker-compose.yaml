@@ -1,8 +1,9 @@
 name: homelab
 
 include:
+  - ./drone/docker-compose.yaml
+  - ./immich/docker-compose.yaml
   - ./ingress/docker-compose.yaml
-  - ./databases/docker-compose.yaml
   - ./security/docker-compose.yaml
   - ./tools/docker-compose.yaml
   - ./media/docker-compose.yaml
