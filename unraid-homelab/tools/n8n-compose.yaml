@@ -1,7 +1,7 @@
 services:
   n8n:
     container_name: n8n
-    image: ghcr.io/n8n-io/n8n:1.117.2@sha256:c7dae935e8657559bf5b6d9c9e8b074d67a55e90fd7a227bae3e668beec3bb62
+    image: ghcr.io/n8n-io/n8n:1.118.0@sha256:5d1268660f1b4b475e9fd0a76c850fbbf192213ad1974206bbc7fbbc2fc89631
     labels:
       folder.view2: Tools
       net.unraid.docker.icon: ${SECRET_APPDATA}/icons/n8n.png
