@@ -1,7 +1,7 @@
 services:
   authelia-redis:
     container_name: authelia-redis
-    image: docker.io/redis:8.2@sha256:4521b581dbddea6e7d81f8fe95ede93f5648aaa66a9dacd581611bf6fe7527bd
+    image: docker.io/redis:8.2@sha256:e78ce825e8a8015813e8626816b3831aace2c90fbba74fc554134799456528c4
     labels:
       folder.view2: Security
       net.unraid.docker.icon: ${SECRET_APPDATA}/icons/redis.png
