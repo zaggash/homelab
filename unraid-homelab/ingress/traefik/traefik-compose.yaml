@@ -1,7 +1,7 @@
 services:
   traefik:
     container_name: traefik
-    image: traefik:v3.5.4@sha256:4df0a50fcf71b454c0d7ad17675776dc8d37359deae3291895bdaa008c1b9972
+    image: traefik:v3.5.6@sha256:c460044fcb4ccca50e6e5ece81ef64a47cb24b16b8fbe4b1f699a90429e72119
     ports:
       - 192.168.1.50:80:8000
       - 192.168.1.50:443:8443
