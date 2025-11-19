@@ -31,6 +31,3 @@ services:
     networks:
       - tools
     restart: always
-
-networks:
-  tools:
