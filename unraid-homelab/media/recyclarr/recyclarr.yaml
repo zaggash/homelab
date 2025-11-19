@@ -82,19 +82,15 @@ radarr:
           - 240770601cc226190c367ef59aba7463  # AAC
           - c2998bd0d90ed5621d8df281e839436e  # DD
         # HDR
-          - c53085ddbd027d9624b320627748612f  # DV HDR10+
           - e23edd2482476e595fb990b12e7c609c  # DV HDR10
           - 58d6a88f13e2db7f5059c41047876f00  # DV
           - 55d53828b9d81cbe20b02efd00aa0efd  # DV HLG
           - a3e19f8f627608af0211acd02bf89735  # DV SDR
-          - b974a6cd08c1066250f1f177d7aa1225  # HDR10+
           - dfb86d5941bc9075d6af23b09c2aeecd  # HDR10
           - e61e28db95d22bedcadf030b8f156d96  # HDR
           - 2a4d9069cc1fe3242ff9bdaebed239bb  # HDR (undefined)
           - 08d6d8834ad9ec87b1dc7ec8148e7a1f  # PQ
           - 9364dd386c9b4a1100dde8264690add7  # HLG
-          #
-          - 55a5b50cb416dea5a50c4955896217ab  # DV HDR10+ Boost
         # Version
           - 0f12c086e289cf966fa5948eac571f44  # Hybrid
           - 570bc9ebecd92723d2d21500f4be314c  # Remaster
@@ -108,9 +104,13 @@ radarr:
           - e7718d7a3ce595f289bfee26adc178f5  # Repack/Proper
         # Unwanted
           - ed38b889b31be83fda192888e2286d83  # BR-DISK
+          - e6886871085226c3da1830830146846c  # Generated Dynamic HDR
           - b8cd450cbfa689c0259a01d9e29ba3d6  # 3D
           - 90a6f9a284dff5103f6346090e6280c8  # LQ
+          - e204b80c87be9497a8a6eaff48f72905  # LQ Release Title
           - 48f031e76111f17ea94898f4cdc34fdc  # FR LQ
+          - 0a3f082873eb454bde444150b70253cc  # Extras
+          - 712d74cd88bceb883ee32f773656b1f5  # Sing Along
           - bfd8eb01832d646a0a89c4deb46f8564  # Upscaled
         assign_scores_to:
           - name: 4K Multi+VFF Remux
@@ -303,21 +303,18 @@ sonarr:
           - 85c61753df5da1fb2aab6f2a47426b09  # BR-DISK
           - 3ba797e5dc13af4b8d9bb25e83d90de2  # FR LQ
           - 9c11cd3f07101cdba90a2d81cf0e56b4  # LQ
+          - e2315f990da2e2cbfc9fa5b7a6fcfe48  # LQ Release Title
           - fbcb31d8dabd2a319072b84fc0b7249c  # Extra
           # HDR
-          - 2b239ed870daba8126a53bd5dc8dc1c8  # DV HDR10+
           - 7878c33f1963fefb3d6c8657d46c2f0a  # DV HDR10
           - 6d0d8de7b57e35518ac0308b0ddf404e  # DV
           - 1f733af03141f068a540eec352589a89  # DV HLG
           - 27954b0a80aab882522a88a4d9eae1cd  # DV SDR
-          - a3d82cbef5039f8d295478d28a887159  # HDR10+
           - 3497799d29a085e2ac2df9d468413c94  # HDR10
           - 3e2c4e748b64a1a1118e0ea3f4cf6875  # HDR
           - bb019e1cd00f304f80971c965de064dc  # HDR (undefined)
           - 2a7e3be05d3861d6df7171ec74cad727  # PQ
           - 17e889ce13117940092308f48b48b45b  # HLG
-          #
-          - 385e9e8581d33133c3961bdcdeffb7b4  # DV HDR10+ Boost
           # Misc.
           - ec8fa7296b64e8cd390a1600981f3923  # Repack/Proper
           - eb3d5cc0a2be0db205fb823640db6a3c  # Repack v2
