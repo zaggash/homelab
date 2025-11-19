@@ -5,6 +5,7 @@ include:
   - homebox-compose.yaml
   - n8n-compose.yaml
   - db-backup-compose.yaml
+  - ownfoil-compose.yaml
 
 networks:
   tools:
