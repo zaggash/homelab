@@ -1,5 +1,5 @@
 # renovate: datasource=github-tags depName=warmcat/libwebsockets versioning=semver
-ARG LIBWEBSOCKET_VERSION=4.5.0
+ARG LIBWEBSOCKET_VERSION=4.5.1
 # renovate: datasource=github-tags depName=eclipse-mosquitto/mosquitto versioning=semver
 ARG MOSQUITTO_VERSION=2.0.22
 # renovate: datasource=github-tags depName=iegomez/mosquitto-go-auth versioning=semver
