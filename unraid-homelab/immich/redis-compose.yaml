@@ -1,7 +1,7 @@
 services:
   immich-redis:
     container_name: immich_redis
-    image: ghcr.io/valkey-io/valkey:8@sha256:81db6d39e1bba3b3ff32bd3a1b19a6d69690f94a3954ec131277b9a26b95b3aa
+    image: ghcr.io/valkey-io/valkey:8@sha256:7759134c99152c956b21a99b35672d5d70390ccdd40564ba975af195d5a2d9b6
     labels:
       folder.view2: Immich
       net.unraid.docker.icon: ${SECRET_APPDATA}/icons/redis.png
