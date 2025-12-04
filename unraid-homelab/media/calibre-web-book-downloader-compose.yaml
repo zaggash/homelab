@@ -1,7 +1,7 @@
 services:
   calibre-web-book-downloader:
     container_name: calibre-web-book-downloader
-    image: ghcr.io/calibrain/calibre-web-automated-book-downloader-extbp:v0.2.4@sha256:23aabf29f4db80d21f20dfaff6fc4bafad8858987bfd89fccb8c78c101b92068
+    image: ghcr.io/calibrain/calibre-web-automated-book-downloader-extbp:v0.3.0@sha256:77d51baf13ab0a9cfd224c065f8a83b73859b4e557175211984047e0ea25c51f
     labels:
       folder.view2: Media
       net.unraid.docker.icon: ${SECRET_APPDATA}/icons/calibre-web-book-downloader.png
