@@ -1,22 +1,25 @@
 services:
   traefik-socket:
     container_name: traefik-socket
-    image: ghcr.io/tecnativa/docker-socket-proxy:v0.4.1@sha256:3400c429c5f9e1b21d62130fb93b16e2e772d4fb7695bd52fc2b743800b9fe9e
+    image: ghcr.io/wollomatic/socket-proxy:1.10.1@sha256:8ab5c5d6cdc4bd93b259969534ef0791508817e3cd1e2e2834b9c5984d6ffb34
     labels:
       folder.view2: Ingress
       net.unraid.docker.icon: ${SECRET_APPDATA}/icons/docker-socket.png
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges
+    read_only: true
+    command:
+      - '-shutdowngracetime=5'
+      - '-watchdoginterval=60'
+      - '-stoponwatchdog'
+      - '-allowfrom=traefik'
+      - '-listenip=0.0.0.0'
+      - '-allowGET=/v1\..{1,2}/(version|containers/.*|events.*)'
+      - '-allowHEAD=/_ping'
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-    environment:
-      CONTAINERS: 1
-      POST: 0
-    privileged: true
     networks:
       - traefik-socket
     restart: always
-    healthcheck:
-      test: wget --spider http://localhost:2375/version || exit 1
-      interval: 10s
-      timeout: 3s
-      retries: 3
-      start_period: 5s
