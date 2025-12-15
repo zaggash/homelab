@@ -17,7 +17,7 @@ services:
       TZ: ${TZ}
       UID: ${UID}
       GID: ${GID}
-      APP_ENV: prod
+      SESSION_COOKIE_SECURE: true
       LOG_LEVEL: info
       INGEST_DIR: /books-ingest
       BOOK_LANGUAGE: fr
