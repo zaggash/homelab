@@ -1,7 +1,7 @@
 services:
   homebox:
     container_name: homebox
-    image: ghcr.io/sysadminsmedia/homebox:0.21.0@sha256:cd5ab1669c37625b55be7758bd54dc2d2d6146db61c510322d0378312783a9b7
+    image: ghcr.io/sysadminsmedia/homebox:0.22.1@sha256:812c28e29cd6d68ada31e7a0369ba71fd67c18d917ba3fac199e8a8c63d13b59
     labels:
       folder.view2: Tools
       net.unraid.docker.icon: ${SECRET_APPDATA}/icons/homebox.png
