@@ -7,7 +7,7 @@ include:
   - audiobookshelf-compose.yaml
   - qbittorrent-compose.yaml
   - recyclarr/recyclarr-compose.yaml
-  - calibre-web-book-downloader-compose.yaml
+  - shelfmark-compose.yaml
   - jellyfin-compose.yaml
 
 networks:
