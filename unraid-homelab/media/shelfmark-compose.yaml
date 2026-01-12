@@ -1,0 +1,26 @@
+services:
+  shelfmark:
+    container_name: shelfmark
+    image: ghcr.io/calibrain/shelfmark-lite:v1.0.0@sha256:b65492d177f29446e43f1acbf4cc5c47457b8665571e42a489ca266e46677f94
+    labels:
+      folder.view2: Media
+      net.unraid.docker.icon: ${SECRET_APPDATA}/icons/shelfmark.png
+      traefik.enable: true
+      traefik.docker.network: homelab_media
+      traefik.http.routers.shelfmark.rule: Host(`books-dl.${SECRET_DOMAIN}`)
+      traefik.http.routers.shelfmark.entryPoints: websecure
+      traefik.http.routers.shelfmark.middlewares: authelia@file
+      traefik.http.services.shelfmark.loadbalancer.server.port: 8084
+    volumes:
+      - "${SECRET_APPDATA}/shelfmark:/config"
+      - "${SECRET_DATADIR}/downloads/complete/ebooks_import:/books-ingest"
+    environment:
+      TZ: ${TZ}
+      PUID: ${UID}
+      PGID: ${GID}
+      INGEST_DIR: /books-ingest
+      SEARCH_MODE: universal
+    networks:
+      - media
+      - media-backend
+    restart: always
