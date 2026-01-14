@@ -3,7 +3,7 @@ services:
     depends_on:
       - traefik-socket
     container_name: traefik
-    image: traefik:v3.6.7@sha256:9706d904a33e2d66d71376c8277a5bed5a7252d25e8246eb5331500b669829df
+    image: traefik:v3.6.7@sha256:2c5e029ee3638d3788b4ca7c8ef454baa8f924b91b190b3fd2742bee721ebeea
     ports:
       - 192.168.1.50:80:8000
       - 192.168.1.50:443:8443
