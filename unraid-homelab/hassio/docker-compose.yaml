@@ -7,10 +7,6 @@ include:
   - somfyprotect2mqtt-compose.yaml
 
 networks:
-  lan:
-    external: true
-    name: br0
-
   hassio-front:
 
   hassio-frigate:
