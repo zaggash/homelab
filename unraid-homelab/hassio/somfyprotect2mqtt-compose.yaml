@@ -1,7 +1,7 @@
 services:
   hassio-somfyprotect2mqtt:
     container_name: hassio-somfyprotect2mqtt
-    image: docker.io/minims/somfyprotect2mqtt:2025.12.3@sha256:f8f8911df5e57685be0a02f1dbc56256d2314f0a473a8c22788599b5cc2a4ab7
+    image: docker.io/minims/somfyprotect2mqtt:2026.1.0@sha256:8ecb01411c4adf6949c1df3dc923583c37a0210f6ee5b774c46c96159e3a4117
     labels:
       folder.view2: Hassio
       net.unraid.docker.icon: ${SECRET_APPDATA}/icons/somfyprotect.png
