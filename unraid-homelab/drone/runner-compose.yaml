@@ -1,7 +1,7 @@
 services:
   drone-runner:
     container_name: drone-runner
-    image: drone/drone-runner-docker:1.8.5@sha256:e92115f2613a15172fe64c4842a6a92e00c186d82ba22e9f9c4832eaabb21df2
+    image: drone/drone-runner-docker:1.8.5@sha256:ead7d7807f878c89038dcdf0383336ffe50a1724b9cb6ff963b0e97279d078e2
     labels:
       folder.view2: Drone
       net.unraid.docker.icon: ${SECRET_APPDATA}/icons/drone.png
