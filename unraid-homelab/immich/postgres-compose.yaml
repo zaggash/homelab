@@ -18,3 +18,5 @@ services:
       - ${SECRET_APPDATA}/immich/postgres:/var/lib/postgresql/data
       - /etc/localtime:/etc/localtime:ro
     restart: always
+    healthcheck:
+      disable: false
