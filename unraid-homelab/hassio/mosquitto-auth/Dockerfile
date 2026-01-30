@@ -43,7 +43,7 @@ RUN set -ex \
 RUN set -ex \
   && mkdir -p /app \
   && cd /app \
-  && wget --inet4-only http://mosquitto.org/files/source/mosquitto-${MOSQUITTO_VERSION}.tar.gz \
+  && wget --inet4-only https://mosquitto.org/files/source/mosquitto-${MOSQUITTO_VERSION}.tar.gz \
   && tar xzvf mosquitto-${MOSQUITTO_VERSION}.tar.gz \
   && cd mosquitto-${MOSQUITTO_VERSION} \
   && make CFLAGS="-Wall -O2 -I/build/lws/include" LDFLAGS="-L/build/lws/lib" WITH_WEBSOCKETS=yes \
