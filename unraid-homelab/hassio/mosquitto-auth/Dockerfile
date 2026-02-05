@@ -18,8 +18,12 @@ RUN set -ex \
        git \
        build-essential \
        cmake \
+       libargon2-dev \
        libssl-dev \
        libcjson-dev \
+       libedit-dev \
+       libmicrohttpd-dev \
+       libsqlite3-dev \
   && wget --inet4-only https://github.com/warmcat/libwebsockets/archive/v${LIBWEBSOCKET_VERSION}.tar.gz \
        -O /tmp/lws.tar.gz \
   && mkdir -p /build/lws \
@@ -46,7 +50,13 @@ RUN set -ex \
   && wget --inet4-only https://mosquitto.org/files/source/mosquitto-${MOSQUITTO_VERSION}.tar.gz \
   && tar xzvf mosquitto-${MOSQUITTO_VERSION}.tar.gz \
   && cd mosquitto-${MOSQUITTO_VERSION} \
-  && make CFLAGS="-Wall -O2 -I/build/lws/include" LDFLAGS="-L/build/lws/lib" WITH_WEBSOCKETS=yes \
+  && make CFLAGS="-Wall -O2 -I/build/lws/include" LDFLAGS="-L/build/lws/lib" \
+       WITH_WEBSOCKETS=yes \
+       WITH_ADNS=no \
+       WITH_DOCS=no \
+       WITH_SHARED_LIBRARIES=yes \
+       WITH_SRV=no \
+       WITH_STRIP=yes \
   && make install
 
 
@@ -61,6 +71,9 @@ COPY --from=mosquitto_builder /usr/local/include/ /usr/local/include/
 
 RUN set -ex \
   && apt-get update \
+  && apt install -y \
+       libcjson1 \
+       libcjson-dev \
   && mkdir /app \
   && cd /app \
   && wget --inet4-only \
