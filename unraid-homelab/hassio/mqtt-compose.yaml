@@ -1,7 +1,7 @@
 services:
   hassio-mqtt:
     container_name: hassio-mqtt
-    image: ghcr.io/zaggash/mosquitto-auth:2.0.22@sha256:92efc4f2f7a68ebc4ed540b2f33949b7ceea8dfc5d64340f9a701e034872ba9b
+    image: ghcr.io/zaggash/mosquitto-auth:2.1.1@sha256:3725528d05b061a78b440dda068831b641d9ef3ad55d74c408b5e6c52ad0031b
     labels:
       folder.view2: Hassio
       net.unraid.docker.icon: ${SECRET_APPDATA}/icons/mqtt.png
