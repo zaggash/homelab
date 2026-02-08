@@ -3,7 +3,7 @@ services:
     container_name: flaresolverr
     #image: ghcr.io/flaresolverr/flaresolverr:v3.3.21@sha256:1a30e1ad6bb3df626bfe3b9735a6d60e208c475c89bf18be0db4d4b121a3cb0e
     #image: 21hsmw/flaresolverr:nodriver@sha256:3d99be35f845750adba3b9aa23844b7f585eeac6b1b45157bf14aaa8f7d16e20
-    image: ghcr.io/thephaseless/byparr:2.0.1@sha256:dd2ab939fd616c17da5f58d85f5264e5ad125de1db732f3f27a4b52e96b78cbb
+    image: ghcr.io/thephaseless/byparr:2.1.0@sha256:01a46a2865d9a6db5eb8ead04ec0dd33b8fbe233e8565ae70b50d4cc0af4cfb0
     shm_size: 2gb
     init: true
     labels:
