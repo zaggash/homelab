@@ -1,7 +1,7 @@
 services:
   shelfmark:
     container_name: shelfmark
-    image: ghcr.io/calibrain/shelfmark-lite:v1.1.0@sha256:acdab66e8f2ec6820365be8fc17aa3218d3b28556e074633a9c381d317937418
+    image: ghcr.io/calibrain/shelfmark-lite:v1.1.1@sha256:227105bd2d849b0fb76eba8262fd6a851741b27b21b8cd1dfaa63a3ca9060593
     labels:
       folder.view2: Media
       net.unraid.docker.icon: ${SECRET_APPDATA}/icons/shelfmark.png
