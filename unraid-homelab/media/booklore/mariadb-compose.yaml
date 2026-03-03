@@ -1,7 +1,7 @@
 services:
   books-db:
     container_name: books-db
-    image: ghcr.io/linuxserver/mariadb:11.4.8@sha256:91de7f701bc7fc3a424b81beafca7a7c6c4c5b7c8be6afd2ae148698695c0b0c
+    image: ghcr.io/linuxserver/mariadb:11.4.9@sha256:f13ba2646ac5b8563eeb493c402d5585fdc3ef034b0a4962f308375ef9900579
     labels:
       folder.view2: Media
       net.unraid.docker.icon: ${SECRET_APPDATA}/icons/mariadb.png
