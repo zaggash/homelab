@@ -1,0 +1,21 @@
+services:
+  hassio-victoriametrics:
+    container_name: hassio-victoriametrics
+    image: quay.io/victoriametrics/victoria-metrics:v1.137.0@sha256:7dc4a7635e386e551d11fb4e7988b22be70ae5cf4e1f89d8a0b1110770a83117
+    command:
+      - "-storageDataPath=/storage"
+      - "-httpListenAddr=:8428"
+      - "-influxListenAddr=:8089"
+      - "-retentionPeriod=99y"
+      - "-search.maxQueryDuration=60s"
+    labels:
+      folder.view2: Hassio
+      net.unraid.docker.icon: ${SECRET_APPDATA}/icons/victoriametrics.png
+    volumes:
+      - "${SECRET_APPDATA}/hassio/victoriametrics/:/storage"
+    user: ${UID}:${GID}
+    environment:
+      TZ: ${TZ}
+    networks:
+      - hassio-net
+    restart: always
