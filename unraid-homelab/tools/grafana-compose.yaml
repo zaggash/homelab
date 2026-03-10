@@ -1,7 +1,7 @@
 services:
   grafana:
     container_name: grafana
-    image: docker.io/grafana/grafana:12.3.5@sha256:a604f143dbb145a16cd58d22b1451826ee59fcf9de561dc6d698b1de222272d0
+    image: docker.io/grafana/grafana:12.4.1@sha256:e932bd6ed0e026595b08483cd0141e5103e1ab7ff8604839ff899b8dc54cabcb
     labels:
       folder.view2: Tools
       net.unraid.docker.icon: ${SECRET_APPDATA}/icons/grafana.png
