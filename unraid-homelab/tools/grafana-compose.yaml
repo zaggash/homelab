@@ -16,7 +16,6 @@ services:
     user: ${UID}:${GID}
     environment:
       TZ: ${TZ}
-      GF_APP_MODE: "production"
       GF_DEFAULT_INSTANCE_NAME: "Cosmicvault Graphs"
       GF_SERVER_PROTOCOL: "http"
       GF_SERVER_ENABLE_GZIP: true
