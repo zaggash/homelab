@@ -19,3 +19,8 @@ services:
     networks:
       - hassio-net
     restart: always
+    healthcheck:
+      test: ['CMD', 'wget', '--spider', '-q', 'http://127.0.0.1:8428/-/healthy']
+      interval: 10s
+      timeout: 5s
+      retries: 5
