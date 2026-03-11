@@ -5,7 +5,6 @@ include:
   - z2m-compose.yaml
   - mqtt-compose.yaml
   - somfyprotect2mqtt-compose.yaml
-  - victoriametrics-compose.yaml
 
 networks:
   hassio-front:
