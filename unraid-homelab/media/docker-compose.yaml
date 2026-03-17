@@ -2,6 +2,7 @@ include:
   - booklore/docker-compose.yaml
   - flaresolver-compose.yaml
   - prowlarr-compose.yaml
+  - ygege-compose.yaml
   - radarr-compose.yaml
   - sonarr-compose.yaml
   - audiobookshelf-compose.yaml

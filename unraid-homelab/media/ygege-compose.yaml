@@ -1,0 +1,20 @@
+services:
+  ygege:
+    container_name: ygege
+    image: ghcr.io/uwudev/ygege:0.9.1@sha256:14968534589cfb89906ae1a88bde8cf65925886b2d18530766e1a31a71c82a3c
+    labels:
+      folder.view2: Media
+      net.unraid.docker.icon: ${SECRET_APPDATA}/icons/ygege.png
+    user: ${UID}:${GID}
+    environment:
+      TZ: ${TZ}
+      LOG_LEVEL: "info"
+    networks:
+      - media-backend
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "curl --fail http://localhost:$${BIND_PORT:-8715}/health || exit 1"]
+      interval: 1m30s
+      timeout: 20s
+      retries: 3
+      start_period: 10s
