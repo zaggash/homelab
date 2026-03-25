@@ -27,7 +27,6 @@ services:
       DB01_TYPE: mysql
       DB01_HOST: books-db
       DB01_NAME: ALL
-      DB01_BACKUP_LOCATION: /backup/${GRIMMORY_DB}
       DB01_USER: ${GRIMMORY_MARIADB_USERNAME}
       DB01_PASS: ${GRIMMORY_MARIADB_PASSWORD}
       DB01_BACKUP_BEGIN: "45 01 * * *" # https://crontab.guru/#45_01_*_*_*
