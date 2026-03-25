@@ -1,5 +1,5 @@
 include:
-  - booklore/docker-compose.yaml
+  - grimmory/docker-compose.yaml
   - flaresolver-compose.yaml
   - prowlarr-compose.yaml
   - ygege-compose.yaml

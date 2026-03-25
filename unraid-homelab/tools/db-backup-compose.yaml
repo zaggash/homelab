@@ -22,13 +22,14 @@ services:
       DEFAULT_FILESYSTEM_PATH: /backup
       DEFAULT_COMPRESSION: GZ
       DEFAULT_GZ_RSYNCABLE: true
+      DEFAULT_MYSQL_CLIENT: mariadb
       ### Booklore DB
       DB01_TYPE: mysql
       DB01_HOST: books-db
       DB01_NAME: ALL
-      DB01_BACKUP_LOCATION: /backup/booklore
-      DB01_USER: ${BOOKLORE_MARIADB_USERNAME}
-      DB01_PASS: ${BOOKLORE_MARIADB_PASSWORD}
+      DB01_BACKUP_LOCATION: /backup/${GRIMMORY_DB}
+      DB01_USER: ${GRIMMORY_MARIADB_USERNAME}
+      DB01_PASS: ${GRIMMORY_MARIADB_PASSWORD}
       DB01_BACKUP_BEGIN: "45 01 * * *" # https://crontab.guru/#45_01_*_*_*
       DB01_CLEANUP_TIME: 43200 # 1 Mois
     networks:
