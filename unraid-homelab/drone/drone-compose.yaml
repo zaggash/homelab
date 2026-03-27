@@ -1,7 +1,7 @@
 services:
   drone-server:
     container_name: drone-server
-    image: drone/drone:2.27.2@sha256:f6a6f3862e0e5ac952f076aa5a0d788a31d24b38581b121be7f38808a019500e
+    image: drone/drone:2.28.0@sha256:da02ea8fc5fcad7febe4533c6749c183b71028bc14c350ea3325fd47cd54145f
     labels:
       folder.view2: Drone
       net.unraid.docker.icon: ${SECRET_APPDATA}/icons/drone.png
