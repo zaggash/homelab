@@ -10,7 +10,7 @@ services:
     volumes:
       - "${SECRET_APPDATA}/traefik:/etc/traefik/"
     labels:
-      folder.view2: Ingress
+      folder.view3: Ingress
       net.unraid.docker.icon: ${SECRET_APPDATA}/icons/traefik.png
       traefik.enable: true
       traefik.docker.network: homelab_webserver-internal

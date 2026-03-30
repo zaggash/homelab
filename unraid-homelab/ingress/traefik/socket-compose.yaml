@@ -3,7 +3,7 @@ services:
     container_name: traefik-socket
     image: ghcr.io/wollomatic/socket-proxy:1.11.4@sha256:03ffc258249e159a2472a5f3f9e9688f616618da8ad5190da4eb36d2c23bb94d
     labels:
-      folder.view2: Ingress
+      folder.view3: Ingress
       net.unraid.docker.icon: ${SECRET_APPDATA}/icons/docker-socket.png
     user: 65534:281
     read_only: true
@@ -12,14 +12,14 @@ services:
     security_opt:
       - no-new-privileges
     command:
-      - '-loglevel=debug'
-      - '-shutdowngracetime=5'
-      - '-watchdoginterval=600'
-      - '-stoponwatchdog'
-      - '-allowfrom=traefik'
-      - '-listenip=0.0.0.0'
+      - "-loglevel=debug"
+      - "-shutdowngracetime=5"
+      - "-watchdoginterval=600"
+      - "-stoponwatchdog"
+      - "-allowfrom=traefik"
+      - "-listenip=0.0.0.0"
       - '-allowGET=/v1\..{1,2}/(version|containers/.*|events.*)'
-      - '-allowHEAD=/_ping'
+      - "-allowHEAD=/_ping"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
     networks:
