@@ -1,7 +1,7 @@
 services:
   hassio-esphome:
     container_name: hassio-esphome
-    image: ghcr.io/esphome/esphome:2026.3.3@sha256:6c0db7e3ad7bf0426564400b706907d0c66897d8feb5a43a08fe75bccd05c437
+    image: ghcr.io/esphome/esphome:2026.4.0@sha256:78a82d810709c28ea4cd69e8691f520297cb08a4c0e74d1b290afa1a0c2fcfbb
     labels:
       folder.view3: Hassio
       net.unraid.docker.icon: ${SECRET_APPDATA}/icons/esphome.png
