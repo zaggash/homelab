@@ -4,7 +4,7 @@ services:
     depends_on:
       books-db:
         condition: service_healthy
-    image: ghcr.io/grimmory-tools/grimmory:v2.3.0@sha256:9014247f591074529894f81115ca40f899db697e89f72c2fe91ec530e3f19597
+    image: ghcr.io/grimmory-tools/grimmory:v2.3.1@sha256:73803e74fca8092bfe5b8c7552905e845bdbcc16f6d0f79251f9a0cb2ba3c459
     labels:
       folder.view3: Media
       net.unraid.docker.icon: ${SECRET_APPDATA}/icons/grimmory.png
