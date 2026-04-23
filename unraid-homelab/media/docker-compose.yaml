@@ -7,7 +7,6 @@ include:
   - sonarr-compose.yaml
   - audiobookshelf-compose.yaml
   - qbittorrent-compose.yaml
-  - recyclarr/recyclarr-compose.yaml
   - clonarr-compose.yaml
   - shelfmark-compose.yaml
   - jellyfin-compose.yaml
