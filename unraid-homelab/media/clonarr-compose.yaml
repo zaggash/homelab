@@ -1,0 +1,21 @@
+services:
+  clonarr:
+    container_name: clonarr
+    image: ghcr.io/prophetse7en/clonarr:v2.0.8@sha256:746fe6d4dc9648a517a3f693ad999a704b0241ee5f4886cc824bfa24be732af4
+    labels:
+      folder.view3: Media
+      net.unraid.docker.icon: ${SECRET_APPDATA}/icons/clonarr.png
+      traefik.enable: true
+      traefik.docker.network: homelab_media
+      traefik.http.routers.clonarr.rule: Host(`clonarr.${SECRET_DOMAIN}`)
+      traefik.http.routers.clonarr.entryPoints: websecure
+      traefik.http.services.clonarr.loadbalancer.server.port: 6060
+    environment:
+      TZ: ${TZ}
+      PUID: ${UID}
+      PGID: ${GID}
+    volumes:
+      - "${SECRET_APPDATA}/clonarr:/config"
+    restart: unless-stopped
+    networks:
+      - media
