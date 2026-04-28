@@ -1,7 +1,7 @@
 services:
   clonarr:
     container_name: clonarr
-    image: ghcr.io/prophetse7en/clonarr:v2.2.9@sha256:547e3771d0993a0739aef4ba5e4649c9a3b5ce849dacc2ec89470dbc45486f9f
+    image: ghcr.io/prophetse7en/clonarr:v2.2.10@sha256:80759338fed17d6be04a56e482c2c677dfe1046e2fa6cc2fd0076a834e2d8ab2
     labels:
       folder.view3: Media
       net.unraid.docker.icon: ${SECRET_APPDATA}/icons/clonarr.png
