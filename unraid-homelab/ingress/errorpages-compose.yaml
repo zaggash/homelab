@@ -14,10 +14,10 @@ services:
       traefik.http.routers.errorpages.middlewares: error-pages-middleware
       traefik.http.middlewares.error-pages-middleware.errors.service: errorpages
       traefik.http.middlewares.error-pages-middleware.errors.status: 400-599
-      traefik.http.middlewares.error-pages-middleware.errors.query: /{status}.html
+      traefik.http.middlewares.error-pages-middleware.errors.query: /{status}
     environment:
       TZ: ${TZ}
-      TEMPLATE_NAME: "shuffle"
+      TEMPLATE_NAME: "lost-in-space"
       SHOW_DETAILS: "true"
     networks:
       - webserver-internal
