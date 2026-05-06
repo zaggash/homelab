@@ -1,7 +1,7 @@
 services:
   immich-redis:
     container_name: immich_redis
-    image: ghcr.io/valkey-io/valkey:8@sha256:1f84517eca8e0dd9585ed57c572796f32839e1b0e7ce07ad28e6bce098468371
+    image: ghcr.io/valkey-io/valkey:8@sha256:9917e842cfc3220e4ac3e819eb98a975cc171eff5e532c79cb75558030eb9078
     user: "1000:1000"
     security_opt:
       - no-new-privileges:true
