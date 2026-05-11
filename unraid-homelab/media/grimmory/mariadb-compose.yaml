@@ -10,7 +10,7 @@ services:
     environment:
       TZ: ${TZ}
       PUID: ${UID}
-      GUID: ${GID}
+      PGID: ${GID}
       MYSQL_ROOT_PASSWORD: ${GRIMMORY_MARIADB_ROOTPW}
       MYSQL_DATABASE: ${GRIMMORY_DB}
       MYSQL_USER: ${GRIMMORY_MARIADB_USERNAME}

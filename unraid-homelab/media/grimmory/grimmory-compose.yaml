@@ -26,6 +26,8 @@ services:
       DATABASE_URL: jdbc:mariadb://books-db:3306/${GRIMMORY_DB}
       DATABASE_USERNAME: ${GRIMMORY_MARIADB_USERNAME}
       DATABASE_PASSWORD: ${GRIMMORY_MARIADB_PASSWORD}
+      API_DOCS_ENABLED: false
+      DISK_TYPE: LOCAL
     networks:
       - media
       - media-backend
