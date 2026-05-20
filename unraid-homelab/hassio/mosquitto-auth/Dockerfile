@@ -1,7 +1,7 @@
 # renovate: datasource=github-tags depName=warmcat/libwebsockets versioning=semver
-ARG LIBWEBSOCKET_VERSION=4.5.2
+ARG LIBWEBSOCKET_VERSION=4.5.8
 # renovate: datasource=github-tags depName=eclipse-mosquitto/mosquitto versioning=semver
-ARG MOSQUITTO_VERSION=2.1.0
+ARG MOSQUITTO_VERSION=2.1.2
 # renovate: datasource=github-tags depName=iegomez/mosquitto-go-auth versioning=semver
 ARG MOSQUITTO_AUTH_VERSION=3.0.0
 
@@ -73,7 +73,7 @@ RUN set -ex \
 
 
 #### Create from a new image.
-FROM debian:stable-slim@sha256:4448d44b91bf4a13cb1b4e02d9d5f87ed40621d6e33f0ae7b6ddf71d57e29364
+FROM debian:stable-slim@sha256:5012d0517aa0075a7150a45aae67586641e898913b7af3b08228108565b5f90c
 RUN set -ex \
   && apt update \
   && apt install -y \
