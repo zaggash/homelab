@@ -1,4 +1,26 @@
 services:
+  reolinkproxy:
+    container_name: hassio-reolinkproxy
+    image: ghcr.io/shareed2k/reolinkproxy:v0.2.4@sha256:df65ffc9b714fec1842a9ebf588e7198c7ed2806a2519e6dbfaacc406a7ef79b
+    labels:
+      folder.view3: Hassio
+    environment:
+      TZ: ${TZ}
+      REOLINK_SERVER_RTSP_ADDRESS: ":8556"
+      REOLINK_CAMERA_0_NAME: "doorbell"
+      REOLINK_CAMERA_0_HOST: "192.168.1.30"
+      REOLINK_CAMERA_0_USERNAME: ${SECRET_DOORBELL_USERNAME}
+      REOLINK_CAMERA_0_PASSWORD: ${SECRET_DOORBELL_PASSWORD}
+      REOLINK_CAMERA_0_STREAM: "main,sub"
+      REOLINK_CAMERA_0_TALK_PROFILE: "sub"
+      REOLINK_ONVIF_USERNAME: ${SECRET_DOORBELL_USERNAME}
+      REOLINK_ONVIF_PASSWORD: ${SECRET_DOORBELL_PASSWORD}
+    networks:
+      - hassio-frigate
+    ports:
+      - "192.168.1.50:8556:8556/tcp"
+    restart: always
+
   frigate:
     container_name: hassio-frigate
     image: ghcr.io/blakeblackshear/frigate:0.17.1@sha256:1724960349dad0bd2ae8ec884171a6fd5755a4dc242a0e66cadbda9c0e85c99b
