@@ -7,18 +7,18 @@ services:
     dns:
       - 192.168.1.10
     environment: &backup_env
-      BACKUP_FILENAME: "adguard-%Y-%m-%dT%H-%M-%S.tar.gz"
-      BACKUP_LATEST_SYMLINK: "adguard-latest.tar.gz"
-      BACKUP_ARCHIVE: "/archive/adguard"
-      BACKUP_SOURCE: "/backup/adguard"
+      BACKUP_FILENAME: "dns-%Y-%m-%dT%H-%M-%S.tar.gz"
+      BACKUP_LATEST_SYMLINK: "dns-latest.tar.gz"
+      BACKUP_ARCHIVE: "/archive/dns"
+      BACKUP_SOURCE: "/backup/dns"
       BACKUP_CRON_EXPRESSION: "15 0 * * *"
       BACKUP_RETENTION_DAYS: "7"
-      BACKUP_PRUNING_PREFIX: "adguard-"
+      BACKUP_PRUNING_PREFIX: "dns-"
       NOTIFICATION_URLS: $PORTAINER_NOTIFICATION_URLS
       NOTIFICATION_LEVEL: "error"
     volumes:
-      - "adguard_conf:/backup/adguard/conf:ro"
-      - "adguard_work:/backup/adguard/work:ro"
+      - "dns_config:/backup/dns/config:ro"
+      - "dns_log:/backup/dns/log:ro"
       - "unraid_backups:/archive"
 
   unifi:
@@ -37,9 +37,9 @@ services:
       - "unraid_backups:/archive"
 
 volumes:
-  adguard_conf:
+  dns_config:
     external: true
-  adguard_work:
+  dns_log:
     external: true
   unifi_data:
     external: true
