@@ -1,29 +1,45 @@
 version: "3"
 services:
-  controller:
+  os-server:
+    image: ghcr.io/lemker/unifi-os-server:v1.1.0@sha256:3c3bd284f6686c0fec41f89369d9c2eb5933464bd1f105b3b1f2dbd482355c71
     hostname: unifi
     domainname: home.lan
-    image: ghcr.io/jacobalberty/unifi-docker:v10.0.162@sha256:896c0ab82d33300694dae82982fd7094497afcbea0be92cadc1e94bfead731d3
-    init: true
     dns:
       - 192.168.1.10
-      - 1.0.0.1
+      - 1.1.1.1
+    cgroup: host
+    cap_add:
+      - NET_RAW
+      - NET_ADMIN
+    extra_hosts:
+      host.docker.internal: host-gateway
+    tmpfs:
+      - /run:exec
+      - /run/lock
+      - /tmp:exec
+      - /var/lib/journal
+      - /var/opt/unifi/tmp:size=64m
     environment:
-      TZ: 'Europe/Paris'
-      UNIFI_STDOUT: true
-      RUNAS_UID0: false
-      UNIFI_UID: 1000
-      UNIFI_GID: 1000
-      JVM_INIT_HEAP_SIZE: 1024M
-      JVM_MAX_HEAP_SIZE: 1024M
-      LOTSOFDEVICES: true
+      - UOS_SYSTEM_IP=unifi.home.lan
     volumes:
-      - data:/unifi
+      - /sys/fs/cgroup:/sys/fs/cgroup:rw
+      - data/persistent:/persistent
+      - data/var-log:/var/log
+      - data/data:/data
+      - data/srv:/srv
+      - data/var-lib-unifi:/var/lib/unifi
+      - data/var-lib-mongodb:/var/lib/mongodb
+      - data/etc-rabbitmq-ssl:/etc/rabbitmq/ssl
     ports:
-      - 8443:8443/tcp # UI
-      - 8080:8080/tcp # Inform
-      - 3478:3478/udp # Stun
+      - 11443:11443
+      - 5005:5005 # Optional
+      - 9543:9543 # Optional
+      - 6789:6789 # Optional
+      - 8080:8080
+      - 8443:8443 # Optional
+      - 3478:3478/udp
+      - 10003:10003/udp
     restart: unless-stopped
-    
+
 volumes:
   data:
