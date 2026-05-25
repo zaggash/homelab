@@ -1,7 +1,7 @@
 services:
   jellyfin:
     container_name: jellyfin
-    image: ghcr.io/linuxserver/jellyfin:10.11.9@sha256:155fb51c745d1a2c28c8b300612bc728a5dd06097bbc62b8b1c76d174eb20366
+    image: ghcr.io/linuxserver/jellyfin:10.11.10@sha256:c0ed73678fb4ca761e0d940a92e49b95352f7f241a9be79a2c575c0099288f46
     labels:
       folder.view3: Media
       net.unraid.docker.icon: ${SECRET_APPDATA}/icons/jellyfin.png
