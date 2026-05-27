@@ -47,5 +47,5 @@ volumes:
     driver: local
     driver_opts:
       type: nfs
-      o: addr=192.168.1.12,nfsvers=4.2,rw,noatime,rsize=8192,wsize=8192,tcp,timeo=14
+      o: addr=192.168.1.12,nfsvers=4.2,rw,noatime,tcp,timeo=14
       device: :/mnt/user/remote-backups
