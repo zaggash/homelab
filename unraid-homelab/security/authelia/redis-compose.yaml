@@ -2,16 +2,16 @@ services:
   authelia-redis:
     container_name: authelia-redis
     image: docker.io/redis:8.8@sha256:25e102bdf0bd1ea1f5840ce8873275ba12dc544740a1c9bda9fc71001f5c7190
+    command: redis-server --requirepass "${SECRET_AUTHELIA_REDIS_PASSWORD}"
     labels:
       folder.view3: Security
       net.unraid.docker.icon: ${SECRET_APPDATA}/icons/redis.png
     volumes:
-      - "${SECRET_APPDATA}/authelia/redis:/bitnami/redis/"
+      - "${SECRET_APPDATA}/authelia/redis:/data"
     networks:
       - authelia-db
     environment:
       TZ: ${TZ}
-      REDIS_PASSWORD: ${SECRET_AUTHELIA_REDIS_PASSWORD}
     restart: always
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
