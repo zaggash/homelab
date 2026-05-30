@@ -1,0 +1,33 @@
+services:
+  signal-api:
+    container_name: signal-api
+    image: bbernhard/signal-cli-rest-api:latest@sha256:d8c0b9e86a0319db7d341065163f4b50cd23b184efbcbb8e541bb87063de79bf
+    environment:
+      - MODE=normal
+      - TZ=${TZ}
+    volumes:
+      - "${SECRET_APPDATA}/signal-cli:/home/.local/share/signal-cli"
+    networks:
+      - media-backend
+    restart: always
+
+  librarian-bot:
+    container_name: librarian-bot
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      - signal-api
+    environment:
+      SIGNAL_URL: http://signal-api:8080
+      BOT_NUMBER: ${LIBRARIAN_BOT_NUMBER}
+      WIFE_NUMBER: ${LIBRARIAN_WIFE_NUMBER}
+      GEMINI_API_KEY: ${LIBRARIAN_GEMINI_API_KEY}
+      GEMINI_MODEL: ${LIBRARIAN_GEMINI_MODEL:-gemini-1.5-flash}
+      IMPORT_DIR: /books_import
+      POLL_INTERVAL: 10
+    volumes:
+      - "${SECRET_DATADIR}/downloads/complete/ebooks_import:/books_import"
+    networks:
+      - media-backend
+    restart: always
