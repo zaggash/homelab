@@ -23,16 +23,25 @@ logging.basicConfig(
 SIGNAL_URL = os.getenv("SIGNAL_URL", "http://signal-api:8080").rstrip("/")
 BOT_NUMBER = os.getenv("BOT_NUMBER", "")
 WIFE_NUMBER = os.getenv("WIFE_NUMBER", "")
+AUTHORIZED_NUMBERS_STR = os.getenv("AUTHORIZED_NUMBERS", "")
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
 GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-1.5-flash")
 IMPORT_DIR = os.getenv("IMPORT_DIR", "/books_import")
 POLL_INTERVAL = int(os.getenv("POLL_INTERVAL", "10"))
 
+# Parse authorized numbers list
+if AUTHORIZED_NUMBERS_STR:
+    AUTHORIZED_NUMBERS = [num.strip() for num in AUTHORIZED_NUMBERS_STR.split(",") if num.strip()]
+elif WIFE_NUMBER:
+    AUTHORIZED_NUMBERS = [WIFE_NUMBER.strip()]
+else:
+    AUTHORIZED_NUMBERS = []
+
 # Validate configuration
 if not BOT_NUMBER:
     logging.error("BOT_NUMBER environment variable is missing!")
-if not WIFE_NUMBER:
-    logging.error("WIFE_NUMBER environment variable is missing!")
+if not AUTHORIZED_NUMBERS:
+    logging.error("No authorized numbers configured! Set AUTHORIZED_NUMBERS or WIFE_NUMBER.")
 if not GEMINI_API_KEY:
     logging.error("GEMINI_API_KEY environment variable is missing!")
 
@@ -402,11 +411,11 @@ def run_bot():
                     continue
                     
                 # Strict Whitelist Validation for Security
-                if sender != WIFE_NUMBER:
+                if sender not in AUTHORIZED_NUMBERS:
                     logging.warning(f"Blocked unauthorized message from {sender}.")
                     continue
                     
-                logging.info(f"Received message from authorized sender ({WIFE_NUMBER}).")
+                logging.info(f"Received message from authorized sender ({sender}).")
                 
                 # Check for cover photo attachments
                 attachments = data_msg.get("attachments", [])
@@ -422,7 +431,7 @@ def run_bot():
                         photo_id = photo.get("id")
                         send_signal_message(
                             "📸 J'ai bien reçu la photo de la couverture. Analyse de l'image en cours...", 
-                            WIFE_NUMBER
+                            sender
                         )
                         
                         image_bytes = download_signal_attachment(photo_id)
@@ -432,17 +441,17 @@ def run_bot():
                                 query = ocr_text
                                 send_signal_message(
                                     f"🔍 Titre détecté : '{ocr_text}'. Recherche en cours sur Anna's Archive...", 
-                                    WIFE_NUMBER
+                                    sender
                                 )
                             else:
                                 send_signal_message(
                                     "⚠️ Désolé, je n'ai pas réussi à lire le titre sur la photo. Peux-tu m'écrire le titre et l'auteur par texte ?", 
-                                    WIFE_NUMBER
+                                    sender
                                 )
                         else:
                             send_signal_message(
                                 "⚠️ Erreur lors du téléchargement de la photo depuis l'API Signal.", 
-                                WIFE_NUMBER
+                                sender
                             )
                 
                 # Handling Text Search Query
@@ -450,7 +459,7 @@ def run_bot():
                     query = text_content
                     send_signal_message(
                         f"🔍 Recherche de '{query}' en cours sur Anna's Archive...", 
-                        WIFE_NUMBER
+                        sender
                     )
                     
                 # Run the search & download pipeline
@@ -460,19 +469,19 @@ def run_bot():
                     if epub_path:
                         send_signal_message(
                             f"📥 {status_msg}\nEnvoi du livre en cours...", 
-                            WIFE_NUMBER
+                            sender
                         )
-                        # Send the file back natively to the wife via Signal
+                        # Send the file back natively to the user via Signal
                         send_signal_message(
                             "✨ Voilà ton livre ! Bonne lecture 📖", 
-                            WIFE_NUMBER, 
+                            sender, 
                             attachment_path=epub_path
                         )
                         logging.info(f"Process complete. Book sent and saved in {IMPORT_DIR}")
                     else:
                         send_signal_message(
                             f"⚠️ {status_msg}", 
-                            WIFE_NUMBER
+                            sender
                         )
                         
         except Exception as e:
