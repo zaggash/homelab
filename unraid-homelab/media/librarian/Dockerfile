@@ -1,5 +1,5 @@
 # Use a lightweight, minimal Python Alpine image
-FROM python:3.11-alpine
+FROM python:3.14-alpine
 
 # Prevent Python from writing .pyc files and enable unbuffered logging
 ENV PYTHONDONTWRITEBYTECODE=1
