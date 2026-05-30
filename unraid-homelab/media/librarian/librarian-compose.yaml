@@ -1,7 +1,7 @@
 services:
   signal-api:
     container_name: signal-api
-    image: bbernhard/signal-cli-rest-api:latest@sha256:d8c0b9e86a0319db7d341065163f4b50cd23b184efbcbb8e541bb87063de79bf
+    image: bbernhard/signal-cli-rest-api:0.99@sha256:96578363477d97cb1d8da303791b2ad686b374a255fce4d78c7c6f00ef56cba8
     environment:
       - MODE=normal
       - TZ=${TZ}
