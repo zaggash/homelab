@@ -22,7 +22,6 @@ logging.basicConfig(
 # -----------------------------------------------------------------------------
 SIGNAL_URL = os.getenv("SIGNAL_URL", "http://signal-api:8080").rstrip("/")
 BOT_NUMBER = os.getenv("BOT_NUMBER", "")
-WIFE_NUMBER = os.getenv("WIFE_NUMBER", "")
 AUTHORIZED_NUMBERS_STR = os.getenv("AUTHORIZED_NUMBERS", "")
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
 GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-1.5-flash")
@@ -30,18 +29,13 @@ IMPORT_DIR = os.getenv("IMPORT_DIR", "/books_import")
 POLL_INTERVAL = int(os.getenv("POLL_INTERVAL", "10"))
 
 # Parse authorized numbers list
-if AUTHORIZED_NUMBERS_STR:
-    AUTHORIZED_NUMBERS = [num.strip() for num in AUTHORIZED_NUMBERS_STR.split(",") if num.strip()]
-elif WIFE_NUMBER:
-    AUTHORIZED_NUMBERS = [WIFE_NUMBER.strip()]
-else:
-    AUTHORIZED_NUMBERS = []
+AUTHORIZED_NUMBERS = [num.strip() for num in AUTHORIZED_NUMBERS_STR.split(",") if num.strip()]
 
 # Validate configuration
 if not BOT_NUMBER:
     logging.error("BOT_NUMBER environment variable is missing!")
 if not AUTHORIZED_NUMBERS:
-    logging.error("No authorized numbers configured! Set AUTHORIZED_NUMBERS or WIFE_NUMBER.")
+    logging.error("No authorized numbers configured! Set AUTHORIZED_NUMBERS.")
 if not GEMINI_API_KEY:
     logging.error("GEMINI_API_KEY environment variable is missing!")
 
