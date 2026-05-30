@@ -5,17 +5,23 @@ FROM python:3.11-alpine
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 
-# Create app directory
+# Create a non-root user and group matching standard homelab permissions (UID/GID 1000)
+RUN addgroup -g 1000 librarian && \
+    adduser -u 1000 -G librarian -S -D -h /app librarian
+
+# Create directories and set correct ownership
 WORKDIR /app
+RUN mkdir -p /books_import && \
+    chown -R librarian:librarian /app /books_import
 
 # Copy the bot script
-COPY librarian_signal.py .
+COPY --chown=librarian:librarian librarian_signal.py .
 
 # Make the script executable
 RUN chmod +x librarian_signal.py
 
-# Create books_import directory
-RUN mkdir -p /books_import
+# Switch to non-root user
+USER librarian
 
 # Run the script
 CMD ["python", "librarian_signal.py"]
