@@ -120,6 +120,32 @@ def download_signal_attachment(attachment_id):
     endpoint = f"/v1/attachments/{attachment_id}"
     return make_signal_request(endpoint, method="GET", is_binary=True)
 
+# Global cache for resolving base64 group IDs to plain text names
+GROUP_NAME_CACHE = {}
+
+def resolve_group_name(group_id):
+    """
+    Resolves the plain-text name of a group from its base64 ID, using a local cache
+    and falling back to the Signal REST API's groups list endpoint.
+    """
+    global GROUP_NAME_CACHE
+    
+    if group_id in GROUP_NAME_CACHE:
+        return GROUP_NAME_CACHE[group_id]
+        
+    logging.info(f"Group name cache miss for ID '{group_id}'. Querying Signal groups list...")
+    endpoint = f"/v1/groups/{BOT_NUMBER}"
+    groups_list = make_signal_request(endpoint, method="GET")
+    
+    if groups_list and isinstance(groups_list, list):
+        for g in groups_list:
+            g_id = g.get("id")
+            g_name = g.get("name")
+            if g_id:
+                GROUP_NAME_CACHE[g_id] = g_name
+                
+    return GROUP_NAME_CACHE.get(group_id)
+
 # -----------------------------------------------------------------------------
 # GEMINI OCR (RE-IMPLEMENTED USING RAW HTTP TO MINIMIZE DEPENDENCIES)
 # -----------------------------------------------------------------------------
@@ -423,12 +449,22 @@ def run_bot():
                 
                 # Check for cover photo attachments
                 attachments = data_msg.get("attachments", [])
-                text_content = data_msg.get("message", "").strip()
+                
+                # Handle cases where message is explicitly None (e.g. photo sent with no caption)
+                raw_message = data_msg.get("message")
+                text_content = raw_message.strip() if raw_message else ""
                 
                 # Determine if the message comes from a group chat (v1 or v2 format)
                 group_info = data_msg.get("groupInfo") or data_msg.get("groupV2Info") or {}
                 group_id = group_info.get("groupId")
+                
+                # Fetch group name from message, caching it, or resolving dynamically on cache miss
                 group_name = group_info.get("name")
+                if group_id:
+                    if not group_name:
+                        group_name = resolve_group_name(group_id)
+                    else:
+                        GROUP_NAME_CACHE[group_id] = group_name
                 
                 is_group = bool(group_id)
                 is_note_to_self = (sender == BOT_NUMBER)
