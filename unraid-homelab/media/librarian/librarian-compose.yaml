@@ -16,6 +16,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    pull_policy: build
     depends_on:
       - signal-api
     environment:
