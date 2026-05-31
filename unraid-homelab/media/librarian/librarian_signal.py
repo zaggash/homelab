@@ -530,90 +530,127 @@ def download_libgen_book(md5_hash, dest_filename):
 # -----------------------------------------------------------------------------
 # FLARESOLVERR BYPASS FOR ANNA'S ARCHIVE DIRECT SLOW LINK
 # -----------------------------------------------------------------------------
-def download_annas_slow_link(md5_hash, dest_filename):
+def download_annas_slow_link(md5_hash, dest_filename, preferred_domain="annas-archive.gl"):
     """
     Uses FlareSolverr to bypass DDoS-Guard on Anna's Archive, resolve
     the 'no waitlist' (Option #5/6/7/8) slow download link, and download the book.
+    Supports automatic domain failover if the preferred domain is blocked (403/503).
     """
     if not FLARESOLVERR_URL:
         return False
         
-    logging.info(f"Attempting DDoS-Guard bypass via FlareSolverr for 'no waitlist' link (MD5: {md5_hash})...")
-    
-    # We target option 5 (0/4) which is often the first 'no waitlist' IPFS/direct link
-    target_url = f"https://annas-archive.gl/slow_download/{md5_hash}/0/4"
-    
-    payload = {
-        "cmd": "request.get",
-        "url": target_url,
-        "maxTimeout": 60000
-    }
-    
-    headers = {"Content-Type": "application/json"}
-    req = urllib.request.Request(
-        f"{FLARESOLVERR_URL}/v1", 
-        data=json.dumps(payload).encode("utf-8"), 
-        headers=headers
-    )
-    
-    try:
-        ctx = ssl._create_unverified_context()
+    # Official domains list for failover
+    domains = ["annas-archive.gl", "annas-archive.pk", "annas-archive.gd"]
+    if preferred_domain in domains:
+        # Move preferred domain to the front
+        domains.remove(preferred_domain)
+        domains.insert(0, preferred_domain)
         
-        with urllib.request.urlopen(req, timeout=75, context=ctx) as response:
-            res_data = json.loads(response.read().decode("utf-8"))
-            
-        if res_data.get("status") != "ok":
-            logging.error(f"FlareSolverr challenge resolution failed: {res_data.get('message')}")
-            return False
-            
-        solution = res_data.get("solution", {})
-        html_content = solution.get("response", "")
-        cookies = solution.get("cookies", [])
-        user_agent = solution.get("userAgent", "")
+    for domain in domains:
+        logging.info(f"Attempting DDoS-Guard bypass via FlareSolverr on {domain} (MD5: {md5_hash})...")
+        target_url = f"https://{domain}/slow_download/{md5_hash}/0/4"
         
-        # Scrape for any direct resolved gateway link (IPFS, cloudflare-ipfs, pinata, etc.)
-        # Supports both absolute URLs and relative URLs
-        redirect_match = re.search(r'href=["\']((?:https?://[^"\']*)?/(?:ipfs|cloudflare-ipfs|pinata|gateway)[^"\']*)["\']', html_content, re.IGNORECASE)
-        if not redirect_match:
-            # Fallback to direct download endpoint generated internally (supports absolute and relative)
-            redirect_match = re.search(r'href=["\']((?:https?://[^"\']*)?/slow_download/direct/[^"\']*)["\']', html_content, re.IGNORECASE)
-            
-        if not redirect_match:
-            logging.error("Could not find resolved download URL in FlareSolverr's HTML response.")
-            return False
-            
-        captured_url = html_lib.unescape(redirect_match.group(1))
-        
-        # If the URL is relative, construct the absolute URL using the target_url origin
-        if captured_url.startswith("/"):
-            parsed_origin = urllib.parse.urlparse(target_url)
-            resolved_url = f"{parsed_origin.scheme}://{parsed_origin.netloc}{captured_url}"
-        else:
-            resolved_url = captured_url
-            
-        logging.info(f"FlareSolverr resolved download URL: {resolved_url}")
-        
-        # Prepare request using solved cookies and user-agent
-        cookie_header = "; ".join([f"{c['name']}={c['value']}" for c in cookies])
-        dl_headers = {
-            "User-Agent": user_agent,
-            "Referer": target_url
+        payload = {
+            "cmd": "request.get",
+            "url": target_url,
+            "maxTimeout": 60000
         }
-        if cookie_header:
-            dl_headers["Cookie"] = cookie_header
-            
-        dl_req = urllib.request.Request(resolved_url, headers=dl_headers)
-        with urllib.request.urlopen(dl_req, timeout=60, context=ctx) as dl_response:
-            with open(dest_filename, "wb") as f_out:
-                f_out.write(dl_response.read())
-                
-        actual_size = os.path.getsize(dest_filename)
-        logging.info(f"Book saved successfully via FlareSolverr: {dest_filename} ({actual_size} bytes)")
-        return True
         
-    except Exception as e:
-        logging.error(f"FlareSolverr download flow failed: {e}")
-        return False
+        headers = {"Content-Type": "application/json"}
+        req = urllib.request.Request(
+            f"{FLARESOLVERR_URL}/v1", 
+            data=json.dumps(payload).encode("utf-8"), 
+            headers=headers
+        )
+        
+        try:
+            ctx = ssl._create_unverified_context()
+            with urllib.request.urlopen(req, timeout=75, context=ctx) as response:
+                res_data = json.loads(response.read().decode("utf-8"))
+                
+            if res_data.get("status") != "ok":
+                logging.warning(f"FlareSolverr request to {domain} failed: {res_data.get('message')}. Trying next domain...")
+                continue
+                
+            solution = res_data.get("solution", {})
+            
+            # CRUCIAL: Check the actual response code of the target website!
+            # FlareSolverr/Byparr returns status "ok" even if the target website returns 403 Forbidden.
+            target_status = solution.get("status")
+            if target_status and target_status != 200:
+                logging.warning(f"Target website {domain} returned HTTP {target_status} (DDoS-Guard block). Trying next domain...")
+                continue
+                
+            html_content = solution.get("response", "")
+            cookies = solution.get("cookies", [])
+            user_agent = solution.get("userAgent", "")
+            
+            # Highly-resilient multi-fallback scraping pipeline to capture the direct download link:
+            captured_url = None
+            
+            # 1. Match by text content of the link: "Download now" or "📚 Download now" (most specific for external partner mirrors)
+            text_match = re.search(r'href=["\']((?:https?://|/)[^"\']+)["\'][^>]*>.*?Download now', html_content, re.IGNORECASE)
+            if text_match:
+                captured_url = html_lib.unescape(text_match.group(1))
+                logging.info(f"Resolved download URL via 'Download now' button text match on {domain}.")
+                
+            # 2. Match by surrounding paragraph visual class: <p class="...font-bold..."> (the download button paragraph wrapper)
+            if not captured_url:
+                p_match = re.search(r'<p[^>]*class="[^"]*font-bold[^"]*"[^>]*>\s*<a[^>]*href=["\']((?:https?://|/)[^"\']+)["\']', html_content, re.IGNORECASE)
+                if p_match:
+                    captured_url = html_lib.unescape(p_match.group(1))
+                    logging.info(f"Resolved download URL via visual font-bold button wrapping paragraph match on {domain}.")
+                    
+            # 3. Match by standard external gateways or IPFS links (absolute/relative)
+            if not captured_url:
+                ipfs_match = re.search(r'href=["\']((?:https?://[^"\']*)?/(?:ipfs|cloudflare-ipfs|pinata|gateway)[^"\']*)["\']', html_content, re.IGNORECASE)
+                if ipfs_match:
+                    captured_url = html_lib.unescape(ipfs_match.group(1))
+                    logging.info(f"Resolved download URL via standard IPFS/gateway keyword match on {domain}.")
+                    
+            # 4. Match by direct internal download endpoint (absolute/relative)
+            if not captured_url:
+                direct_match = re.search(r'href=["\']((?:https?://[^"\']*)?/slow_download/direct/[^"\']*)["\']', html_content, re.IGNORECASE)
+                if direct_match:
+                    captured_url = html_lib.unescape(direct_match.group(1))
+                    logging.info(f"Resolved download URL via internal direct slow download route match on {domain}.")
+                    
+            if not captured_url:
+                logging.warning(f"Could not find resolved download URL on {domain} in FlareSolverr's HTML response. Trying next domain...")
+                continue
+                
+            # If the URL is relative, construct the absolute URL using the target_url origin
+            if captured_url.startswith("/"):
+                parsed_origin = urllib.parse.urlparse(target_url)
+                resolved_url = f"{parsed_origin.scheme}://{parsed_origin.netloc}{captured_url}"
+            else:
+                resolved_url = captured_url
+                
+            logging.info(f"FlareSolverr resolved download URL: {resolved_url}")
+            
+            # Prepare request using solved cookies and user-agent
+            cookie_header = "; ".join([f"{c['name']}={c['value']}" for c in cookies])
+            dl_headers = {
+                "User-Agent": user_agent,
+                "Referer": target_url
+            }
+            if cookie_header:
+                dl_headers["Cookie"] = cookie_header
+                
+            dl_req = urllib.request.Request(resolved_url, headers=dl_headers)
+            with urllib.request.urlopen(dl_req, timeout=60, context=ctx) as dl_response:
+                with open(dest_filename, "wb") as f_out:
+                    f_out.write(dl_response.read())
+                    
+            actual_size = os.path.getsize(dest_filename)
+            logging.info(f"Book saved successfully via FlareSolverr: {dest_filename} ({actual_size} bytes)")
+            return True
+            
+        except Exception as e:
+            logging.warning(f"FlareSolverr download flow failed on {domain}: {e}. Trying next domain...")
+            
+    logging.error("All official domains failed to bypass DDoS-Guard or retrieve the download link via FlareSolverr.")
+    return False
 
 # -----------------------------------------------------------------------------
 # HELPER TO PARSE FILE SIZE FOR SORTING (e.g. "2.4MB" -> float(2400.0) KB)
@@ -737,7 +774,8 @@ def process_book_request(query):
         # Download book
         success = download_libgen_book(md5, dest_filename)
         if not success and FLARESOLVERR_URL:
-            success = download_annas_slow_link(md5, dest_filename)
+            best_match_domain = best_match.get("domain", "annas-archive.gl")
+            success = download_annas_slow_link(md5, dest_filename, preferred_domain=best_match_domain)
             
         if success:
             return dest_filename, f"Livre trouvé ! '{title}' (EPUB, {size}). Téléchargement terminé."
