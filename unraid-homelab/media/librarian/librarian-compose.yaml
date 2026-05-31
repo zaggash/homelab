@@ -1,0 +1,40 @@
+services:
+  signal-api:
+    container_name: signal-api
+    image: bbernhard/signal-cli-rest-api:0.99@sha256:96578363477d97cb1d8da303791b2ad686b374a255fce4d78c7c6f00ef56cba8
+    environment:
+      - MODE=normal
+      - TZ=${TZ}
+    volumes:
+      - "${SECRET_APPDATA}/signal-cli:/home/.local/share/signal-cli"
+    networks:
+      - media-backend
+    restart: always
+
+  librarian-bot:
+    container_name: librarian-bot
+    build:
+      context: .
+      dockerfile: Dockerfile
+    pull_policy: build
+    depends_on:
+      - signal-api
+    environment:
+      SIGNAL_URL: http://signal-api:8080
+      BOT_NUMBER: ${LIBRARIAN_BOT_NUMBER}
+      AUTHORIZED_NUMBERS: ${LIBRARIAN_AUTHORIZED_NUMBERS}
+      AUTHORIZED_GROUP: "Library"
+      GRIMMORY_URL: ${LIBRARIAN_GRIMMORY_URL:-}
+      GRIMMORY_USER: ${LIBRARIAN_GRIMMORY_USER:-}
+      GRIMMORY_PASSWORD: ${LIBRARIAN_GRIMMORY_PASSWORD:-}
+      GRIMMORY_AUTH_HEADER: ${LIBRARIAN_GRIMMORY_AUTH_HEADER:-Remote-User}
+      GEMINI_API_KEY: ${LIBRARIAN_GEMINI_API_KEY}
+      GEMINI_MODEL: ${LIBRARIAN_GEMINI_MODEL:-gemini-1.5-flash}
+      FLARESOLVERR_URL: ${LIBRARIAN_FLARESOLVERR_URL:-}
+      IMPORT_DIR: /books_import
+      POLL_INTERVAL: 10
+    volumes:
+      - "${SECRET_DATADIR}/downloads/complete/ebooks_import:/books_import"
+    networks:
+      - media-backend
+    restart: always
