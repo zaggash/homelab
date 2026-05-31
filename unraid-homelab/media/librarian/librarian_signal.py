@@ -9,6 +9,7 @@ import logging
 import urllib.request
 import urllib.parse
 import html as html_lib
+import ssl
 
 # Configure Logging
 logging.basicConfig(
@@ -32,6 +33,7 @@ GRIMMORY_URL = os.getenv("GRIMMORY_URL", "").rstrip("/")
 GRIMMORY_USER = os.getenv("GRIMMORY_USER", "").strip()
 GRIMMORY_PASSWORD = os.getenv("GRIMMORY_PASSWORD", "").strip()
 GRIMMORY_AUTH_HEADER = os.getenv("GRIMMORY_AUTH_HEADER", "Remote-User").strip()
+FLARESOLVERR_URL = os.getenv("FLARESOLVERR_URL", "").rstrip("/")
 
 # Parse authorized numbers list
 AUTHORIZED_NUMBERS = [num.strip() for num in AUTHORIZED_NUMBERS_STR.split(",") if num.strip()]
@@ -386,7 +388,7 @@ def search_annas_archive(query, max_retries=5, retry_delay=2):
     Searches Anna's Archive across active domains and parses metadata using regex.
     """
     encoded_query = urllib.parse.quote_plus(query)
-    domains = ["annas-archive.gl", "annas-archive.li", "annas-archive.gs"]
+    domains = ["annas-archive.gl", "annas-archive.pk", "annas-archive.gd"]
     
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36"
@@ -526,6 +528,85 @@ def download_libgen_book(md5_hash, dest_filename):
         return False
 
 # -----------------------------------------------------------------------------
+# FLARESOLVERR BYPASS FOR ANNA'S ARCHIVE DIRECT SLOW LINK
+# -----------------------------------------------------------------------------
+def download_annas_slow_link(md5_hash, dest_filename):
+    """
+    Uses FlareSolverr to bypass DDoS-Guard on Anna's Archive, resolve
+    the 'no waitlist' (Option #5/6/7/8) slow download link, and download the book.
+    """
+    if not FLARESOLVERR_URL:
+        return False
+        
+    logging.info(f"Attempting DDoS-Guard bypass via FlareSolverr for 'no waitlist' link (MD5: {md5_hash})...")
+    
+    # We target option 5 (0/4) which is often the first 'no waitlist' IPFS/direct link
+    target_url = f"https://annas-archive.gl/slow_download/{md5_hash}/0/4"
+    
+    payload = {
+        "cmd": "request.get",
+        "url": target_url,
+        "maxTimeout": 60000
+    }
+    
+    headers = {"Content-Type": "application/json"}
+    req = urllib.request.Request(
+        f"{FLARESOLVERR_URL}/v1", 
+        data=json.dumps(payload).encode("utf-8"), 
+        headers=headers
+    )
+    
+    try:
+        ctx = ssl._create_unverified_context()
+        
+        with urllib.request.urlopen(req, timeout=75, context=ctx) as response:
+            res_data = json.loads(response.read().decode("utf-8"))
+            
+        if res_data.get("status") != "ok":
+            logging.error(f"FlareSolverr challenge resolution failed: {res_data.get('message')}")
+            return False
+            
+        solution = res_data.get("solution", {})
+        html_content = solution.get("response", "")
+        cookies = solution.get("cookies", [])
+        user_agent = solution.get("userAgent", "")
+        
+        # Scrape for any direct resolved gateway link (IPFS, cloudflare-ipfs, pinata, etc.)
+        redirect_match = re.search(r'href=["\'](https?://[^"\']*(?:ipfs|cloudflare-ipfs|pinata|gateway)[^"\']*)["\']', html_content, re.IGNORECASE)
+        if not redirect_match:
+            # Fallback to direct download endpoint generated internally
+            redirect_match = re.search(r'href=["\'](https?://[^"\']+/slow_download/direct/[^"\']*)["\']', html_content, re.IGNORECASE)
+            
+        if not redirect_match:
+            logging.error("Could not find resolved download URL in FlareSolverr's HTML response.")
+            return False
+            
+        resolved_url = html_lib.unescape(redirect_match.group(1))
+        logging.info(f"FlareSolverr resolved download URL: {resolved_url}")
+        
+        # Prepare request using solved cookies and user-agent
+        cookie_header = "; ".join([f"{c['name']}={c['value']}" for c in cookies])
+        dl_headers = {
+            "User-Agent": user_agent,
+            "Referer": target_url
+        }
+        if cookie_header:
+            dl_headers["Cookie"] = cookie_header
+            
+        dl_req = urllib.request.Request(resolved_url, headers=dl_headers)
+        with urllib.request.urlopen(dl_req, timeout=60, context=ctx) as dl_response:
+            with open(dest_filename, "wb") as f_out:
+                f_out.write(dl_response.read())
+                
+        actual_size = os.path.getsize(dest_filename)
+        logging.info(f"Book saved successfully via FlareSolverr: {dest_filename} ({actual_size} bytes)")
+        return True
+        
+    except Exception as e:
+        logging.error(f"FlareSolverr download flow failed: {e}")
+        return False
+
+# -----------------------------------------------------------------------------
 # HELPER TO PARSE FILE SIZE FOR SORTING (e.g. "2.4MB" -> float(2400.0) KB)
 # -----------------------------------------------------------------------------
 def parse_size_to_kb(size_str):
@@ -646,6 +727,9 @@ def process_book_request(query):
         
         # Download book
         success = download_libgen_book(md5, dest_filename)
+        if not success and FLARESOLVERR_URL:
+            success = download_annas_slow_link(md5, dest_filename)
+            
         if success:
             return dest_filename, f"Livre trouvé ! '{title}' (EPUB, {size}). Téléchargement terminé."
         else:
@@ -656,7 +740,7 @@ def process_book_request(query):
                 except Exception as rm_err:
                     logging.error(f"Failed to remove partial/failed download file {dest_filename}: {rm_err}")
             
-    return None, "Le téléchargement du livre a échoué depuis les serveurs Libgen (tous les candidats ont échoué)."
+    return None, "Le téléchargement du livre a échoué (tous les candidats ont échoué sur Libgen et Anna's Archive)."
 
 # -----------------------------------------------------------------------------
 # BOT WORKER LOOP
