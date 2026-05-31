@@ -454,8 +454,8 @@ def run_bot():
                 
                 # Verify trigger prefixes (e.g., !book or !livre) to prevent normal chat/note/group spam.
                 # Prefix is strictly mandatory for both group chats and Note to Self.
-                prefix_pattern = r"^(?i)(!book|!livre)\b"
-                has_prefix = bool(re.match(prefix_pattern, text_content))
+                prefix_pattern = r"^(!book|!livre)\b"
+                has_prefix = bool(re.match(prefix_pattern, text_content, re.IGNORECASE))
                 
                 if not has_prefix:
                     # Silently ignore normal non-book related messages in chats/groups
@@ -497,7 +497,7 @@ def run_bot():
                 # Handling Text Search Query (only processed if has_prefix is True)
                 elif text_content:
                     # Extract query by stripping the prefix
-                    query = re.sub(prefix_pattern, "", text_content).strip()
+                    query = re.sub(prefix_pattern, "", text_content, flags=re.IGNORECASE).strip()
                     
                     send_signal_message(
                         f"🔍 Recherche de '{query}' en cours sur Anna's Archive...", 
