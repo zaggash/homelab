@@ -27,6 +27,7 @@ GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
 GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-1.5-flash")
 IMPORT_DIR = os.getenv("IMPORT_DIR", "/books_import")
 POLL_INTERVAL = int(os.getenv("POLL_INTERVAL", "10"))
+AUTHORIZED_GROUP = os.getenv("AUTHORIZED_GROUP", "").strip()
 
 # Parse authorized numbers list
 AUTHORIZED_NUMBERS = [num.strip() for num in AUTHORIZED_NUMBERS_STR.split(",") if num.strip()]
@@ -38,6 +39,8 @@ if not AUTHORIZED_NUMBERS:
     logging.error("No authorized numbers configured! Set AUTHORIZED_NUMBERS.")
 if not GEMINI_API_KEY:
     logging.error("GEMINI_API_KEY environment variable is missing!")
+if AUTHORIZED_GROUP:
+    logging.info(f"Group restriction active: Only responding in group matching '{AUTHORIZED_GROUP}'")
 
 os.makedirs(IMPORT_DIR, exist_ok=True)
 
@@ -117,6 +120,63 @@ def download_signal_attachment(attachment_id):
     endpoint = f"/v1/attachments/{attachment_id}"
     return make_signal_request(endpoint, method="GET", is_binary=True)
 
+# Global cache for resolving base64 group IDs to plain text names and API-compatible group IDs
+GROUP_NAME_CACHE = {}
+GROUP_ID_API_FORMAT_CACHE = {}
+
+def resolve_group_name(group_id):
+    """
+    Resolves the plain-text name of a group from its base64 ID, using a local cache
+    and falling back to the Signal REST API's groups list endpoint.
+    Also caches the API-compatible double-base64 group ID format.
+    """
+    global GROUP_NAME_CACHE, GROUP_ID_API_FORMAT_CACHE
+    
+    if group_id in GROUP_NAME_CACHE:
+        return GROUP_NAME_CACHE[group_id]
+        
+    logging.info(f"Group name cache miss for ID '{group_id}'. Querying Signal groups list...")
+    endpoint = f"/v1/groups/{BOT_NUMBER}"
+    groups_list = make_signal_request(endpoint, method="GET")
+    
+    logging.info(f"Signal API /v1/groups response: {groups_list}")
+    
+    if groups_list and isinstance(groups_list, list):
+        for g in groups_list:
+            g_id = g.get("id")
+            g_internal = g.get("internal_id")
+            g_name = g.get("name")
+            
+            # Cache using all possible representations to ensure robust matching
+            if g_id:
+                GROUP_NAME_CACHE[g_id] = g_name
+                if g_id.startswith("group."):
+                    raw_id = g_id[6:]
+                    GROUP_NAME_CACHE[raw_id] = g_name
+                    GROUP_ID_API_FORMAT_CACHE[raw_id] = g_id
+            if g_internal:
+                GROUP_NAME_CACHE[g_internal] = g_name
+                if g_id:
+                    GROUP_ID_API_FORMAT_CACHE[g_internal] = g_id
+                
+    # Fallback to direct group query if still not resolved
+    if group_id not in GROUP_NAME_CACHE:
+        logging.info(f"Attempting direct single group resolution for '{group_id}'...")
+        # Ensure ID starts with "group." prefix for the API query
+        api_group_id = group_id if group_id.startswith("group.") else f"group.{group_id}"
+        single_endpoint = f"/v1/groups/{BOT_NUMBER}/{api_group_id}"
+        g_details = make_signal_request(single_endpoint, method="GET")
+        logging.info(f"Signal API single group response: {g_details}")
+        if g_details and isinstance(g_details, dict):
+            g_name = g_details.get("name")
+            if g_name:
+                GROUP_NAME_CACHE[group_id] = g_name
+                # Cache the API group ID format too
+                GROUP_NAME_CACHE[api_group_id] = g_name
+                GROUP_ID_API_FORMAT_CACHE[group_id] = api_group_id
+                
+    return GROUP_NAME_CACHE.get(group_id)
+
 # -----------------------------------------------------------------------------
 # GEMINI OCR (RE-IMPLEMENTED USING RAW HTTP TO MINIMIZE DEPENDENCIES)
 # -----------------------------------------------------------------------------
@@ -184,7 +244,7 @@ def search_annas_archive(query, max_retries=5, retry_delay=2):
     connected_domain = ""
     
     for domain in domains:
-        url = f"https://{domain}/search?q={encoded_query}"
+        url = f"https://{domain}/search?q={encoded_query}&lang=fr&ext=epub"
         logging.info(f"Searching Anna's Archive on {domain}...")
         
         for attempt in range(max_retries):
@@ -331,21 +391,54 @@ def parse_size_to_kb(size_str):
     return val
 
 # -----------------------------------------------------------------------------
+# JACCARD STRING SIMILARITY FOR ROBUST TITLE RELEVANCE FILTERING
+# -----------------------------------------------------------------------------
+def calculate_title_similarity(query, title):
+    """
+    Calculates a similarity score (0.0 to 1.0) between query and title
+    based on word overlap, ignoring case, punctuation, and common short stop words.
+    """
+    def tokenize(text):
+        # Convert to lowercase and replace non-alphanumeric with spaces
+        text_norm = re.sub(r'[^\w\s]', ' ', text.lower())
+        # Filter out short or common noise words in French and English
+        stop_words = {
+            'le', 'la', 'les', 'un', 'une', 'des', 'du', 'de', 'et', 'en', 'au', 'aux', 
+            'pour', 'dans', 'sur', 'par', 'avec', 'sans', 'sous', 'the', 'of', 'and', 'in', 'on', 'with', 'for',
+            'fr', 'french', 'epub', 'edition', 'tome', 'vol', 'volume', 'ebook', 'livre', 
+            'pdf', 'complet', 'gratuit', 'gratuits', 'version', 'intégrale', 'integrale'
+        }
+        words = [w for w in text_norm.split() if len(w) > 1 and w not in stop_words]
+        return set(words)
+        
+    query_tokens = tokenize(query)
+    title_tokens = tokenize(title)
+    
+    if not query_tokens:
+        return 0.0
+        
+    intersection = query_tokens.intersection(title_tokens)
+    union = query_tokens.union(title_tokens)
+    
+    # Standard Jaccard similarity
+    return len(intersection) / len(union) if union else 0.0
+
+# -----------------------------------------------------------------------------
 # MAIN BOOK RETRIEVAL PIPELINE
 # -----------------------------------------------------------------------------
 def process_book_request(query):
     """
     Takes a query, searches Anna's Archive, filters French EPUBs,
-    downloads the smallest file, and returns the path.
+    ranks them by title relevance, and downloads the smallest highly relevant file.
     """
     logging.info(f"Starting book search for query: '{query}'")
     
-    # 1. Search Anna's Archive
+    # 1. Search Anna's Archive (with lang=fr and ext=epub pre-filtering)
     results = search_annas_archive(query)
     if not results:
         return None, "Désolé, je n'ai trouvé aucun résultat pour cette recherche sur Anna's Archive."
         
-    # 2. Filter for French and EPUB format
+    # 2. Filter for French and EPUB format, and compute title similarity scores
     french_epubs = []
     for r in results:
         lang_lower = r["lang"].lower()
@@ -356,27 +449,44 @@ def process_book_request(query):
         is_epub = "epub" in format_lower
         
         if is_french and is_epub:
+            # Calculate title similarity score between the query and this result's title
+            similarity = calculate_title_similarity(query, r["title"])
+            r["similarity"] = similarity
             french_epubs.append(r)
             
     if not french_epubs:
         return None, "J'ai trouvé des résultats mais aucun n'est au format EPUB en français."
         
-    # 3. Sort by size (ascending) to get the smallest EPUB for the e-reader
-    # Alex prefers smallest EPUB files to save space
-    french_epubs.sort(key=lambda x: parse_size_to_kb(x["size"]))
+    # 3. Two-pass selection to balance relevance and file size:
+    # Pass 1: Find the highest title similarity score in our results
+    max_similarity = max(r["similarity"] for r in french_epubs)
     
-    best_match = french_epubs[0]
+    # Pass 2: Filter results to keep only those within a close margin (e.g. within 0.15) of the highest score,
+    # and require at least a minimum similarity score (e.g. 0.20) to avoid completely irrelevant matches.
+    relevance_threshold = max(max_similarity - 0.15, 0.20)
+    candidates = [r for r in french_epubs if r["similarity"] >= relevance_threshold]
+    
+    # If no results passed the relevance threshold, fall back to the original list to ensure we don't return nothing
+    if not candidates:
+        logging.warning("No results passed the similarity threshold. Falling back to all results.")
+        candidates = french_epubs
+        
+    # 4. Sort candidates by size (ascending) to get the smallest file of the highly-relevant set
+    candidates.sort(key=lambda x: parse_size_to_kb(x["size"]))
+    
+    best_match = candidates[0]
     title = best_match["title"]
     size = best_match["size"]
     md5 = best_match["md5"]
+    sim_score = best_match.get("similarity", 0.0)
     
-    logging.info(f"Selected Best Match: '{title}' | Size: {size} | MD5: {md5}")
+    logging.info(f"Selected Best Match: '{title}' | Similarity: {sim_score:.2f} | Size: {size} | MD5: {md5}")
     
-    # 4. Standardize safe filename
+    # 5. Standardize safe filename
     safe_title = re.sub(r'[/\\?%*:|"<>]', '_', title)
     dest_filename = os.path.join(IMPORT_DIR, f"{safe_title}.epub")
     
-    # 5. Download book
+    # 6. Download book
     success = download_libgen_book(md5, dest_filename)
     if success:
         return dest_filename, f"Livre trouvé ! '{title}' (EPUB, {size}). Téléchargement terminé."
@@ -401,11 +511,18 @@ def run_bot():
                 sender = envelope.get("sourceNumber")
                 data_msg = envelope.get("dataMessage")
                 
+                # Handle sync messages (e.g., "Note to Self" sent from primary mobile device)
+                sync_msg = envelope.get("syncMessage", {})
+                sent_msg = sync_msg.get("sentMessage") if sync_msg else None
+                if sent_msg and sender == BOT_NUMBER:
+                    data_msg = sent_msg
+                
                 if not sender or not data_msg:
                     continue
                     
                 # Strict Whitelist Validation for Security
-                if sender not in AUTHORIZED_NUMBERS:
+                # Automatically allow BOT_NUMBER (Note to Self)
+                if sender not in AUTHORIZED_NUMBERS and sender != BOT_NUMBER:
                     logging.warning(f"Blocked unauthorized message from {sender}.")
                     continue
                     
@@ -413,7 +530,61 @@ def run_bot():
                 
                 # Check for cover photo attachments
                 attachments = data_msg.get("attachments", [])
-                text_content = data_msg.get("message", "").strip()
+                
+                # Handle cases where message is explicitly None (e.g. photo sent with no caption)
+                raw_message = data_msg.get("message")
+                text_content = raw_message.strip() if raw_message else ""
+                
+                # Determine if the message comes from a group chat (v1 or v2 format)
+                group_info = data_msg.get("groupInfo") or data_msg.get("groupV2Info") or {}
+                group_id = group_info.get("groupId")
+                
+                # Fetch group name from message, caching it, or resolving dynamically on cache miss
+                group_name = group_info.get("name")
+                if group_id:
+                    # Always resolve to ensure BOTH name cache and API-compatible ID format cache are populated
+                    resolved_name = resolve_group_name(group_id)
+                    if resolved_name:
+                        group_name = resolved_name
+                    elif group_name:
+                        GROUP_NAME_CACHE[group_id] = group_name
+                
+                is_group = bool(group_id)
+                is_note_to_self = (sender == BOT_NUMBER)
+                
+                # Enforce context isolation: Only respond in group chats OR in Note to Self.
+                # Standard one-on-one DMs from other users are completely ignored to avoid spam.
+                if not (is_group or is_note_to_self):
+                    logging.info(f"Ignored message from {sender} (not in a group and not Note to Self).")
+                    continue
+                
+                # If a specific authorized group is configured, restrict group messages to that group
+                if is_group and AUTHORIZED_GROUP:
+                    # Match by group ID or group name (case-insensitive)
+                    matches_id = (group_id == AUTHORIZED_GROUP)
+                    matches_name = (group_name and group_name.strip().lower() == AUTHORIZED_GROUP.lower())
+                    
+                    if not (matches_id or matches_name):
+                        logging.warning(f"Blocked group message from unauthorized group: '{group_name}' (ID: {group_id}).")
+                        continue
+                
+                # Resolve the API-compatible group ID format (starting with "group.") if it exists in cache
+                api_group_id = GROUP_ID_API_FORMAT_CACHE.get(group_id, group_id)
+                # Ensure the prefix "group." is present for sending back to a group ID
+                if is_group and not api_group_id.startswith("group."):
+                    api_group_id = f"group.{api_group_id}"
+                
+                # Reply destination: send back to the group if it's a group message, otherwise to DM (Note to Self)
+                reply_to = api_group_id if is_group else sender
+                
+                # Verify trigger prefixes (e.g., !book or !livre) to prevent normal chat/note/group spam.
+                # Prefix is strictly mandatory for both group chats and Note to Self.
+                prefix_pattern = r"^(!book|!livre)\b"
+                has_prefix = bool(re.match(prefix_pattern, text_content, re.IGNORECASE))
+                
+                if not has_prefix:
+                    # Silently ignore normal non-book related messages in chats/groups
+                    continue
                 
                 query = None
                 
@@ -425,7 +596,7 @@ def run_bot():
                         photo_id = photo.get("id")
                         send_signal_message(
                             "📸 J'ai bien reçu la photo de la couverture. Analyse de l'image en cours...", 
-                            sender
+                            reply_to
                         )
                         
                         image_bytes = download_signal_attachment(photo_id)
@@ -435,25 +606,27 @@ def run_bot():
                                 query = ocr_text
                                 send_signal_message(
                                     f"🔍 Titre détecté : '{ocr_text}'. Recherche en cours sur Anna's Archive...", 
-                                    sender
+                                    reply_to
                                 )
                             else:
                                 send_signal_message(
                                     "⚠️ Désolé, je n'ai pas réussi à lire le titre sur la photo. Peux-tu m'écrire le titre et l'auteur par texte ?", 
-                                    sender
+                                    reply_to
                                 )
                         else:
                             send_signal_message(
                                 "⚠️ Erreur lors du téléchargement de la photo depuis l'API Signal.", 
-                                sender
+                                reply_to
                             )
                 
-                # Handling Text Search Query
+                # Handling Text Search Query (only processed if has_prefix is True)
                 elif text_content:
-                    query = text_content
+                    # Extract query by stripping the prefix
+                    query = re.sub(prefix_pattern, "", text_content, flags=re.IGNORECASE).strip()
+                    
                     send_signal_message(
                         f"🔍 Recherche de '{query}' en cours sur Anna's Archive...", 
-                        sender
+                        reply_to
                     )
                     
                 # Run the search & download pipeline
@@ -463,19 +636,19 @@ def run_bot():
                     if epub_path:
                         send_signal_message(
                             f"📥 {status_msg}\nEnvoi du livre en cours...", 
-                            sender
+                            reply_to
                         )
                         # Send the file back natively to the user via Signal
                         send_signal_message(
                             "✨ Voilà ton livre ! Bonne lecture 📖", 
-                            sender, 
+                            reply_to, 
                             attachment_path=epub_path
                         )
                         logging.info(f"Process complete. Book sent and saved in {IMPORT_DIR}")
                     else:
                         send_signal_message(
                             f"⚠️ {status_msg}", 
-                            sender
+                            reply_to
                         )
                         
         except Exception as e:

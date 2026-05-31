@@ -16,12 +16,14 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    pull_policy: build
     depends_on:
       - signal-api
     environment:
       SIGNAL_URL: http://signal-api:8080
       BOT_NUMBER: ${LIBRARIAN_BOT_NUMBER}
       AUTHORIZED_NUMBERS: ${LIBRARIAN_AUTHORIZED_NUMBERS}
+      AUTHORIZED_GROUP: "Library"
       GEMINI_API_KEY: ${LIBRARIAN_GEMINI_API_KEY}
       GEMINI_MODEL: ${LIBRARIAN_GEMINI_MODEL:-gemini-1.5-flash}
       IMPORT_DIR: /books_import
