@@ -27,6 +27,7 @@ GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
 GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-1.5-flash")
 IMPORT_DIR = os.getenv("IMPORT_DIR", "/books_import")
 POLL_INTERVAL = int(os.getenv("POLL_INTERVAL", "10"))
+AUTHORIZED_GROUP = os.getenv("AUTHORIZED_GROUP", "").strip()
 
 # Parse authorized numbers list
 AUTHORIZED_NUMBERS = [num.strip() for num in AUTHORIZED_NUMBERS_STR.split(",") if num.strip()]
@@ -38,6 +39,8 @@ if not AUTHORIZED_NUMBERS:
     logging.error("No authorized numbers configured! Set AUTHORIZED_NUMBERS.")
 if not GEMINI_API_KEY:
     logging.error("GEMINI_API_KEY environment variable is missing!")
+if AUTHORIZED_GROUP:
+    logging.info(f"Group restriction active: Only responding in group matching '{AUTHORIZED_GROUP}'")
 
 os.makedirs(IMPORT_DIR, exist_ok=True)
 
@@ -401,11 +404,18 @@ def run_bot():
                 sender = envelope.get("sourceNumber")
                 data_msg = envelope.get("dataMessage")
                 
+                # Handle sync messages (e.g., "Note to Self" sent from primary mobile device)
+                sync_msg = envelope.get("syncMessage", {})
+                sent_msg = sync_msg.get("sentMessage") if sync_msg else None
+                if sent_msg and sender == BOT_NUMBER:
+                    data_msg = sent_msg
+                
                 if not sender or not data_msg:
                     continue
                     
                 # Strict Whitelist Validation for Security
-                if sender not in AUTHORIZED_NUMBERS:
+                # Automatically allow BOT_NUMBER (Note to Self)
+                if sender not in AUTHORIZED_NUMBERS and sender != BOT_NUMBER:
                     logging.warning(f"Blocked unauthorized message from {sender}.")
                     continue
                     
@@ -414,6 +424,42 @@ def run_bot():
                 # Check for cover photo attachments
                 attachments = data_msg.get("attachments", [])
                 text_content = data_msg.get("message", "").strip()
+                
+                # Determine if the message comes from a group chat (v1 or v2 format)
+                group_info = data_msg.get("groupInfo") or data_msg.get("groupV2Info") or {}
+                group_id = group_info.get("groupId")
+                group_name = group_info.get("name")
+                
+                is_group = bool(group_id)
+                is_note_to_self = (sender == BOT_NUMBER)
+                
+                # Enforce context isolation: Only respond in group chats OR in Note to Self.
+                # Standard one-on-one DMs from other users are completely ignored to avoid spam.
+                if not (is_group or is_note_to_self):
+                    logging.info(f"Ignored message from {sender} (not in a group and not Note to Self).")
+                    continue
+                
+                # If a specific authorized group is configured, restrict group messages to that group
+                if is_group and AUTHORIZED_GROUP:
+                    # Match by group ID or group name (case-insensitive)
+                    matches_id = (group_id == AUTHORIZED_GROUP)
+                    matches_name = (group_name and group_name.strip().lower() == AUTHORIZED_GROUP.lower())
+                    
+                    if not (matches_id or matches_name):
+                        logging.warning(f"Blocked group message from unauthorized group: '{group_name}' (ID: {group_id}).")
+                        continue
+                
+                # Reply destination: send back to the group if it's a group message, otherwise to DM (Note to Self)
+                reply_to = group_id if group_id else sender
+                
+                # Verify trigger prefixes (e.g., !book or !livre) to prevent normal chat/note/group spam.
+                # Prefix is strictly mandatory for both group chats and Note to Self.
+                prefix_pattern = r"^(?i)(!book|!livre)\b"
+                has_prefix = bool(re.match(prefix_pattern, text_content))
+                
+                if not has_prefix:
+                    # Silently ignore normal non-book related messages in chats/groups
+                    continue
                 
                 query = None
                 
@@ -425,7 +471,7 @@ def run_bot():
                         photo_id = photo.get("id")
                         send_signal_message(
                             "📸 J'ai bien reçu la photo de la couverture. Analyse de l'image en cours...", 
-                            sender
+                            reply_to
                         )
                         
                         image_bytes = download_signal_attachment(photo_id)
@@ -435,25 +481,27 @@ def run_bot():
                                 query = ocr_text
                                 send_signal_message(
                                     f"🔍 Titre détecté : '{ocr_text}'. Recherche en cours sur Anna's Archive...", 
-                                    sender
+                                    reply_to
                                 )
                             else:
                                 send_signal_message(
                                     "⚠️ Désolé, je n'ai pas réussi à lire le titre sur la photo. Peux-tu m'écrire le titre et l'auteur par texte ?", 
-                                    sender
+                                    reply_to
                                 )
                         else:
                             send_signal_message(
                                 "⚠️ Erreur lors du téléchargement de la photo depuis l'API Signal.", 
-                                sender
+                                reply_to
                             )
                 
-                # Handling Text Search Query
+                # Handling Text Search Query (only processed if has_prefix is True)
                 elif text_content:
-                    query = text_content
+                    # Extract query by stripping the prefix
+                    query = re.sub(prefix_pattern, "", text_content).strip()
+                    
                     send_signal_message(
                         f"🔍 Recherche de '{query}' en cours sur Anna's Archive...", 
-                        sender
+                        reply_to
                     )
                     
                 # Run the search & download pipeline
@@ -463,19 +511,19 @@ def run_bot():
                     if epub_path:
                         send_signal_message(
                             f"📥 {status_msg}\nEnvoi du livre en cours...", 
-                            sender
+                            reply_to
                         )
                         # Send the file back natively to the user via Signal
                         send_signal_message(
                             "✨ Voilà ton livre ! Bonne lecture 📖", 
-                            sender, 
+                            reply_to, 
                             attachment_path=epub_path
                         )
                         logging.info(f"Process complete. Book sent and saved in {IMPORT_DIR}")
                     else:
                         send_signal_message(
                             f"⚠️ {status_msg}", 
-                            sender
+                            reply_to
                         )
                         
         except Exception as e:
