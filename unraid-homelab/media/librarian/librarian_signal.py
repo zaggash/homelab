@@ -571,19 +571,40 @@ def download_annas_slow_link(md5_hash, dest_filename):
         cookies = solution.get("cookies", [])
         user_agent = solution.get("userAgent", "")
         
-        # Scrape for any direct resolved gateway link (IPFS, cloudflare-ipfs, pinata, etc.)
-        # Supports both absolute URLs and relative URLs
-        redirect_match = re.search(r'href=["\']((?:https?://[^"\']*)?/(?:ipfs|cloudflare-ipfs|pinata|gateway)[^"\']*)["\']', html_content, re.IGNORECASE)
-        if not redirect_match:
-            # Fallback to direct download endpoint generated internally (supports absolute and relative)
-            redirect_match = re.search(r'href=["\']((?:https?://[^"\']*)?/slow_download/direct/[^"\']*)["\']', html_content, re.IGNORECASE)
+        # Highly-resilient multi-fallback scraping pipeline to capture the direct download link:
+        captured_url = None
+        
+        # 1. Match by text content of the link: "Download now" or "📚 Download now" (most specific for external partner mirrors)
+        text_match = re.search(r'href=["\']((?:https?://|/)[^"\']+)["\'][^>]*>.*?Download now', html_content, re.IGNORECASE)
+        if text_match:
+            captured_url = html_lib.unescape(text_match.group(1))
+            logging.info("Resolved download URL via 'Download now' button text match.")
             
-        if not redirect_match:
+        # 2. Match by surrounding paragraph visual class: <p class="...font-bold..."> (the download button paragraph wrapper)
+        if not captured_url:
+            p_match = re.search(r'<p[^>]*class="[^"]*font-bold[^"]*"[^>]*>\s*<a[^>]*href=["\']((?:https?://|/)[^"\']+)["\']', html_content, re.IGNORECASE)
+            if p_match:
+                captured_url = html_lib.unescape(p_match.group(1))
+                logging.info("Resolved download URL via visual font-bold button wrapping paragraph match.")
+                
+        # 3. Match by standard external gateways or IPFS links (absolute/relative)
+        if not captured_url:
+            ipfs_match = re.search(r'href=["\']((?:https?://[^"\']*)?/(?:ipfs|cloudflare-ipfs|pinata|gateway)[^"\']*)["\']', html_content, re.IGNORECASE)
+            if ipfs_match:
+                captured_url = html_lib.unescape(ipfs_match.group(1))
+                logging.info("Resolved download URL via standard IPFS/gateway keyword match.")
+                
+        # 4. Match by direct internal download endpoint (absolute/relative)
+        if not captured_url:
+            direct_match = re.search(r'href=["\']((?:https?://[^"\']*)?/slow_download/direct/[^"\']*)["\']', html_content, re.IGNORECASE)
+            if direct_match:
+                captured_url = html_lib.unescape(direct_match.group(1))
+                logging.info("Resolved download URL via internal direct slow download route match.")
+                
+        if not captured_url:
             logging.error("Could not find resolved download URL in FlareSolverr's HTML response.")
             return False
             
-        captured_url = html_lib.unescape(redirect_match.group(1))
-        
         # If the URL is relative, construct the absolute URL using the target_url origin
         if captured_url.startswith("/"):
             parsed_origin = urllib.parse.urlparse(target_url)
