@@ -516,7 +516,7 @@ def download_libgen_book(md5_hash, dest_filename):
         get_url = f"https://libgen.li/{get_relative_path}"
         logging.info(f"Session key verified: {parsed_key}. Streaming direct file download...")
         
-        with opener.open(get_url, timeout=60) as download_response:
+        with opener.open(get_url, timeout=180) as download_response:
             with open(dest_filename, "wb") as f_out:
                 f_out.write(download_response.read())
                 
@@ -572,16 +572,25 @@ def download_annas_slow_link(md5_hash, dest_filename):
         user_agent = solution.get("userAgent", "")
         
         # Scrape for any direct resolved gateway link (IPFS, cloudflare-ipfs, pinata, etc.)
-        redirect_match = re.search(r'href=["\'](https?://[^"\']*(?:ipfs|cloudflare-ipfs|pinata|gateway)[^"\']*)["\']', html_content, re.IGNORECASE)
+        # Supports both absolute URLs and relative URLs
+        redirect_match = re.search(r'href=["\']((?:https?://[^"\']*)?/(?:ipfs|cloudflare-ipfs|pinata|gateway)[^"\']*)["\']', html_content, re.IGNORECASE)
         if not redirect_match:
-            # Fallback to direct download endpoint generated internally
-            redirect_match = re.search(r'href=["\'](https?://[^"\']+/slow_download/direct/[^"\']*)["\']', html_content, re.IGNORECASE)
+            # Fallback to direct download endpoint generated internally (supports absolute and relative)
+            redirect_match = re.search(r'href=["\']((?:https?://[^"\']*)?/slow_download/direct/[^"\']*)["\']', html_content, re.IGNORECASE)
             
         if not redirect_match:
             logging.error("Could not find resolved download URL in FlareSolverr's HTML response.")
             return False
             
-        resolved_url = html_lib.unescape(redirect_match.group(1))
+        captured_url = html_lib.unescape(redirect_match.group(1))
+        
+        # If the URL is relative, construct the absolute URL using the target_url origin
+        if captured_url.startswith("/"):
+            parsed_origin = urllib.parse.urlparse(target_url)
+            resolved_url = f"{parsed_origin.scheme}://{parsed_origin.netloc}{captured_url}"
+        else:
+            resolved_url = captured_url
+            
         logging.info(f"FlareSolverr resolved download URL: {resolved_url}")
         
         # Prepare request using solved cookies and user-agent
