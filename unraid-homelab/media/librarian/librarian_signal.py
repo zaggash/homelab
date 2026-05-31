@@ -28,6 +28,10 @@ GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-1.5-flash")
 IMPORT_DIR = os.getenv("IMPORT_DIR", "/books_import")
 POLL_INTERVAL = int(os.getenv("POLL_INTERVAL", "10"))
 AUTHORIZED_GROUP = os.getenv("AUTHORIZED_GROUP", "").strip()
+GRIMMORY_URL = os.getenv("GRIMMORY_URL", "").rstrip("/")
+GRIMMORY_USER = os.getenv("GRIMMORY_USER", "").strip()
+GRIMMORY_PASSWORD = os.getenv("GRIMMORY_PASSWORD", "").strip()
+GRIMMORY_AUTH_HEADER = os.getenv("GRIMMORY_AUTH_HEADER", "Remote-User").strip()
 
 # Parse authorized numbers list
 AUTHORIZED_NUMBERS = [num.strip() for num in AUTHORIZED_NUMBERS_STR.split(",") if num.strip()]
@@ -176,6 +180,154 @@ def resolve_group_name(group_id):
                 GROUP_ID_API_FORMAT_CACHE[group_id] = api_group_id
                 
     return GROUP_NAME_CACHE.get(group_id)
+
+# -----------------------------------------------------------------------------
+# GRIMMORY INTEGRATION (LIBRARY & BOOKDROP QUEUE VERIFICATION)
+# -----------------------------------------------------------------------------
+_GRIMMORY_JWT_CACHE = None
+
+def get_grimmory_jwt():
+    """
+    Obtains a valid JWT token from Grimmory.
+    Supports:
+    1. Local Auth (if GRIMMORY_USER and GRIMMORY_PASSWORD are provided).
+       Calls POST /api/v1/auth/login with username and password.
+    2. Dynamic Remote Auth / SSO (if GRIMMORY_USER is provided and GRIMMORY_PASSWORD is not).
+       Calls GET /api/v1/auth/remote with Remote-User header.
+    """
+    global _GRIMMORY_JWT_CACHE
+    if not GRIMMORY_URL or not GRIMMORY_USER:
+        return None
+        
+    # If we have a cached JWT, return it
+    if _GRIMMORY_JWT_CACHE:
+        return _GRIMMORY_JWT_CACHE
+        
+    # Case 1: Local Authentication (Username/Password)
+    if GRIMMORY_USER and GRIMMORY_PASSWORD:
+        logging.info(f"Authenticating with Grimmory Local Auth for user '{GRIMMORY_USER}'...")
+        url = f"{GRIMMORY_URL}/api/v1/auth/login"
+        payload = {
+            "username": GRIMMORY_USER,
+            "password": GRIMMORY_PASSWORD
+        }
+        headers = {
+            "Content-Type": "application/json"
+        }
+        data_bytes = json.dumps(payload).encode("utf-8")
+        req = urllib.request.Request(url, data=data_bytes, headers=headers, method="POST")
+        try:
+            with urllib.request.urlopen(req, timeout=10) as response:
+                res_data = json.loads(response.read().decode("utf-8"))
+                _GRIMMORY_JWT_CACHE = res_data.get("accessToken")
+                if _GRIMMORY_JWT_CACHE:
+                    logging.info("Grimmory local JWT acquired and cached successfully.")
+                    return _GRIMMORY_JWT_CACHE
+        except Exception as e:
+            logging.error(f"Failed to authenticate with Grimmory Local Auth: {e}")
+        return None
+        
+    # Case 2: Remote Auth / SSO (Username only, no Password)
+    if GRIMMORY_USER and not GRIMMORY_PASSWORD:
+        logging.info(f"Authenticating dynamically with Grimmory Remote Auth for user '{GRIMMORY_USER}'...")
+        url = f"{GRIMMORY_URL}/api/v1/auth/remote"
+        
+        # Pass standard Remote-User header
+        headers = {
+            "Remote-User": GRIMMORY_USER,
+            "Remote-Name": GRIMMORY_USER,
+            "Remote-Email": f"{GRIMMORY_USER}@local.internal"
+        }
+        
+        # Also support custom header name if configured
+        if GRIMMORY_AUTH_HEADER and GRIMMORY_AUTH_HEADER != "Authorization":
+            headers[GRIMMORY_AUTH_HEADER] = GRIMMORY_USER
+            
+        req = urllib.request.Request(url, headers=headers)
+        try:
+            with urllib.request.urlopen(req, timeout=10) as response:
+                res_data = json.loads(response.read().decode("utf-8"))
+                _GRIMMORY_JWT_CACHE = res_data.get("accessToken")
+                if _GRIMMORY_JWT_CACHE:
+                    logging.info("Grimmory dynamic JWT acquired and cached successfully.")
+                    return _GRIMMORY_JWT_CACHE
+        except Exception as e:
+            logging.error(f"Failed to fetch dynamic JWT from Grimmory: {e}")
+            
+    return None
+
+def make_grimmory_request(endpoint, retry_on_401=True):
+    """
+    Sends an HTTP GET request to the Grimmory API.
+    """
+    global _GRIMMORY_JWT_CACHE
+    jwt = get_grimmory_jwt()
+    if not jwt:
+        return None
+        
+    url = f"{GRIMMORY_URL}{endpoint}"
+    headers = {
+        "Authorization": f"Bearer {jwt}"
+    }
+    
+    req = urllib.request.Request(url, headers=headers)
+    try:
+        with urllib.request.urlopen(req, timeout=10) as response:
+            return json.loads(response.read().decode("utf-8"))
+    except urllib.error.HTTPError as e:
+        if e.code == 401 and retry_on_401:
+            logging.warning("Grimmory token expired (401). Clearing cache and retrying...")
+            _GRIMMORY_JWT_CACHE = None
+            return make_grimmory_request(endpoint, retry_on_401=False)
+        logging.error(f"Grimmory API HTTP error on GET {endpoint}: {e}")
+        return None
+    except Exception as e:
+        logging.error(f"Grimmory API error on GET {endpoint}: {e}")
+        return None
+
+def is_book_already_present(query):
+    """
+    Checks if the book is already in Grimmory library or in the bookdrop queue.
+    """
+    if not GRIMMORY_URL or not GRIMMORY_USER:
+        return False, None
+        
+    logging.info(f"Checking if '{query}' is already present in Grimmory (library or bookdrop)...")
+    
+    # 1. Check Library Books (GET /api/v1/books)
+    books = make_grimmory_request("/api/v1/books")
+    if books and isinstance(books, list):
+        for b in books:
+            title = b.get("title")
+            metadata = b.get("metadata") or {}
+            meta_title = metadata.get("title")
+            
+            for t in [title, meta_title]:
+                if t:
+                    similarity = calculate_title_similarity(query, t)
+                    if similarity >= 0.70:
+                        return True, f"Déjà présent dans la bibliothèque : '{t}'"
+                        
+    # 2. Check Bookdrop Queue (GET /api/v1/bookdrop/files)
+    bookdrop_data = make_grimmory_request("/api/v1/bookdrop/files")
+    if bookdrop_data and isinstance(bookdrop_data, dict):
+        files = bookdrop_data.get("content", [])
+        if isinstance(files, list):
+            for f in files:
+                file_name = f.get("fileName")
+                metadata = f.get("originalMetadata") or {}
+                meta_title = metadata.get("title")
+                
+                # Clean extension for name match
+                file_name_clean = re.sub(r'\.[a-zA-Z0-9]+$', '', file_name) if file_name else ""
+                
+                for t in [file_name_clean, meta_title]:
+                    if t:
+                        similarity = calculate_title_similarity(query, t)
+                        if similarity >= 0.70:
+                            return True, f"Déjà dans la file d'attente bookdrop : '{t}'"
+                            
+    return False, None
 
 # -----------------------------------------------------------------------------
 # GEMINI OCR (RE-IMPLEMENTED USING RAW HTTP TO MINIMIZE DEPENDENCIES)
@@ -432,6 +584,11 @@ def process_book_request(query):
     ranks them by title relevance, and downloads the smallest highly relevant file.
     """
     logging.info(f"Starting book search for query: '{query}'")
+    
+    # 0. Check if already present in Grimmory (library or bookdrop queue)
+    present, reason = is_book_already_present(query)
+    if present:
+        return None, f"📚 {reason}\nLa recherche a été annulée."
     
     # 1. Search Anna's Archive (with lang=fr and ext=epub pre-filtering)
     results = search_annas_archive(query)
