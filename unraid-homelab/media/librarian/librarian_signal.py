@@ -631,24 +631,32 @@ def process_book_request(query):
     # 4. Sort candidates by size (ascending) to get the smallest file of the highly-relevant set
     candidates.sort(key=lambda x: parse_size_to_kb(x["size"]))
     
-    best_match = candidates[0]
-    title = best_match["title"]
-    size = best_match["size"]
-    md5 = best_match["md5"]
-    sim_score = best_match.get("similarity", 0.0)
-    
-    logging.info(f"Selected Best Match: '{title}' | Similarity: {sim_score:.2f} | Size: {size} | MD5: {md5}")
-    
-    # 5. Standardize safe filename
-    safe_title = re.sub(r'[/\\?%*:|"<>]', '_', title)
-    dest_filename = os.path.join(IMPORT_DIR, f"{safe_title}.epub")
-    
-    # 6. Download book
-    success = download_libgen_book(md5, dest_filename)
-    if success:
-        return dest_filename, f"Livre trouvé ! '{title}' (EPUB, {size}). Téléchargement terminé."
-    else:
-        return None, "Le téléchargement du livre a échoué depuis les serveurs Libgen."
+    # 5. Try downloading candidates sequentially until one succeeds
+    for idx, best_match in enumerate(candidates):
+        title = best_match["title"]
+        size = best_match["size"]
+        md5 = best_match["md5"]
+        sim_score = best_match.get("similarity", 0.0)
+        
+        logging.info(f"Trying Candidate {idx+1}/{len(candidates)}: '{title}' | Similarity: {sim_score:.2f} | Size: {size} | MD5: {md5}")
+        
+        # Standardize safe filename
+        safe_title = re.sub(r'[/\\?%*:|"<>]', '_', title)
+        dest_filename = os.path.join(IMPORT_DIR, f"{safe_title}.epub")
+        
+        # Download book
+        success = download_libgen_book(md5, dest_filename)
+        if success:
+            return dest_filename, f"Livre trouvé ! '{title}' (EPUB, {size}). Téléchargement terminé."
+        else:
+            logging.warning(f"Failed to download candidate {idx+1} ({md5}). Trying next available candidate...")
+            if os.path.exists(dest_filename):
+                try:
+                    os.remove(dest_filename)
+                except Exception as rm_err:
+                    logging.error(f"Failed to remove partial/failed download file {dest_filename}: {rm_err}")
+            
+    return None, "Le téléchargement du livre a échoué depuis les serveurs Libgen (tous les candidats ont échoué)."
 
 # -----------------------------------------------------------------------------
 # BOT WORKER LOOP
