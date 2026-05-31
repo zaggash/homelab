@@ -137,12 +137,25 @@ def resolve_group_name(group_id):
     endpoint = f"/v1/groups/{BOT_NUMBER}"
     groups_list = make_signal_request(endpoint, method="GET")
     
+    logging.info(f"Signal API /v1/groups response: {groups_list}")
+    
     if groups_list and isinstance(groups_list, list):
         for g in groups_list:
             g_id = g.get("id")
             g_name = g.get("name")
             if g_id:
                 GROUP_NAME_CACHE[g_id] = g_name
+                
+    # Fallback to direct group query if still not resolved
+    if group_id not in GROUP_NAME_CACHE:
+        logging.info(f"Attempting direct single group resolution for '{group_id}'...")
+        single_endpoint = f"/v1/groups/{BOT_NUMBER}/{group_id}"
+        g_details = make_signal_request(single_endpoint, method="GET")
+        logging.info(f"Signal API single group response: {g_details}")
+        if g_details and isinstance(g_details, dict):
+            g_name = g_details.get("name")
+            if g_name:
+                GROUP_NAME_CACHE[group_id] = g_name
                 
     return GROUP_NAME_CACHE.get(group_id)
 
