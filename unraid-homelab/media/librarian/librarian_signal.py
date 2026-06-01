@@ -773,10 +773,10 @@ def process_book_request(query):
     relevance_threshold = max(max_similarity - 0.15, 0.20)
     candidates = [r for r in french_epubs if r["similarity"] >= relevance_threshold]
     
-    # If no results passed the relevance threshold, fall back to the original list to ensure we don't return nothing
+    # If no results passed the relevance threshold, cancel the search to avoid downloading completely irrelevant books
     if not candidates:
-        logging.warning("No results passed the similarity threshold. Falling back to all results.")
-        candidates = french_epubs
+        logging.warning(f"No results passed the similarity threshold of {relevance_threshold:.2f} (max similarity found was {max_similarity:.2f}).")
+        return None, f"Désolé, je n'ai trouvé aucun livre correspondant de manière fiable à ta recherche (la similarité maximale avec les titres trouvés est de {max_similarity:.2f})."
         
     # 4. Sort candidates by size (ascending) to get the smallest file of the highly-relevant set
     candidates.sort(key=lambda x: parse_size_to_kb(x["size"]))
