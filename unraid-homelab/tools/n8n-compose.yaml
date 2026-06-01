@@ -15,6 +15,7 @@ services:
     environment:
       TZ: ${TZ}
       GENERIC_TIMEZONE: ${TZ}
+      N8N_TELEMETRY_ENABLED: false
       N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS: true
       N8N_HOST: flow.${SECRET_DOMAIN}
       N8N_PORT: 5678
