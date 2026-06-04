@@ -4,6 +4,7 @@ include:
   - sftpgo-compose.yaml
   - homebox-compose.yaml
   - db-backup-compose.yaml
+  - matrix-compose.yaml
 
 networks:
   tools:

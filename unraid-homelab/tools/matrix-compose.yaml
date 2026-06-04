@@ -1,0 +1,35 @@
+services:
+  matrix:
+    container_name: matrix
+    image: ghcr.io/element-hq/synapse:v1.153.0@sha256:8ba9310909c4f255f942e504d9e5e5d9a7f20e3fa1cdf5aea8acb704b6a15098
+    labels:
+      folder.view3: Tools
+      net.unraid.docker.icon: ${SECRET_APPDATA}/icons/matrix.png
+      traefik.enable: true
+      traefik.http.routers.matrix.rule: Host(`matrix.${SECRET_DOMAIN}`)
+      traefik.http.routers.matrix.entryPoints: websecure
+      traefik.http.services.matrix.loadbalancer.server.port: 8008
+    volumes:
+      - "${SECRET_APPDATA}/matrix:/data"
+    environment:
+      TZ: ${TZ}
+      UID: ${UID}
+      GID: ${GID}
+      SYNAPSE_CONFIG_PATH: /data/homeserver.yaml
+    networks:
+      - tools
+    restart: always
+
+  matrix-web:
+    container_name: matrix-web
+    image: ghcr.io/element-hq/element-web:v1.12.20@sha256:2cdd374e2cb65c1634fa92786d74eba195aa39ed782b43fba2e6b54f6d36ae7d
+    labels:
+      folder.view3: Tools
+      net.unraid.docker.icon: ${SECRET_APPDATA}/icons/matrix-web.png
+      traefik.enable: true
+      traefik.http.routers.matrix-web.rule: Host(`matrix-web.${SECRET_DOMAIN}`)
+      traefik.http.routers.matrix-web.entryPoints: websecure
+      traefik.http.services.matrix-web.loadbalancer.server.port: 80
+    environment:
+      TZ: ${TZ}
+    restart: always
