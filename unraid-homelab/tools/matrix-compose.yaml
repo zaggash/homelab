@@ -32,4 +32,6 @@ services:
       traefik.http.services.matrix-web.loadbalancer.server.port: 80
     environment:
       TZ: ${TZ}
+    networks:
+      - tools
     restart: always
