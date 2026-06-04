@@ -3,7 +3,6 @@ include:
   - backrest-compose.yaml
   - sftpgo-compose.yaml
   - homebox-compose.yaml
-  - n8n-compose.yaml
   - db-backup-compose.yaml
 
 networks:
