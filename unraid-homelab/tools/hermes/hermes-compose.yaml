@@ -1,0 +1,23 @@
+services:
+  hermes-w: &hermes_service
+    container_name: hermes-w
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: gateway run
+    labels:
+      folder.view3: Tools
+      net.unraid.docker.icon: ${SECRET_APPDATA}/icons/hermes.png
+    volumes:
+      - "${SECRET_APPDATA}/hermes/w-agent:/opt/data/"
+    environment:
+      TZ: ${TZ}
+    networks:
+      - gluetun
+    restart: always
+
+  hermes-p:
+    <<: *hermes_service
+    container_name: hermes-p
+    volumes:
+      - "${SECRET_APPDATA}/hermes/p-agent:/opt/data/"

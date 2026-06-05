@@ -5,6 +5,7 @@ include:
   - homebox-compose.yaml
   - db-backup-compose.yaml
   - matrix-compose.yaml
+  - hermes/hermes-compose.yaml
 
 networks:
   tools:
