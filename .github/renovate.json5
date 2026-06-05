@@ -129,16 +129,5 @@
         '/linuxserver/qbittorrent/',
       ],
     },
-    {
-      description: 'Set semver for bookshelf',
-      matchDatasources: [
-        'docker',
-      ],
-      versioning: 'semver',
-      matchPackageNames: [
-        'pennydreadful/bookshelf',
-      ],
-      versionCompatibility: '^(?<compatibility>.*)-(?<version>.*)$',
-    },
   ],
 }
