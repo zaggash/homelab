@@ -18,13 +18,9 @@
       customType: 'regex',
       managerFilePatterns: [
         '/unraid-homelab/.*/bedrock-connect/Dockerfile/',
-        '/unraid-homelab/.*/mosquitto-auth/Dockerfile/',
       ],
       matchStrings: [
         'renovate: datasource=(?<datasource>.*?) depName=(?<depName>.*?) versioning=(?<versioning>.*?)\\sENV BEDROCK_CONNECT=(?<currentValue>.*)',
-        'renovate: datasource=(?<datasource>.*?) depName=(?<depName>.*?) versioning=(?<versioning>.*?)\\sARG LIBWEBSOCKET_VERSION=(?<currentValue>.*)',
-        'renovate: datasource=(?<datasource>.*?) depName=(?<depName>.*?) versioning=(?<versioning>.*?)\\sARG MOSQUITTO_VERSION=(?<currentValue>.*)',
-        'renovate: datasource=(?<datasource>.*?) depName=(?<depName>.*?) versioning=(?<versioning>.*?)\\sARG MOSQUITTO_AUTH_VERSION=(?<currentValue>.*)',
       ],
     },
   ],
@@ -67,18 +63,6 @@
         'patch',
       ],
       ignoreTests: true,
-    },
-    {
-      description: 'Group Mosquitto+Auth Dockerfile updates',
-      groupName: 'Mosquitto+Auth Dockerfile',
-      matchFileNames: [
-        'unraid-homelab/**/mosquitto-auth/**',
-      ],
-      group: {
-        commitMessageTopic: '{{{groupName}}} group',
-      },
-      separateMajorMinor: false,
-      separateMinorPatch: false,
     },
     {
       description: 'Group immich updates',
