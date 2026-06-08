@@ -1,0 +1,26 @@
+services:
+  seerr:
+    container_name: seerr
+    image: ghcr.io/seerr-team/seerr:v3.3.0@sha256:c92d2dc117f62185e7bcb88cd56efd374ea79210eaf433275449e8d5988eb5a8
+    labels:
+      folder.view3: Media
+      net.unraid.docker.icon: ${SECRET_APPDATA}/icons/seerr.png
+      traefik.enable: true
+      traefik.docker.network: homelab_media
+      traefik.http.routers.seerr.rule: Host(`seerr.${SECRET_DOMAIN}`)
+      traefik.http.routers.seerr.entryPoints: websecure
+      traefik.http.services.seerr.loadbalancer.server.port: 5055
+    volumes:
+      - "${SECRET_APPDATA}/seerr:/app/config"
+    user: ${UID}:${GID}
+    environment:
+      TZ: ${TZ}
+    networks:
+      - media
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider http://localhost:5055/api/v1/settings/public || exit 1
+      start_period: 20s
+      timeout: 3s
+      interval: 15s
+      retries: 3
+    restart: always
