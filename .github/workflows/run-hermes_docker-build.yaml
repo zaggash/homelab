@@ -1,0 +1,86 @@
+name: Hermes build image
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/run-hermes_docker-build.yaml"
+      - "unraid-homelab/**/hermes/Dockerfile"
+
+env:
+  ORG_ACCOUNT: "zaggash"
+  IMAGE_NAME: "hermes-agent"
+  CONTEXT: "./unraid-homelab/tools/hermes/"
+  DOCKERFILE: "./unraid-homelab/tools/hermes/Dockerfile"
+
+jobs:
+  extract-tag:
+    name: Extract Parent Tag
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.get-tag.outputs.tag }}
+      org_account: ${{ env.ORG_ACCOUNT }}
+      image_name: ${{ env.IMAGE_NAME }}
+      context: ${{ env.CONTEXT }}
+      dockerfile: ${{ env.DOCKERFILE }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Extract Tag from Dockerfile
+        id: get-tag
+        run: |
+          DOCKERFILE="${{ env.DOCKERFILE }}"
+          tag="latest" # Valeur par défaut
+
+          if [ -f "$DOCKERFILE" ]; then
+            while read -r line || [ -n "$line" ]; do
+              # Match de la ligne FROM (insensible à la casse)
+              if [[ "$line" =~ ^[Ff][Rr][Oo][Mm][[:space:]] ]]; then
+                words=($line)
+                for word in "${words[@]}"; do
+                  # Ignore le mot-clé FROM et les options comme --platform=...
+                  if [[ "$word" =~ ^-- ]] || [[ "$word" =~ ^[Ff][Rr][Oo][Mm]$ ]]; then
+                    continue
+                  fi
+                  image_ref="$word"
+                  break
+                done
+                break
+              fi
+            done < "$DOCKERFILE"
+
+            if [ -n "$image_ref" ]; then
+              # 1. Supprime le digest de l'image s'il est présent (@sha256:...)
+              image_no_digest="${image_ref%%@*}"
+              # 2. Récupère la partie après le dernier slash (pour ignorer le port d'un registry privé comme localhost:5000)
+              last_segment="${image_no_digest##*/}"
+              # 3. Extrait le tag s'il y a un symbole de deux-points ':'
+              if [[ "$last_segment" == *:* ]]; then
+                tag="${last_segment##*:}"
+              fi
+            fi
+          else
+            echo "::warning::Dockerfile non trouvé à l'emplacement $DOCKERFILE. Utilisation du tag 'latest'."
+          fi
+          tag=$(echo "$tag" | tr -d '\r')
+
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          echo "Extracted tag: $tag"
+
+  build-push:
+    name: Build & Push
+    needs: extract-tag
+    uses: zaggash/gh-workflows/.github/workflows/action_docker-build-repo.yaml@main
+    with:
+      github-account: ${{ needs.extract-tag.outputs.org_account }}
+      image-name: ${{ needs.extract-tag.outputs.image_name }}
+      tag: ${{ needs.extract-tag.outputs.tag }}
+      context: ${{ needs.extract-tag.outputs.context }}
+      dockerfile: ${{ needs.needs.extract-tag.outputs.dockerfile }}
+    secrets:
+      gh_username: ${{ secrets.GH_USERNAME }}
+      gh_token: ${{ secrets.GH_TOKEN }}
