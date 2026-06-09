@@ -22,7 +22,7 @@ services:
 
   matrix-web:
     container_name: matrix-web
-    image: ghcr.io/element-hq/element-web:v1.12.20@sha256:2cdd374e2cb65c1634fa92786d74eba195aa39ed782b43fba2e6b54f6d36ae7d
+    image: ghcr.io/element-hq/element-web:v1.12.21@sha256:26546ef29e02a6e0978c137b7cc93581e6bbb94a5fe95104b89a216c43004d12
     labels:
       folder.view3: Tools
       net.unraid.docker.icon: ${SECRET_APPDATA}/icons/matrix-web.png
