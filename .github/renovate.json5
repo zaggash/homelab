@@ -65,6 +65,29 @@
       ignoreTests: true,
     },
     {
+      description: 'Automerge hermes-agent Docker tag on release',
+      matchManagers: [
+        'dockerfile',
+      ],
+      matchDatasources: [
+        'docker',
+      ],
+      matchFileNames: [
+        'unraid-homelab/**/hermes/**',
+      ],
+      matchPackageNames: [
+        'nousresearch/hermes-agent',
+      ],
+      automerge: true,
+      automergeType: 'branch',
+      matchUpdateTypes: [
+        'major',
+        'minor',
+        'patch',
+      ],
+      ignoreTests: true,
+    },
+    {
       description: 'Group immich updates',
       groupName: 'Immich',
       matchDatasources: [
@@ -102,15 +125,15 @@
     {
       description: 'Set Linuxserver jellyfin semver compatible',
       allowedVersions: '<2000.0.0',
-      matchPackageNames: [
-        '/linuxserver/jellyfin/',
+      matchPackagePatterns: [
+        'linuxserver/jellyfin',
       ],
     },
     {
       description: 'Set Linuxserver qbittorrent semver compatible',
       allowedVersions: '<14.0.0',
-      matchPackageNames: [
-        '/linuxserver/qbittorrent/',
+      matchPackagePatterns: [
+        'linuxserver/qbittorrent',
       ],
     },
   ],

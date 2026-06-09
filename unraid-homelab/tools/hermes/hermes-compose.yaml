@@ -1,9 +1,7 @@
 services:
   hermes-w: &hermes_service
     container_name: hermes-w
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: ghcr.io/zaggash/hermes-agent:v2026.6.5@sha256:fee321284b35d11f85fd504f39de09f77eee7908193a689513db31951036ef65
     command: gateway run
     labels:
       folder.view3: Tools
