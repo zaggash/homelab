@@ -125,15 +125,15 @@
     {
       description: 'Set Linuxserver jellyfin semver compatible',
       allowedVersions: '<2000.0.0',
-      matchPackagePatterns: [
-        'linuxserver/jellyfin',
+      matchPackageNames: [
+        '/linuxserver/jellyfin/',
       ],
     },
     {
       description: 'Set Linuxserver qbittorrent semver compatible',
       allowedVersions: '<14.0.0',
-      matchPackagePatterns: [
-        'linuxserver/qbittorrent',
+      matchPackageNames: [
+        '/linuxserver/qbittorrent/',
       ],
     },
   ],
