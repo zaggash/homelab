@@ -20,6 +20,7 @@ services:
       HBOX_WEB_MAX_FILE_UPLOAD: 10
       HBOX_OPTIONS_ALLOW_ANALYTICS: false
       HBOX_OPTIONS_ALLOW_REGISTRATION: false
+      HBOX_AUTH_API_KEY_PEPPER: ${HBOX_AUTH_API_KEY_PEPPER}
     networks:
       - tools
     restart: always
