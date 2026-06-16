@@ -1,0 +1,24 @@
+services:
+  dispatcharr:
+    container_name: dispatcharr
+    image: ghcr.io/dispatcharr/dispatcharr:0.26.0@sha256:9275b0c1f5319a84b412af6839a1364ef25b61d8d6ff0d2130a6c2b2504a8b07
+    labels:
+      folder.view3: Media
+      net.unraid.docker.icon: ${SECRET_APPDATA}/icons/dispatcharr.png
+      traefik.enable: true
+      traefik.http.routers.dispatcharr.rule: Host(`iptv.${SECRET_DOMAIN}`)
+      traefik.http.routers.dispatcharr.entryPoints: websecure
+      traefik.http.services.dispatcharr.loadbalancer.server.port: 9191
+    volumes:
+      - "${SECRET_APPDATA}/dispatcharr:/data"
+    environment:
+      TZ: ${TZ}
+      DISPATCHARR_ENV: aio
+      REDIS_HOST: localhost
+      CELERY_BROKER_URL: redis://localhost:6379/0
+      DISPATCHARR_LOG_LEVEL: info
+    devices:
+      - /dev/dri:/dev/dri
+    networks:
+      - media
+    restart: unless-stopped
