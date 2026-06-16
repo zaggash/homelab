@@ -13,6 +13,7 @@ services:
       traefik.http.services.dispatcharr.loadbalancer.server.port: 9191
     volumes:
       - "${SECRET_APPDATA}/dispatcharr:/data"
+      - "${SECRET_DATADIR}/media/VODS:/VODS"
     environment:
       TZ: ${TZ}
       DISPATCHARR_ENV: aio
