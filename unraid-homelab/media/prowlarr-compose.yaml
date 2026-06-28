@@ -1,7 +1,7 @@
 services:
   prowlarr:
     container_name: prowlarr
-    image: ghcr.io/home-operations/prowlarr:2.4.0@sha256:b7da6e9defbe0e43a361b51a4bd7f21031d8c2c751f7cc7e1c3f80503af6456c
+    image: ghcr.io/home-operations/prowlarr:2.5.0@sha256:9c89ef21672a20f4cd4a766b5a085ae5a61de54a79e0841e136330a711b85447
     labels:
       folder.view3: Media
       net.unraid.docker.icon: ${SECRET_APPDATA}/icons/prowlarr.png
