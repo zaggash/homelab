@@ -768,6 +768,12 @@ def process_book_request(query):
     # Pass 1: Find the highest title similarity score in our results
     max_similarity = max(r["similarity"] for r in french_epubs)
     
+    # Require at least a minimum absolute confidence score (e.g. 0.35) for the best match to avoid downloading random books
+    min_confidence = 0.35
+    if max_similarity < min_confidence:
+        logging.warning(f"Max similarity found ({max_similarity:.2f}) is below absolute confidence threshold ({min_confidence:.2f}). Aborting search.")
+        return None, f"Désolé, je n'ai trouvé aucun livre correspondant de manière fiable à ta recherche (la similarité maximale avec les titres trouvés est de {max_similarity:.2f})."
+        
     # Pass 2: Filter results to keep only those within a close margin (e.g. within 0.15) of the highest score,
     # and require at least a minimum similarity score (e.g. 0.20) to avoid completely irrelevant matches.
     relevance_threshold = max(max_similarity - 0.15, 0.20)
