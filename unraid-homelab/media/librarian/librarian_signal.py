@@ -896,11 +896,12 @@ def run_bot():
                 reply_to = api_group_id if is_group else sender
                 
                 # Verify trigger prefixes (e.g., !book or !livre) to prevent normal chat/note/group spam.
-                # Prefix is strictly mandatory for both group chats and Note to Self.
+                # Prefix is strictly mandatory for normal messages, but optional if there is an image attachment.
                 prefix_pattern = r"^(!book|!livre)\b"
                 has_prefix = bool(re.match(prefix_pattern, text_content, re.IGNORECASE))
+                has_image_attachment = any("image" in att.get("contentType", "") for att in attachments)
                 
-                if not has_prefix:
+                if not (has_prefix or has_image_attachment):
                     # Silently ignore normal non-book related messages in chats/groups
                     continue
                 
