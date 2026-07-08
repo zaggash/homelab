@@ -1,7 +1,7 @@
 version: "3"
 services:
   os-server:
-    image: ghcr.io/lemker/unifi-os-server:v1.3.0@sha256:445c3350bdb44ac68a7770e151a9fe17c7336cf8f4682316e0b66ac05faa6916
+    image: ghcr.io/lemker/unifi-os-server:v1.4.0@sha256:bb07cac8005000893d239b9d88cfdca0376b28cf222ddb21081a73d5f67eef36
     hostname: unifi
     domainname: home.lan
     dns:
