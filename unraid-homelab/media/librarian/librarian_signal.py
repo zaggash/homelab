@@ -874,7 +874,11 @@ def run_bot():
                         GROUP_NAME_CACHE[group_id] = group_name
                 
                 is_group = bool(group_id)
-                is_note_to_self = (sender == BOT_NUMBER)
+                if sent_msg:
+                    destination = sent_msg.get("destinationNumber") or sent_msg.get("destination")
+                    is_note_to_self = (destination == BOT_NUMBER) or (not destination)
+                else:
+                    is_note_to_self = (sender == BOT_NUMBER)
                 
                 # Enforce context isolation: Only respond in group chats OR in Note to Self.
                 # Standard one-on-one DMs from other users are completely ignored to avoid spam.
