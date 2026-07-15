@@ -10,6 +10,8 @@ services:
       - "${SECRET_APPDATA}/hermes/w-agent:/opt/data/"
     environment:
       TZ: ${TZ}
+      HERMES_UID: ${UID}
+      HERMES_GID: ${GID}
     networks:
       - gluetun
     restart: always
