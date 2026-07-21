@@ -1,7 +1,7 @@
 services:
   hermes-w: &hermes_service
     container_name: hermes-w
-    image: ghcr.io/zaggash/hermes-agent:v2026.7.7@sha256:591e23085962f7e599d7883ae75f496e110f8cbf45eedfe755db78a2713a1546
+    image: ghcr.io/zaggash/hermes-agent:v2026.7.20@sha256:9abd20e5a60bdc78f6077ede731d653569842f50bd802bfed3bb07d8c317c97f
     command: gateway run
     labels:
       folder.view3: Tools
