@@ -1,7 +1,7 @@
 services:
   radarr:
     container_name: radarr
-    image: ghcr.io/home-operations/radarr:6.3.0@sha256:ca30ff27d24c1fd548b1c8efd684b6a9238b7fed2bd5b834ea700aa09c16fe11
+    image: ghcr.io/home-operations/radarr:6.4.0@sha256:c82ca292d70ac798bc993421fa7467b0c760238db646a1abc7789115d4359d5c
     labels:
       folder.view3: Media
       net.unraid.docker.icon: ${SECRET_APPDATA}/icons/radarr.png
