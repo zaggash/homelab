@@ -17,6 +17,7 @@ services:
       traefik.http.services.immich.loadbalancer.server.port: 2283
     devices:
       - /dev/dri:/dev/dri
+    shm_size: '2gb'
     networks:
       - immich-front
       - immich-ml
