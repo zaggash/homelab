@@ -17,6 +17,7 @@ services:
     devices:
       - /dev/dri:/dev/dri
       - /dev/kfd:/dev/kfd
+    shm_size: '2gb'
     environment:
       TZ: ${TZ}
       PUID: ${UID}
