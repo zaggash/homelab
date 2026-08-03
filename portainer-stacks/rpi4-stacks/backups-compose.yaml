@@ -28,12 +28,18 @@ services:
       BACKUP_FILENAME: "unifi-%Y-%m-%dT%H-%M-%S.tar.gz"
       BACKUP_LATEST_SYMLINK: "unifi-latest.tar.gz"
       BACKUP_ARCHIVE: "/archive/unifi"
-      BACKUP_SOURCE: "/backup/unifi/data/backup/"
+      BACKUP_SOURCE: "/backup/unifi"
       BACKUP_CRON_EXPRESSION: "15 0 * * *"
       BACKUP_RETENTION_DAYS: "7"
       BACKUP_PRUNING_PREFIX: "unifi-"
     volumes:
-      - "unifi_data:/backup/unifi"
+      - "unifi_persistent:/backup/unifi/persistent"
+      - "unifi_var-log:/backup/unifi/var/log"
+      - "unifi_data:/backup/unifi/data"
+      - "unifi_srv:/backup/unifi/srv"
+      - "unifi_var-lib-unifi:/backup/unifi/var/lib/unifi"
+      - "unifi_var-lib-mongodb:/backup/unifi/var/lib/mongodb"
+      - "unifi_etc-rabbitmq-ssl:/backup/unifi/etc/rabbitmq/ssl"
       - "unraid_backups:/archive"
 
 volumes:
@@ -41,7 +47,19 @@ volumes:
     external: true
   dns_log:
     external: true
+  unifi_persistent:
+    external: true
+  unifi_var-log:
+    external: true
   unifi_data:
+    external: true
+  unifi_srv:
+    external: true
+  unifi_var-lib-unifi:
+    external: true
+  unifi_var-lib-mongodb:
+    external: true
+  unifi_etc-rabbitmq-ssl:
     external: true
   unraid_backups:
     driver: local
