@@ -4,7 +4,7 @@ services:
     container_name: error-pages
     labels:
       folder.view3: Ingress
-      net.unraid.docker.icon: ${SECRET_APPDATA}/icons/error-pages.png
+      net.unraid.docker.icon: file://${SECRET_APPDATA}/icons/error-pages.png
       traefik.enable: true
       traefik.docker.network: homelab_webserver-internal
       traefik.http.routers.errorpages.rule: HostRegexp(`.+`)

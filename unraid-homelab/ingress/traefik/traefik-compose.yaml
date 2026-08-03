@@ -11,7 +11,7 @@ services:
       - "${SECRET_APPDATA}/traefik:/etc/traefik/"
     labels:
       folder.view3: Ingress
-      net.unraid.docker.icon: ${SECRET_APPDATA}/icons/traefik.png
+      net.unraid.docker.icon: file://${SECRET_APPDATA}/icons/traefik.png
       traefik.enable: true
       traefik.docker.network: homelab_webserver-internal
       traefik.http.routers.api.rule: Host(`traefik.${SECRET_DOMAIN}`)

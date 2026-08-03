@@ -6,7 +6,7 @@ services:
     image: ghcr.io/immich-app/immich-machine-learning:v3.1.0@sha256:5a0839dc5303cd7215bcd2180a26aed3af41675aefb3e75e5157e9f10ad16e6e
     labels:
       folder.view3: Immich
-      net.unraid.docker.icon: ${SECRET_APPDATA}/icons/immich.png
+      net.unraid.docker.icon: file://${SECRET_APPDATA}/icons/immich.png
     # extends: # uncomment this section for hardware acceleration - see https://immich.app/docs/features/ml-hardware-acceleration
     #   file: hwaccel.ml.yml
     #   service: cpu # set to one of [armnn, cuda, openvino, openvino-wsl] for accelerated inference - use the `-wsl` version for WSL2 where applicable

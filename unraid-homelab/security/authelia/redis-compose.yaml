@@ -5,7 +5,7 @@ services:
     command: redis-server --requirepass "${SECRET_AUTHELIA_REDIS_PASSWORD}"
     labels:
       folder.view3: Security
-      net.unraid.docker.icon: ${SECRET_APPDATA}/icons/redis.png
+      net.unraid.docker.icon: file://${SECRET_APPDATA}/icons/redis.png
     volumes:
       - "${SECRET_APPDATA}/authelia/redis:/data"
     networks:

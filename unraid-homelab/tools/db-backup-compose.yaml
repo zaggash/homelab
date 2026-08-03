@@ -4,7 +4,7 @@ services:
     image: ghcr.io/tiredofit/docker-db-backup:4.1.99@sha256:d547726ad13079fb1441b1d21f85f043a634cfeda1e013101ca8ba1fc3cf838e
     labels:
       folder.view3: Tools
-      net.unraid.docker.icon: ${SECRET_APPDATA}/icons/db-backup.png
+      net.unraid.docker.icon: file://${SECRET_APPDATA}/icons/db-backup.png
     volumes:
       # Default Volumes
       - ${SECRET_APPDATA}/db-backup/scripts:/assets/scripts

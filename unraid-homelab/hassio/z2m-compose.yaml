@@ -4,7 +4,7 @@ services:
     image: ghcr.io/koenkk/zigbee2mqtt:2.13.0@sha256:4fb4db4d49a217bed6d0204f454ce809febc565bbe051b85c556ee2bcef73d8c
     labels:
       folder.view3: Hassio
-      net.unraid.docker.icon: ${SECRET_APPDATA}/icons/z2m.png
+      net.unraid.docker.icon: file://${SECRET_APPDATA}/icons/z2m.png
     user: ${UID}:${GID}
     group_add:
       - 16

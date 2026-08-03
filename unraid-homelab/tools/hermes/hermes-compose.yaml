@@ -5,7 +5,7 @@ services:
     command: gateway run
     labels:
       folder.view3: Tools
-      net.unraid.docker.icon: ${SECRET_APPDATA}/icons/hermes.png
+      net.unraid.docker.icon: file://${SECRET_APPDATA}/icons/hermes.png
     volumes:
       - "${SECRET_APPDATA}/hermes/w-agent:/opt/data/"
     environment:

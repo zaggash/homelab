@@ -9,7 +9,7 @@ services:
       - NET_RAW
     labels:
       folder.view3: Immich
-      net.unraid.docker.icon: ${SECRET_APPDATA}/icons/immich.png
+      net.unraid.docker.icon: file://${SECRET_APPDATA}/icons/immich.png
       traefik.enable: true
       traefik.docker.network: homelab_immich-front
       traefik.http.routers.immich.rule: Host(`photos.${SECRET_DOMAIN}`)

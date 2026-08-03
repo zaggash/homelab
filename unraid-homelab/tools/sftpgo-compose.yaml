@@ -4,7 +4,7 @@ services:
     image: ghcr.io/drakkan/sftpgo:v2.7.5
     labels:
       folder.view3: Tools
-      net.unraid.docker.icon: ${SECRET_APPDATA}/icons/sftpgo.png
+      net.unraid.docker.icon: file://${SECRET_APPDATA}/icons/sftpgo.png
       traefik.enable: true
       traefik.docker.network: homelab_tools
       traefik.http.routers.sftpgo-ui.rule: Host(`cloud.${SECRET_DOMAIN}`)

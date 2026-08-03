@@ -26,7 +26,7 @@ services:
     image: ghcr.io/blakeblackshear/frigate:0.17.2@sha256:d4351369984d4a9e2a49ac59736f6490856a7ea11f7790040746d21496967010
     labels:
       folder.view3: Hassio
-      net.unraid.docker.icon: ${SECRET_APPDATA}/icons/frigate.png
+      net.unraid.docker.icon: file://${SECRET_APPDATA}/icons/frigate.png
     devices:
       - /dev/dri/renderD128:/dev/dri/renderD128
     shm_size: "512mb"

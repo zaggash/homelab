@@ -4,7 +4,7 @@ services:
     image: ghcr.io/authelia/authelia:4.39.20@sha256:1b363e9279e742397966333f364e0876ae02bf5c876de73e83af6d48c57ff51b
     labels:
       folder.view3: Security
-      net.unraid.docker.icon: ${SECRET_APPDATA}/icons/authelia.png
+      net.unraid.docker.icon: file://${SECRET_APPDATA}/icons/authelia.png
       traefik.enable: true
       traefik.docker.network: homelab_authelia
       traefik.http.routers.authelia.rule: Host(`login.${SECRET_DOMAIN}`)

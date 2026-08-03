@@ -4,7 +4,7 @@ services:
     image: ghcr.io/crocodilestick/calibre-web-automated:V3.1.4@sha256:577e846f104fd21453ef306eefb4a95dd95b3b9ddd2463a150944494284da0fd
     labels:
       folder.view2: Media
-      net.unraid.docker.icon: ${SECRET_APPDATA}/icons/calibre-web.png
+      net.unraid.docker.icon: file://${SECRET_APPDATA}/icons/calibre-web.png
       traefik.enable: true
       traefik.docker.network: homelab_media
       traefik.http.middlewares.kobo-sync-headers.headers.customrequestheaders.X-Scheme: https

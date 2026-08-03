@@ -4,7 +4,7 @@ services:
     image: ghcr.io/lldap/lldap:latest-alpine@sha256:51c856bbd975bbdba7f030319442d4c4dd6bfcf9c5e48425a4099635e05b43b8
     labels:
       folder.view3: Security
-      net.unraid.docker.icon: ${SECRET_APPDATA}/icons/lldap.png
+      net.unraid.docker.icon: file://${SECRET_APPDATA}/icons/lldap.png
       traefik.enable: true
       traefik.docker.network: homelab_lldap-internal
       traefik.http.routers.lldap.rule: Host(`ldap.${SECRET_HOME_DOMAIN}`)
