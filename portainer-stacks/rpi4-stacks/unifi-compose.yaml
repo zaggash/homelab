@@ -23,23 +23,31 @@ services:
       - UOS_SYSTEM_IP=unifi.home.lan
     volumes:
       - /sys/fs/cgroup:/sys/fs/cgroup:rw
-      - data/persistent:/persistent
-      - data/var-log:/var/log
-      - data/data:/data
-      - data/srv:/srv
-      - data/var-lib-unifi:/var/lib/unifi
-      - data/var-lib-mongodb:/var/lib/mongodb
-      - data/etc-rabbitmq-ssl:/etc/rabbitmq/ssl
+      - persistent:/persistent
+      - var-log:/var/log
+      - data:/data
+      - srv:/srv
+      - var-lib-unifi:/var/lib/unifi
+      - var-lib-mongodb:/var/lib/mongodb
+      - etc-rabbitmq-ssl:/etc/rabbitmq/ssl
     ports:
-      - 11443:11443
-      - 5005:5005 # Optional
-      - 9543:9543 # Optional
-      - 6789:6789 # Optional
-      - 8080:8080
-      - 8443:8443 # Optional
+      - 11443:443/tcp
+      - 5005:5005/tcp # Optional
+      - 9543:9543/tcp # Optional
+      - 6789:6789/tcp # Optional
+      - 8080:8080/tcp
       - 3478:3478/udp
+      - 5514:5514/udp
       - 10003:10003/udp
+      - 127.0.0.1:11084:11084
+      - 28082:28082/tcp
     restart: unless-stopped
 
 volumes:
+  persistent:
+  var-log:
   data:
+  srv:
+  var-lib-unifi:
+  var-lib-mongodb:
+  etc-rabbitmq-ssl:
