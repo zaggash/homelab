@@ -133,27 +133,6 @@ steps:
         include:
           - unraid-homelab/**
 
-  - name: move-recyclarr-config
-    image: alpine:3.24
-    volumes:
-      - name: appdata
-        path: /appdata
-    environment:
-      SOPS_AGE_KEY:
-        from_secret: age-key
-    commands:
-      - apk update && apk add sops envsubst
-      - cd unraid-homelab/ && mkdir -p /appdata/recyclarr/
-      - sops exec-env secrets.encoded.env 'cat ./media/recyclarr/recyclarr.yaml | envsubst' > /appdata/recyclarr/recyclarr.yaml
-      - echo "recyclarr" >> restart.containers
-    when:
-      paths:
-        include:
-          - unraid-homelab/**/recyclarr/recyclarr.yaml
-    depends_on:
-      - compose-config-check
-
-
   - name: move-authelia-config
     image: alpine:3.24
     volumes:
@@ -213,7 +192,6 @@ steps:
           - unraid-homelab/**
     depends_on:
       - compose-config-check
-      - move-recyclarr-config
       - move-authelia-config
       - move-traefik-config
 
