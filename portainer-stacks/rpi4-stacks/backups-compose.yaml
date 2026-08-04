@@ -34,7 +34,6 @@ services:
       BACKUP_PRUNING_PREFIX: "unifi-"
     volumes:
       - "unifi_persistent:/backup/unifi/persistent"
-      - "unifi_var-log:/backup/unifi/var/log"
       - "unifi_data:/backup/unifi/data"
       - "unifi_srv:/backup/unifi/srv"
       - "unifi_var-lib-unifi:/backup/unifi/var/lib/unifi"
@@ -48,8 +47,6 @@ volumes:
   dns_log:
     external: true
   unifi_persistent:
-    external: true
-  unifi_var-log:
     external: true
   unifi_data:
     external: true
