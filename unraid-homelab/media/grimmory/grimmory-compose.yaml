@@ -19,6 +19,7 @@ services:
       - "${SECRET_APPDATA}/grimmory/data:/app/data"
       - "${SECRET_DATADIR}/downloads/complete/ebooks_import:/bookdrop"
       - "${SECRET_DATADIR}/media/ebooks:/books"
+      - "${SECRET_DATADIR}/media/bd-manga-comics:/bd-manga-comics"
     environment:
       TZ: ${TZ}
       USER_ID: ${UID}
