@@ -1,0 +1,21 @@
+services:
+  komga:
+    container_name: komga
+    image: ghcr.io/gotson/komga:1.25.0@sha256:c4f9885fc077e2e9cd684dc95e8f6cfa5e33b100b46712b2de7f5cc2ff59e6fb
+    labels:
+      folder.view3: Media
+      net.unraid.docker.icon: file://${SECRET_APPDATA}/icons/komga.png
+      traefik.enable: true
+      traefik.docker.network: homelab_media
+      traefik.http.routers.komga.rule: Host(`comics.${SECRET_DOMAIN}`)
+      traefik.http.routers.komga.entryPoints: websecure
+      traefik.http.services.komga.loadbalancer.server.port: 25600
+    user: "1000:1000"
+    volumes:
+      - "${SECRET_APPDATA}/komga/config:/config"
+      - "${SECRET_DATADIR}/media/bd-manga-comics:/bd-manga-comics"
+    environment:
+      TZ: ${TZ}
+    networks:
+      - media
+    restart: always
