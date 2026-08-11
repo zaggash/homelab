@@ -18,6 +18,19 @@ storage:
       mode: 0755
 
   files:
+    - path: /etc/zincati/config.d/55-updates-strategy.toml
+      contents:
+        inline: |
+          [updates]
+          strategy = "periodic"
+          [updates.periodic]
+          time_zone = "Europe/Paris"
+          [[updates.periodic.window]]
+          days = [ "Mon" ]
+          start_time = "05:00"
+          length_minutes = 60
+
+  files:
     - path: /etc/pki/ca-trust/source/anchors/internal-home-ca.pem
       mode: 0644
       contents:
