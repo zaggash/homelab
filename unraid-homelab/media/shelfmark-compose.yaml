@@ -1,7 +1,7 @@
 services:
   shelfmark:
     container_name: shelfmark
-    image: ghcr.io/calibrain/shelfmark-lite:v1.3.5@sha256:ae23600f7dd8e020dd735ed9f3576c091de5ef134295943efd3c561319a4dc88
+    image: ghcr.io/calibrain/shelfmark-lite:v1.3.6@sha256:6584598c19ca769dc3c4b6049033f193ae6412b35d8e51384c842ee3e8c9634e
     user: "1000:1000"
     labels:
       folder.view3: Media
