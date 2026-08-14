@@ -661,72 +661,8 @@ def search_annas_archive(query, max_retries=1, retry_delay=2):
                 logging.info(f"Anna's Archive returned {len(results)} results for candidate query '{target_q}'.")
                 return results
 
-    logging.warning("All search attempts on Anna's Archive failed. Falling back to Libgen.li direct search...")
-    return search_libgen_li(query)
-
-    # Regex search for unique MD5 hashes
-    matches = list(re.finditer(r'/md5/([a-f0-9]{32})', html))
-    unique_md5s = []
-    unique_positions = []
-    for m in matches:
-        h = m.group(1)
-        if h not in unique_md5s:
-            unique_md5s.append(h)
-            unique_positions.append(m.start())
-            
-    results = []
-    for idx, (h, pos) in enumerate(zip(unique_md5s, unique_positions)):
-        if idx + 1 < len(unique_positions):
-            next_pos = unique_positions[idx+1]
-        else:
-            next_pos = pos + 5000
-        snippet = html[pos:next_pos]
-        
-        # Parse title
-        title = "Unknown"
-        title_match = re.search(r'href="/md5/[a-f0-9]{32}"[^>]*class="[^"]*font-semibold[^"]*">([^<]+)</a>', snippet)
-        if title_match:
-            title = html_lib.unescape(title_match.group(1))
-        else:
-            a_match = re.search(r'<a href="/md5/[a-f0-9]{32}"[^>]*>([^<]+)</a>', snippet)
-            if a_match:
-                title = html_lib.unescape(a_match.group(1))
-        title = re.sub(r'<[^>]+>', '', title).strip()
-            
-        # Clean up tags inside snippet to parse metadata
-        clean_text = re.sub(r'<[^>]+>', ' | ', snippet)
-        clean_text = re.sub(r'\s*\|\s*', ' | ', clean_text)
-        clean_text = re.sub(r'\s+', ' ', clean_text)
-        
-        meta_line = "Unknown"
-        dot_match = re.search(r'([^|·]+·\s*[^|·]+\s*·\s*[^|·]+\s*·\s*[^|·]+)', clean_text)
-        if dot_match:
-            meta_line = dot_match.group(1).strip()
-        else:
-            dot_match = re.search(r'([^|·]+·\s*[^|·]+\s*·\s*[^|·]+)', clean_text)
-            if dot_match:
-                meta_line = dot_match.group(1).strip()
-                
-        meta_line = html_lib.unescape(meta_line)
-        parts = [p.strip() for p in meta_line.split("·")] if meta_line != "Unknown" else []
-        
-        lang = parts[0] if len(parts) > 0 else "Unknown"
-        fmt = parts[1] if len(parts) > 1 else "Unknown"
-        size = parts[2] if len(parts) > 2 else "Unknown"
-        year = parts[3] if len(parts) > 3 else "Unknown"
-        
-        results.append({
-            "md5": h,
-            "title": title,
-            "meta": meta_line,
-            "lang": lang,
-            "format": fmt,
-            "size": size,
-            "year": year,
-            "domain": connected_domain
-        })
-        
-    return results
+    logging.warning("All search attempts on Anna's Archive failed.")
+    return []
 
 # -----------------------------------------------------------------------------
 # LIBGEN.LI SESSION-PRESERVING DOWNLOADER
@@ -958,10 +894,16 @@ def process_book_request(query):
     if present:
         return None, f"📚 {reason}\nLa recherche a été annulée."
     
-    # 1. Search Anna's Archive (with lang=fr and ext=epub pre-filtering)
-    results = search_annas_archive(query)
+    # 1. Primary search: Libgen.li direct JSON API (fast, no DDoS-Guard/hCaptcha)
+    results = search_libgen_li(query)
+    
+    # 2. Secondary fallback search: Anna's Archive (if Libgen.li returns no results)
     if not results:
-        return None, "Désolé, je n'ai trouvé aucun résultat pour cette recherche sur Anna's Archive."
+        logging.info("Libgen.li returned no results. Trying Anna's Archive secondary fallback...")
+        results = search_annas_archive(query)
+        
+    if not results:
+        return None, "Désolé, je n'ai trouvé aucun résultat pour cette recherche."
         
     # 2. Filter for French and EPUB format, and compute title similarity scores
     french_epubs = []
