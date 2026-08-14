@@ -10,6 +10,7 @@ import urllib.request
 import urllib.parse
 import html as html_lib
 import ssl
+import unicodedata
 
 # Configure Logging
 logging.basicConfig(
@@ -416,9 +417,10 @@ def extract_book_details_from_cover(image_bytes):
 # -----------------------------------------------------------------------------
 # ANNA'S ARCHIVE SEARCH Scraper (BeautifulSoup-independent)
 # -----------------------------------------------------------------------------
-def search_annas_archive(query, max_retries=5, retry_delay=2):
+def search_annas_archive(query, max_retries=3, retry_delay=2):
     """
     Searches Anna's Archive across active domains and parses metadata using regex.
+    First attempts a direct HTTP fetch, and if blocked/failed, falls back to Byparr (FLARESOLVERR_URL).
     """
     encoded_query = urllib.parse.quote_plus(query)
     domains = ["annas-archive.gl", "annas-archive.pk", "annas-archive.gd"]
@@ -429,28 +431,67 @@ def search_annas_archive(query, max_retries=5, retry_delay=2):
     
     html = ""
     connected_domain = ""
+    ctx = ssl._create_unverified_context()
     
     for domain in domains:
         url = f"https://{domain}/search?q={encoded_query}&lang=fr&ext=epub"
         logging.info(f"Searching Anna's Archive on {domain}...")
         
         for attempt in range(max_retries):
+            # 1. Direct Attempt
             try:
+                logging.info(f"Attempting direct HTTP fetch on {domain} (attempt {attempt+1})...")
                 req = urllib.request.Request(url, headers=headers)
                 with urllib.request.urlopen(req, timeout=15) as response:
-                    html = response.read().decode("utf-8", errors="ignore")
-                    connected_domain = domain
-                    logging.info(f"Successfully fetched results from {domain} (attempt {attempt+1})")
-                    break
+                    raw_html = response.read().decode("utf-8", errors="ignore")
+                    if "DDoS-Guard" not in raw_html and "Just a moment..." not in raw_html:
+                        html = raw_html
+                        connected_domain = domain
+                        logging.info(f"Successfully fetched results directly from {domain} (attempt {attempt+1})")
+                        break
+                    else:
+                        logging.warning(f"Direct fetch on {domain} returned DDoS-Guard/Cloudflare challenge page.")
             except Exception as e:
-                logging.warning(f"Attempt {attempt+1} on {domain} failed: {e}")
-                if attempt < max_retries - 1:
-                    time.sleep(retry_delay)
+                logging.warning(f"Direct fetch attempt {attempt+1} on {domain} failed: {e}")
+                
+            # 2. Byparr Fallback Attempt
+            if FLARESOLVERR_URL:
+                logging.info(f"Attempting Byparr bypass on {domain} (attempt {attempt+1})...")
+                payload = {
+                    "cmd": "request.get",
+                    "url": url,
+                    "maxTimeout": 30000
+                }
+                req_proxy = urllib.request.Request(
+                    f"{FLARESOLVERR_URL}/v1",
+                    data=json.dumps(payload).encode("utf-8"),
+                    headers={"Content-Type": "application/json"}
+                )
+                try:
+                    with urllib.request.urlopen(req_proxy, timeout=35, context=ctx) as response:
+                        res_data = json.loads(response.read().decode("utf-8"))
+                        if res_data.get("status") == "ok":
+                            byparr_html = res_data.get("solution", {}).get("response", "")
+                            if byparr_html and "DDoS-Guard" not in byparr_html:
+                                html = byparr_html
+                                connected_domain = domain
+                                logging.info(f"Successfully fetched results via Byparr from {domain} (attempt {attempt+1})")
+                                break
+                            elif byparr_html:
+                                logging.warning(f"Byparr response on {domain} still contained DDoS-Guard challenge.")
+                        else:
+                            logging.warning(f"Byparr bypass on {domain} failed: {res_data.get('message')}")
+                except Exception as e:
+                    logging.error(f"Error calling Byparr endpoint for {domain}: {e}")
+                    
+            if attempt < max_retries - 1 and not html:
+                time.sleep(retry_delay)
+                
         if html:
             break
             
     if not html:
-        logging.error("All search attempts on all domains failed.")
+        logging.error("All search attempts (direct & Byparr) on all domains failed.")
         return []
 
     # Regex search for unique MD5 hashes
@@ -692,23 +733,30 @@ def parse_size_to_kb(size_str):
         return val * 1024.0
     return val
 
+def normalize_text(text):
+    if not text:
+        return ""
+    text = text.lower().replace('œ', 'oe').replace('æ', 'ae')
+    text = unicodedata.normalize('NFD', text)
+    return ''.join(c for c in text if unicodedata.category(c) != 'Mn')
+
 # -----------------------------------------------------------------------------
 # JACCARD STRING SIMILARITY FOR ROBUST TITLE RELEVANCE FILTERING
 # -----------------------------------------------------------------------------
 def calculate_title_similarity(query, title):
     """
     Calculates a similarity score (0.0 to 1.0) between query and title
-    based on word overlap, ignoring case, punctuation, and common short stop words.
+    based on word overlap, ignoring case, accents, ligatures, punctuation, and common short stop words.
     """
     def tokenize(text):
-        # Convert to lowercase and replace non-alphanumeric with spaces
-        text_norm = re.sub(r'[^\w\s]', ' ', text.lower())
+        norm = normalize_text(text)
+        text_norm = re.sub(r'[^\w\s]', ' ', norm)
         # Filter out short or common noise words in French and English
         stop_words = {
             'le', 'la', 'les', 'un', 'une', 'des', 'du', 'de', 'et', 'en', 'au', 'aux', 
             'pour', 'dans', 'sur', 'par', 'avec', 'sans', 'sous', 'the', 'of', 'and', 'in', 'on', 'with', 'for',
             'fr', 'french', 'epub', 'edition', 'tome', 'vol', 'volume', 'ebook', 'livre', 
-            'pdf', 'complet', 'gratuit', 'gratuits', 'version', 'intégrale', 'integrale'
+            'pdf', 'complet', 'gratuit', 'gratuits', 'version', 'integrale'
         }
         words = [w for w in text_norm.split() if len(w) > 1 and w not in stop_words]
         return set(words)
@@ -751,9 +799,9 @@ def process_book_request(query):
         lang_lower = r["lang"].lower()
         format_lower = r["format"].lower()
         
-        # Check language matches French / fr
-        is_french = "french" in lang_lower or "fr" in lang_lower or "[fr]" in lang_lower
-        is_epub = "epub" in format_lower
+        # Check language matches French / fr (allow 'unknown' as search URL is already filtered with lang=fr&ext=epub)
+        is_french = "french" in lang_lower or "fr" in lang_lower or "[fr]" in lang_lower or lang_lower == "unknown"
+        is_epub = "epub" in format_lower or format_lower == "unknown"
         
         if is_french and is_epub:
             # Calculate title similarity score between the query and this result's title
