@@ -1094,7 +1094,7 @@ def run_bot():
                             if ocr_text:
                                 query = ocr_text
                                 send_signal_message(
-                                    f"🔍 Titre détecté : '{ocr_text}'. Recherche en cours sur Anna's Archive...", 
+                                    f"🔍 Titre détecté : '{ocr_text}'. Recherche en cours...", 
                                     reply_to
                                 )
                             else:
@@ -1114,7 +1114,7 @@ def run_bot():
                     query = re.sub(prefix_pattern, "", text_content, flags=re.IGNORECASE).strip()
                     
                     send_signal_message(
-                        f"🔍 Recherche de '{query}' en cours sur Anna's Archive...", 
+                        f"🔍 Recherche de '{query}' en cours...", 
                         reply_to
                     )
                     
