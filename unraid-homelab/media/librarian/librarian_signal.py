@@ -415,84 +415,254 @@ def extract_book_details_from_cover(image_bytes):
         return None
 
 # -----------------------------------------------------------------------------
+# LIBGEN.LI SEARCH FALLBACK SCRAPER
+# -----------------------------------------------------------------------------
+def search_libgen_li(query):
+    """
+    Searches Libgen.li directly using its index and JSON API endpoint.
+    Tries the full query first, and if 0 results, tries simplified fallback terms (e.g. title only or key words).
+    Bypasses WAF protections on Anna's Archive and returns structured book results.
+    """
+    def generate_query_candidates(raw_q):
+        candidates = [raw_q]
+        # If query has 'Author - Title' format, extract title and author separately
+        if '-' in raw_q:
+            parts = [p.strip() for p in raw_q.split('-') if p.strip()]
+            for p in parts:
+                if len(p) > 2 and p not in candidates:
+                    candidates.append(p)
+                    
+        # Extract main words for short search
+        norm = raw_q.lower().replace('œ', 'oe').replace('æ', 'ae')
+        norm = unicodedata.normalize('NFD', norm)
+        norm = ''.join(c for c in norm if unicodedata.category(c) != 'Mn')
+        stop_words = {
+            'le', 'la', 'les', 'un', 'une', 'des', 'du', 'de', 'et', 'en', 'au', 'aux', 
+            'pour', 'dans', 'sur', 'par', 'avec', 'sans', 'sous', 'the', 'of', 'and', 'in', 'on', 'with', 'for',
+            'fr', 'french', 'epub', 'tome', 'vol', 'volume', 'ebook', 'livre'
+        }
+        words = [w for w in re.sub(r'[^\w\s]', ' ', norm).split() if len(w) > 1 and w not in stop_words]
+        if len(words) >= 2:
+            two_words = f"{words[0]} {words[1]}"
+            if two_words not in candidates:
+                candidates.append(two_words)
+        return candidates
+
+    query_list = generate_query_candidates(query)
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+    }
+
+    for target_q in query_list:
+        encoded = urllib.parse.quote_plus(target_q)
+        url = f"https://libgen.li/index.php?req={encoded}"
+        logging.info(f"Searching Libgen.li for candidate query: '{target_q}'...")
+        try:
+            req = urllib.request.Request(url, headers=headers)
+            with urllib.request.urlopen(req, timeout=15) as resp:
+                html = resp.read().decode("utf-8", errors="ignore")
+                
+            m = re.search(r'href=["\'](?:/)?(json\.php\?object=f&ids=[0-9,]+)["\']', html)
+            if not m:
+                logging.warning(f"No JSON API payload link found on Libgen.li index page for query '{target_q}'.")
+                continue
+                
+            json_url = f"https://libgen.li/{m.group(1)}"
+            req_json = urllib.request.Request(json_url, headers=headers)
+            with urllib.request.urlopen(req_json, timeout=15) as resp_json:
+                data = json.loads(resp_json.read().decode("utf-8"))
+                
+            results = []
+            for item in data.values():
+                md5 = item.get("md5", "").lower()
+                extension = item.get("extension", "").lower()
+                locator = item.get("locator", "")
+                filesize = item.get("filesize", 0)
+                
+                title = item.get("title", "")
+                authors = item.get("authors", "")
+                
+                if not title and locator:
+                    filename = locator.split("\\")[-1].split("/")[-1]
+                    title = re.sub(r'\.[a-zA-Z0-9]+$', '', filename)
+                    
+                full_title = f"{authors} - {title}" if authors and title else (title or authors)
+                size_kb = float(filesize) / 1024.0 if filesize else 0
+                size_str = f"{size_kb / 1024.0:.1f}MB" if size_kb > 1024 else f"{size_kb:.0f}KB"
+                
+                # Detect French language indicator in locator path or metadata
+                is_french_locator = "[fr]" in locator.lower() or "french" in locator.lower() or " romance)" in locator.lower()
+                lang = "fr" if is_french_locator else "unknown"
+                
+                results.append({
+                    "md5": md5,
+                    "title": html_lib.unescape(full_title),
+                    "meta": f"{lang} · {extension} · {size_str}",
+                    "lang": lang,
+                    "format": extension,
+                    "size": size_str,
+                    "year": item.get("year", "Unknown"),
+                    "domain": "libgen.li"
+                })
+                
+            if results:
+                logging.info(f"Libgen.li search returned {len(results)} results for query '{target_q}'.")
+                return results
+        except Exception as e:
+            logging.error(f"Libgen.li search attempt failed for '{target_q}': {e}")
+            
+    return []
+
+# -----------------------------------------------------------------------------
 # ANNA'S ARCHIVE SEARCH Scraper (BeautifulSoup-independent)
 # -----------------------------------------------------------------------------
 def search_annas_archive(query, max_retries=1, retry_delay=2):
     """
-    Searches Anna's Archive across active domains and parses metadata using regex.
-    First attempts a direct HTTP fetch, and if blocked/failed, falls back to Byparr (FLARESOLVERR_URL).
+    Searches Anna's Archive across active domains using query candidates and parses metadata using regex.
+    First attempts direct/Byparr on Anna's Archive, then falls back to direct Libgen.li.
     """
-    encoded_query = urllib.parse.quote_plus(query)
+    def generate_query_candidates(raw_q):
+        candidates = [raw_q]
+        if '-' in raw_q:
+            parts = [p.strip() for p in raw_q.split('-') if p.strip()]
+            for p in parts:
+                if len(p) > 2 and p not in candidates:
+                    candidates.append(p)
+        norm = raw_q.lower().replace('œ', 'oe').replace('æ', 'ae')
+        norm = unicodedata.normalize('NFD', norm)
+        norm = ''.join(c for c in norm if unicodedata.category(c) != 'Mn')
+        stop_words = {
+            'le', 'la', 'les', 'un', 'une', 'des', 'du', 'de', 'et', 'en', 'au', 'aux', 
+            'pour', 'dans', 'sur', 'par', 'avec', 'sans', 'sous', 'the', 'of', 'and', 'in', 'on', 'with', 'for',
+            'fr', 'french', 'epub', 'tome', 'vol', 'volume', 'ebook', 'livre'
+        }
+        words = [w for w in re.sub(r'[^\w\s]', ' ', norm).split() if len(w) > 1 and w not in stop_words]
+        if len(words) >= 2:
+            two_words = f"{words[0]} {words[1]}"
+            if two_words not in candidates:
+                candidates.append(two_words)
+        return candidates
+
+    query_candidates = generate_query_candidates(query)
     domains = ["annas-archive.gl", "annas-archive.pk", "annas-archive.gd"]
-    
     headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36"
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
     }
-    
-    html = ""
-    connected_domain = ""
     ctx = ssl._create_unverified_context()
-    
-    for domain in domains:
-        url = f"https://{domain}/search?q={encoded_query}&lang=fr&ext=epub"
-        logging.info(f"Searching Anna's Archive on {domain}...")
-        
-        for attempt in range(max_retries):
-            # 1. Direct Attempt
-            try:
-                logging.info(f"Attempting direct HTTP fetch on {domain} (attempt {attempt+1})...")
-                req = urllib.request.Request(url, headers=headers)
-                with urllib.request.urlopen(req, timeout=15) as response:
-                    raw_html = response.read().decode("utf-8", errors="ignore")
-                    if "DDoS-Guard" not in raw_html and "Just a moment..." not in raw_html:
-                        html = raw_html
-                        connected_domain = domain
-                        logging.info(f"Successfully fetched results directly from {domain} (attempt {attempt+1})")
-                        break
-                    else:
-                        logging.warning(f"Direct fetch on {domain} returned DDoS-Guard/Cloudflare challenge page.")
-            except Exception as e:
-                logging.warning(f"Direct fetch attempt {attempt+1} on {domain} failed: {e}")
-                
-            # 2. Byparr Fallback Attempt
-            if FLARESOLVERR_URL:
-                logging.info(f"Attempting Byparr bypass on {domain} (attempt {attempt+1})...")
-                payload = {
-                    "cmd": "request.get",
-                    "url": url,
-                    "maxTimeout": 60000
-                }
-                req_proxy = urllib.request.Request(
-                    f"{FLARESOLVERR_URL}/v1",
-                    data=json.dumps(payload).encode("utf-8"),
-                    headers={"Content-Type": "application/json"}
-                )
+
+    for target_q in query_candidates:
+        encoded_query = urllib.parse.quote_plus(target_q)
+        html = ""
+        connected_domain = ""
+
+        for domain in domains:
+            url = f"https://{domain}/search?q={encoded_query}&lang=fr&ext=epub"
+            logging.info(f"Searching Anna's Archive for '{target_q}' on {domain}...")
+
+            for attempt in range(max_retries):
+                # 1. Direct Attempt
                 try:
-                    with urllib.request.urlopen(req_proxy, timeout=75, context=ctx) as response:
-                        res_data = json.loads(response.read().decode("utf-8"))
-                        if res_data.get("status") == "ok":
-                            byparr_html = res_data.get("solution", {}).get("response", "")
-                            if byparr_html and "DDoS-Guard" not in byparr_html:
-                                html = byparr_html
-                                connected_domain = domain
-                                logging.info(f"Successfully fetched results via Byparr from {domain} (attempt {attempt+1})")
-                                break
-                            elif byparr_html:
-                                logging.warning(f"Byparr response on {domain} still contained DDoS-Guard challenge.")
-                        else:
-                            logging.warning(f"Byparr bypass on {domain} failed: {res_data.get('message')}")
-                except Exception as e:
-                    logging.error(f"Error calling Byparr endpoint for {domain}: {e}")
-                    
-            if attempt < max_retries - 1 and not html:
-                time.sleep(retry_delay)
-                
+                    req = urllib.request.Request(url, headers=headers)
+                    with urllib.request.urlopen(req, timeout=10) as response:
+                        raw_html = response.read().decode("utf-8", errors="ignore")
+                        if "DDoS-Guard" not in raw_html and "Just a moment..." not in raw_html:
+                            html = raw_html
+                            connected_domain = domain
+                            logging.info(f"Successfully fetched results directly from {domain}")
+                            break
+                except Exception:
+                    pass
+
+                # 2. Byparr Fallback Attempt
+                if FLARESOLVERR_URL:
+                    payload = {"cmd": "request.get", "url": url, "maxTimeout": 60000}
+                    req_proxy = urllib.request.Request(
+                        f"{FLARESOLVERR_URL}/v1",
+                        data=json.dumps(payload).encode("utf-8"),
+                        headers={"Content-Type": "application/json"}
+                    )
+                    try:
+                        with urllib.request.urlopen(req_proxy, timeout=75, context=ctx) as response:
+                            res_data = json.loads(response.read().decode("utf-8"))
+                            if res_data.get("status") == "ok":
+                                byparr_html = res_data.get("solution", {}).get("response", "")
+                                if byparr_html and "DDoS-Guard" not in byparr_html:
+                                    html = byparr_html
+                                    connected_domain = domain
+                                    logging.info(f"Successfully fetched results via Byparr from {domain}")
+                                    break
+                    except Exception as e:
+                        logging.error(f"Error calling Byparr endpoint for {domain}: {e}")
+
+                if attempt < max_retries - 1 and not html:
+                    time.sleep(retry_delay)
+
+            if html:
+                break
+
         if html:
-            break
-            
-    if not html:
-        logging.error("All search attempts (direct & Byparr) on all domains failed.")
-        return []
+            matches = list(re.finditer(r'/md5/([a-f0-9]{32})', html))
+            unique_md5s = []
+            unique_positions = []
+            for m in matches:
+                h = m.group(1)
+                if h not in unique_md5s:
+                    unique_md5s.append(h)
+                    unique_positions.append(m.start())
+
+            results = []
+            for idx, (h, pos) in enumerate(zip(unique_md5s, unique_positions)):
+                next_pos = unique_positions[idx+1] if idx + 1 < len(unique_positions) else pos + 5000
+                snippet = html[pos:next_pos]
+
+                title = "Unknown"
+                title_match = re.search(r'href="/md5/[a-f0-9]{32}"[^>]*class="[^"]*font-semibold[^"]*">([^<]+)</a>', snippet)
+                if title_match:
+                    title = html_lib.unescape(title_match.group(1))
+                else:
+                    a_match = re.search(r'<a href="/md5/[a-f0-9]{32}"[^>]*>([^<]+)</a>', snippet)
+                    if a_match:
+                        title = html_lib.unescape(a_match.group(1))
+                title = re.sub(r'<[^>]+>', '', title).strip()
+
+                clean_text = re.sub(r'<[^>]+>', ' | ', snippet)
+                clean_text = re.sub(r'\s*\|\s*', ' | ', clean_text)
+                clean_text = re.sub(r'\s+', ' ', clean_text)
+
+                meta_line = "Unknown"
+                dot_match = re.search(r'([^|·]+·\s*[^|·]+\s*·\s*[^|·]+\s*·\s*[^|·]+)', clean_text)
+                if dot_match:
+                    meta_line = dot_match.group(1).strip()
+                else:
+                    dot_match = re.search(r'([^|·]+·\s*[^|·]+\s*·\s*[^|·]+)', clean_text)
+                    if dot_match:
+                        meta_line = dot_match.group(1).strip()
+
+                meta_line = html_lib.unescape(meta_line)
+                parts = [p.strip() for p in meta_line.split("·")] if meta_line != "Unknown" else []
+
+                lang = parts[0] if len(parts) > 0 else "Unknown"
+                fmt = parts[1] if len(parts) > 1 else "Unknown"
+                size = parts[2] if len(parts) > 2 else "Unknown"
+                year = parts[3] if len(parts) > 3 else "Unknown"
+
+                results.append({
+                    "md5": h,
+                    "title": title,
+                    "meta": meta_line,
+                    "lang": lang,
+                    "format": fmt,
+                    "size": size,
+                    "year": year,
+                    "domain": connected_domain
+                })
+
+            if results:
+                logging.info(f"Anna's Archive returned {len(results)} results for candidate query '{target_q}'.")
+                return results
+
+    logging.warning("All search attempts on Anna's Archive failed. Falling back to Libgen.li direct search...")
+    return search_libgen_li(query)
 
     # Regex search for unique MD5 hashes
     matches = list(re.finditer(r'/md5/([a-f0-9]{32})', html))
@@ -816,8 +986,8 @@ def process_book_request(query):
     # Pass 1: Find the highest title similarity score in our results
     max_similarity = max(r["similarity"] for r in french_epubs)
     
-    # Require at least a minimum absolute confidence score (e.g. 0.35) for the best match to avoid downloading random books
-    min_confidence = 0.35
+    # Require at least a minimum absolute confidence score (e.g. 0.40) for the best match to avoid downloading random books
+    min_confidence = 0.40
     if max_similarity < min_confidence:
         logging.warning(f"Max similarity found ({max_similarity:.2f}) is below absolute confidence threshold ({min_confidence:.2f}). Aborting search.")
         return None, f"Désolé, je n'ai trouvé aucun livre correspondant de manière fiable à ta recherche (la similarité maximale avec les titres trouvés est de {max_similarity:.2f})."
