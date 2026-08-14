@@ -417,7 +417,7 @@ def extract_book_details_from_cover(image_bytes):
 # -----------------------------------------------------------------------------
 # ANNA'S ARCHIVE SEARCH Scraper (BeautifulSoup-independent)
 # -----------------------------------------------------------------------------
-def search_annas_archive(query, max_retries=3, retry_delay=2):
+def search_annas_archive(query, max_retries=1, retry_delay=2):
     """
     Searches Anna's Archive across active domains and parses metadata using regex.
     First attempts a direct HTTP fetch, and if blocked/failed, falls back to Byparr (FLARESOLVERR_URL).
@@ -460,7 +460,7 @@ def search_annas_archive(query, max_retries=3, retry_delay=2):
                 payload = {
                     "cmd": "request.get",
                     "url": url,
-                    "maxTimeout": 30000
+                    "maxTimeout": 60000
                 }
                 req_proxy = urllib.request.Request(
                     f"{FLARESOLVERR_URL}/v1",
@@ -468,7 +468,7 @@ def search_annas_archive(query, max_retries=3, retry_delay=2):
                     headers={"Content-Type": "application/json"}
                 )
                 try:
-                    with urllib.request.urlopen(req_proxy, timeout=35, context=ctx) as response:
+                    with urllib.request.urlopen(req_proxy, timeout=75, context=ctx) as response:
                         res_data = json.loads(response.read().decode("utf-8"))
                         if res_data.get("status") == "ok":
                             byparr_html = res_data.get("solution", {}).get("response", "")
