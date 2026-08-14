@@ -1,7 +1,7 @@
 services:
   flaresolverr:
     container_name: flaresolverr
-    image: ghcr.io/thephaseless/byparr:2.1.0@sha256:01a46a2865d9a6db5eb8ead04ec0dd33b8fbe233e8565ae70b50d4cc0af4cfb0
+    image: ghcr.io/thephaseless/byparr:3.0.3
     #image: ghcr.io/flaresolverr/flaresolverr:v3.5.0@sha256:139dfee1c6f89249c8d665d1333a42e8ec74ec0a86bc6bb1c8461e10d3a66a47
     shm_size: 2gb
     init: true
