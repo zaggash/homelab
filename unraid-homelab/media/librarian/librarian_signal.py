@@ -11,6 +11,8 @@ import urllib.parse
 import html as html_lib
 import ssl
 import unicodedata
+import difflib
+from concurrent.futures import ThreadPoolExecutor
 
 # Configure Logging
 logging.basicConfig(
@@ -26,7 +28,7 @@ SIGNAL_URL = os.getenv("SIGNAL_URL", "http://signal-api:8080").rstrip("/")
 BOT_NUMBER = os.getenv("BOT_NUMBER", "")
 AUTHORIZED_NUMBERS_STR = os.getenv("AUTHORIZED_NUMBERS", "")
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
-GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-1.5-flash")
+GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
 IMPORT_DIR = os.getenv("IMPORT_DIR", "/books_import")
 POLL_INTERVAL = int(os.getenv("POLL_INTERVAL", "10"))
 AUTHORIZED_GROUP = os.getenv("AUTHORIZED_GROUP", "").strip()
@@ -35,6 +37,7 @@ GRIMMORY_USER = os.getenv("GRIMMORY_USER", "").strip()
 GRIMMORY_PASSWORD = os.getenv("GRIMMORY_PASSWORD", "").strip()
 GRIMMORY_AUTH_HEADER = os.getenv("GRIMMORY_AUTH_HEADER", "Remote-User").strip()
 FLARESOLVERR_URL = os.getenv("FLARESOLVERR_URL", "").rstrip("/")
+HEARTBEAT_FILE = "/tmp/librarian_heartbeat"
 
 # Parse authorized numbers list
 AUTHORIZED_NUMBERS = [num.strip() for num in AUTHORIZED_NUMBERS_STR.split(",") if num.strip()]
@@ -50,6 +53,9 @@ if AUTHORIZED_GROUP:
     logging.info(f"Group restriction active: Only responding in group matching '{AUTHORIZED_GROUP}'")
 
 os.makedirs(IMPORT_DIR, exist_ok=True)
+
+# Thread pool for asynchronous task execution (prevents blocking the polling loop)
+task_executor = ThreadPoolExecutor(max_workers=2, thread_name_prefix="librarian_worker")
 
 # -----------------------------------------------------------------------------
 # HELPER FOR DIRECT SIGNAL-API REQUESTS
@@ -116,7 +122,6 @@ def receive_signal_messages():
     """
     Retrieves and clears unread messages from the Signal network.
     """
-    # Timeout is set to 5 seconds to prevent holding the thread indefinitely
     endpoint = f"/v1/receive/{BOT_NUMBER}?timeout=5"
     return make_signal_request(endpoint, method="GET")
 
@@ -146,15 +151,12 @@ def resolve_group_name(group_id):
     endpoint = f"/v1/groups/{BOT_NUMBER}"
     groups_list = make_signal_request(endpoint, method="GET")
     
-    logging.info(f"Signal API /v1/groups response: {groups_list}")
-    
     if groups_list and isinstance(groups_list, list):
         for g in groups_list:
             g_id = g.get("id")
             g_internal = g.get("internal_id")
             g_name = g.get("name")
             
-            # Cache using all possible representations to ensure robust matching
             if g_id:
                 GROUP_NAME_CACHE[g_id] = g_name
                 if g_id.startswith("group."):
@@ -166,19 +168,15 @@ def resolve_group_name(group_id):
                 if g_id:
                     GROUP_ID_API_FORMAT_CACHE[g_internal] = g_id
                 
-    # Fallback to direct group query if still not resolved
     if group_id not in GROUP_NAME_CACHE:
         logging.info(f"Attempting direct single group resolution for '{group_id}'...")
-        # Ensure ID starts with "group." prefix for the API query
         api_group_id = group_id if group_id.startswith("group.") else f"group.{group_id}"
         single_endpoint = f"/v1/groups/{BOT_NUMBER}/{api_group_id}"
         g_details = make_signal_request(single_endpoint, method="GET")
-        logging.info(f"Signal API single group response: {g_details}")
         if g_details and isinstance(g_details, dict):
             g_name = g_details.get("name")
             if g_name:
                 GROUP_NAME_CACHE[group_id] = g_name
-                # Cache the API group ID format too
                 GROUP_NAME_CACHE[api_group_id] = g_name
                 GROUP_ID_API_FORMAT_CACHE[group_id] = api_group_id
                 
@@ -188,21 +186,16 @@ def resolve_group_name(group_id):
 # GRIMMORY INTEGRATION (LIBRARY & BOOKDROP QUEUE VERIFICATION)
 # -----------------------------------------------------------------------------
 _GRIMMORY_JWT_CACHE = None
+_GRIMMORY_BOOKS_CACHE = {"data": None, "timestamp": 0}
 
 def get_grimmory_jwt():
     """
-    Obtains a valid JWT token from Grimmory.
-    Supports:
-    1. Local Auth (if GRIMMORY_USER and GRIMMORY_PASSWORD are provided).
-       Calls POST /api/v1/auth/login with username and password.
-    2. Dynamic Remote Auth / SSO (if GRIMMORY_USER is provided and GRIMMORY_PASSWORD is not).
-       Calls GET /api/v1/auth/remote with Remote-User header.
+    Obtains a valid JWT token from Grimmory using local auth or Remote-User header.
     """
     global _GRIMMORY_JWT_CACHE
     if not GRIMMORY_URL or not GRIMMORY_USER:
         return None
         
-    # If we have a cached JWT, return it
     if _GRIMMORY_JWT_CACHE:
         return _GRIMMORY_JWT_CACHE
         
@@ -214,9 +207,7 @@ def get_grimmory_jwt():
             "username": GRIMMORY_USER,
             "password": GRIMMORY_PASSWORD
         }
-        headers = {
-            "Content-Type": "application/json"
-        }
+        headers = {"Content-Type": "application/json"}
         data_bytes = json.dumps(payload).encode("utf-8")
         req = urllib.request.Request(url, data=data_bytes, headers=headers, method="POST")
         try:
@@ -234,15 +225,11 @@ def get_grimmory_jwt():
     if GRIMMORY_USER and not GRIMMORY_PASSWORD:
         logging.info(f"Authenticating dynamically with Grimmory Remote Auth for user '{GRIMMORY_USER}'...")
         url = f"{GRIMMORY_URL}/api/v1/auth/remote"
-        
-        # Pass standard Remote-User header
         headers = {
             "Remote-User": GRIMMORY_USER,
             "Remote-Name": GRIMMORY_USER,
             "Remote-Email": f"{GRIMMORY_USER}@local.internal"
         }
-        
-        # Also support custom header name if configured
         if GRIMMORY_AUTH_HEADER and GRIMMORY_AUTH_HEADER != "Authorization":
             headers[GRIMMORY_AUTH_HEADER] = GRIMMORY_USER
             
@@ -291,15 +278,29 @@ def make_grimmory_request(endpoint, retry_on_401=True):
 def is_book_already_present(query):
     """
     Checks if the book is already in Grimmory library or in the bookdrop queue.
-    Supports robust comparisons by checking both title-only and combined 'Author - Title' strings.
+    Uses paginated queries (?size=1000) and short-lived caching.
     """
+    global _GRIMMORY_BOOKS_CACHE
     if not GRIMMORY_URL or not GRIMMORY_USER:
         return False, None
         
     logging.info(f"Checking if '{query}' is already present in Grimmory (library or bookdrop)...")
+    now = time.time()
     
-    # 1. Check Library Books (GET /api/v1/books)
-    books = make_grimmory_request("/api/v1/books")
+    # 1. Check Library Books (GET /api/v1/books?size=1000)
+    books = None
+    if _GRIMMORY_BOOKS_CACHE["data"] and (now - _GRIMMORY_BOOKS_CACHE["timestamp"] < 60):
+        books = _GRIMMORY_BOOKS_CACHE["data"]
+    else:
+        raw_books = make_grimmory_request("/api/v1/books?size=1000")
+        if isinstance(raw_books, list):
+            books = raw_books
+        elif isinstance(raw_books, dict):
+            books = raw_books.get("content", [])
+        if books is not None:
+            _GRIMMORY_BOOKS_CACHE["data"] = books
+            _GRIMMORY_BOOKS_CACHE["timestamp"] = now
+
     if books and isinstance(books, list):
         for b in books:
             title = b.get("title")
@@ -307,7 +308,6 @@ def is_book_already_present(query):
             meta_title = metadata.get("title")
             authors = metadata.get("authors") or []
             
-            # Gather all comparison targets (both title-only and combined "Author - Title")
             targets = []
             for t in [title, meta_title]:
                 if t:
@@ -322,8 +322,8 @@ def is_book_already_present(query):
                 if similarity >= 0.70:
                     return True, f"Déjà présent dans la bibliothèque : '{t}'"
                         
-    # 2. Check Bookdrop Queue (GET /api/v1/bookdrop/files)
-    bookdrop_data = make_grimmory_request("/api/v1/bookdrop/files")
+    # 2. Check Bookdrop Queue (GET /api/v1/bookdrop/files?size=1000)
+    bookdrop_data = make_grimmory_request("/api/v1/bookdrop/files?size=1000")
     if bookdrop_data and isinstance(bookdrop_data, dict):
         files = bookdrop_data.get("content", [])
         if isinstance(files, list):
@@ -332,17 +332,14 @@ def is_book_already_present(query):
                 original_metadata = f.get("originalMetadata") or {}
                 fetched_metadata = f.get("fetchedMetadata") or {}
                 
-                # Try getting titles and authors from both original and fetched metadata
                 meta_title_orig = original_metadata.get("title")
                 meta_title_fetch = fetched_metadata.get("title")
                 
                 authors_orig = original_metadata.get("authors") or []
                 authors_fetch = fetched_metadata.get("authors") or []
                 
-                # Clean extension for name match
                 file_name_clean = re.sub(r'\.[a-zA-Z0-9]+$', '', file_name) if file_name else ""
                 
-                # Build unique comparison list
                 titles = [t for t in [file_name_clean, meta_title_orig, meta_title_fetch] if t]
                 authors = []
                 for a_list in [authors_orig, authors_fetch]:
@@ -366,22 +363,29 @@ def is_book_already_present(query):
     return False, None
 
 # -----------------------------------------------------------------------------
-# GEMINI OCR (RE-IMPLEMENTED USING RAW HTTP TO MINIMIZE DEPENDENCIES)
+# GEMINI OCR (STRUCTURED JSON OUTPUT & HEADER AUTHENTICATION)
 # -----------------------------------------------------------------------------
 def extract_book_details_from_cover(image_bytes):
     """
-    Sends the cover photo to Gemini to extract Title and Author.
+    Sends the cover photo to Gemini to extract Title and Author using Structured JSON.
+    Uses x-goog-api-key header authentication to avoid leaking secrets in logs/URLs.
     """
-    logging.info("Sending cover photo to Gemini for OCR analysis...")
+    if not GEMINI_API_KEY:
+        logging.error("GEMINI_API_KEY is not configured!")
+        return None
+
+    logging.info(f"Sending cover photo to Gemini ({GEMINI_MODEL}) for structured OCR analysis...")
     image_b64 = base64.b64encode(image_bytes).decode("utf-8")
     
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/{GEMINI_MODEL}:generateContent?key={GEMINI_API_KEY}"
-    headers = {"Content-Type": "application/json"}
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/{GEMINI_MODEL}:generateContent"
+    headers = {
+        "Content-Type": "application/json",
+        "x-goog-api-key": GEMINI_API_KEY
+    }
     
     prompt_text = (
-        "Tu es un bibliothécaire expert. Analyse la couverture de ce livre et renvoie UNIQUEMENT "
-        "l'auteur et le titre sous le format 'Auteur - Titre' (par exemple: 'Clara Dupont-Monod - S'adapter'). "
-        "Ne rajoute aucune autre phrase, ni salutation, ni markdown, ni explication."
+        "Tu es un bibliothécaire expert. Analyse avec précision la couverture de ce livre "
+        "pour identifier l'auteur principal et le titre exact. Remplis le schéma JSON fourni."
     )
     
     payload = {
@@ -397,7 +401,18 @@ def extract_book_details_from_cover(image_bytes):
                     "text": prompt_text
                 }
             ]
-        }]
+        }],
+        "generationConfig": {
+            "responseMimeType": "application/json",
+            "responseSchema": {
+                "type": "OBJECT",
+                "properties": {
+                    "author": {"type": "STRING"},
+                    "title": {"type": "STRING"}
+                },
+                "required": ["title"]
+            }
+        }
     }
     
     req = urllib.request.Request(url, data=json.dumps(payload).encode("utf-8"), headers=headers)
@@ -405,37 +420,67 @@ def extract_book_details_from_cover(image_bytes):
         with urllib.request.urlopen(req, timeout=30) as response:
             res = json.loads(response.read().decode("utf-8"))
             
-        text = res["candidates"][0]["content"]["parts"][0]["text"].strip()
-        # Strip common formatting leaks
-        text = re.sub(r'[*`"]', '', text).strip()
-        logging.info(f"Gemini OCR result: '{text}'")
-        return text
+        raw_text = res["candidates"][0]["content"]["parts"][0]["text"].strip()
+        parsed = json.loads(raw_text)
+        
+        author = parsed.get("author", "").strip()
+        title = parsed.get("title", "").strip()
+        
+        if author and title:
+            result = f"{author} - {title}"
+        else:
+            result = title or author
+            
+        logging.info(f"Gemini Structured OCR result: '{result}' (Author: '{author}', Title: '{title}')")
+        return result
     except Exception as e:
-        logging.error(f"Gemini API request failed: {e}")
-        return None
+        logging.error(f"Gemini API structured request failed: {e}")
+        # Fallback to plain prompt if structured output isn't supported on custom model endpoint
+        try:
+            logging.info("Attempting fallback non-schema prompt to Gemini...")
+            fallback_payload = {
+                "contents": [{
+                    "parts": [
+                        {
+                            "inlineData": {
+                                "mimeType": "image/jpeg",
+                                "data": image_b64
+                            }
+                        },
+                        {
+                            "text": "Analyse la couverture de ce livre et renvoie UNIQUEMENT 'Auteur - Titre' sans markdown."
+                        }
+                    ]
+                }]
+            }
+            req_fb = urllib.request.Request(url, data=json.dumps(fallback_payload).encode("utf-8"), headers=headers)
+            with urllib.request.urlopen(req_fb, timeout=30) as response:
+                res_fb = json.loads(response.read().decode("utf-8"))
+            text = res_fb["candidates"][0]["content"]["parts"][0]["text"].strip()
+            text = re.sub(r'[*`"]', '', text).strip()
+            logging.info(f"Gemini fallback OCR result: '{text}'")
+            return text
+        except Exception as fb_err:
+            logging.error(f"Gemini fallback OCR failed: {fb_err}")
+            return None
 
 # -----------------------------------------------------------------------------
-# LIBGEN.LI SEARCH FALLBACK SCRAPER
+# LIBGEN.LI SEARCH SCRAPER
 # -----------------------------------------------------------------------------
 def search_libgen_li(query):
     """
     Searches Libgen.li directly using its index and JSON API endpoint.
-    Tries the full query first, and if 0 results, tries simplified fallback terms (e.g. title only or key words).
-    Bypasses WAF protections on Anna's Archive and returns structured book results.
+    Tries the full query first, then candidate decompositions.
     """
     def generate_query_candidates(raw_q):
         candidates = [raw_q]
-        # If query has 'Author - Title' format, extract title and author separately
         if '-' in raw_q:
             parts = [p.strip() for p in raw_q.split('-') if p.strip()]
             for p in parts:
                 if len(p) > 2 and p not in candidates:
                     candidates.append(p)
                     
-        # Extract main words for short search
-        norm = raw_q.lower().replace('œ', 'oe').replace('æ', 'ae')
-        norm = unicodedata.normalize('NFD', norm)
-        norm = ''.join(c for c in norm if unicodedata.category(c) != 'Mn')
+        norm = normalize_text(raw_q)
         stop_words = {
             'le', 'la', 'les', 'un', 'une', 'des', 'du', 'de', 'et', 'en', 'au', 'aux', 
             'pour', 'dans', 'sur', 'par', 'avec', 'sans', 'sous', 'the', 'of', 'and', 'in', 'on', 'with', 'for',
@@ -450,7 +495,7 @@ def search_libgen_li(query):
 
     query_list = generate_query_candidates(query)
     headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36"
     }
 
     for target_q in query_list:
@@ -490,7 +535,6 @@ def search_libgen_li(query):
                 size_kb = float(filesize) / 1024.0 if filesize else 0
                 size_str = f"{size_kb / 1024.0:.1f}MB" if size_kb > 1024 else f"{size_kb:.0f}KB"
                 
-                # Detect French language indicator in locator path or metadata
                 is_french_locator = "[fr]" in locator.lower() or "french" in locator.lower() or " romance)" in locator.lower()
                 lang = "fr" if is_french_locator else "unknown"
                 
@@ -514,12 +558,11 @@ def search_libgen_li(query):
     return []
 
 # -----------------------------------------------------------------------------
-# ANNA'S ARCHIVE SEARCH Scraper (BeautifulSoup-independent)
+# ANNA'S ARCHIVE SEARCH Scraper
 # -----------------------------------------------------------------------------
 def search_annas_archive(query, max_retries=1, retry_delay=2):
     """
-    Searches Anna's Archive across active domains using query candidates and parses metadata using regex.
-    First attempts direct/Byparr on Anna's Archive, then falls back to direct Libgen.li.
+    Searches Anna's Archive across active domains using query candidates.
     """
     def generate_query_candidates(raw_q):
         candidates = [raw_q]
@@ -528,9 +571,7 @@ def search_annas_archive(query, max_retries=1, retry_delay=2):
             for p in parts:
                 if len(p) > 2 and p not in candidates:
                     candidates.append(p)
-        norm = raw_q.lower().replace('œ', 'oe').replace('æ', 'ae')
-        norm = unicodedata.normalize('NFD', norm)
-        norm = ''.join(c for c in norm if unicodedata.category(c) != 'Mn')
+        norm = normalize_text(raw_q)
         stop_words = {
             'le', 'la', 'les', 'un', 'une', 'des', 'du', 'de', 'et', 'en', 'au', 'aux', 
             'pour', 'dans', 'sur', 'par', 'avec', 'sans', 'sous', 'the', 'of', 'and', 'in', 'on', 'with', 'for',
@@ -544,9 +585,9 @@ def search_annas_archive(query, max_retries=1, retry_delay=2):
         return candidates
 
     query_candidates = generate_query_candidates(query)
-    domains = ["annas-archive.gl", "annas-archive.pk", "annas-archive.gd"]
+    domains = ["annas-archive.gl", "annas-archive.pk", "annas-archive.gd", "annas-archive.li", "annas-archive.se"]
     headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36"
     }
     ctx = ssl._create_unverified_context()
 
@@ -633,10 +674,6 @@ def search_annas_archive(query, max_retries=1, retry_delay=2):
                 dot_match = re.search(r'([^|·]+·\s*[^|·]+\s*·\s*[^|·]+\s*·\s*[^|·]+)', clean_text)
                 if dot_match:
                     meta_line = dot_match.group(1).strip()
-                else:
-                    dot_match = re.search(r'([^|·]+·\s*[^|·]+\s*·\s*[^|·]+)', clean_text)
-                    if dot_match:
-                        meta_line = dot_match.group(1).strip()
 
                 meta_line = html_lib.unescape(meta_line)
                 parts = [p.strip() for p in meta_line.split("·")] if meta_line != "Unknown" else []
@@ -669,15 +706,14 @@ def search_annas_archive(query, max_retries=1, retry_delay=2):
 # -----------------------------------------------------------------------------
 def download_libgen_book(md5_hash, dest_filename):
     """
-    Downloads a book directly from Libgen.li using a session cookie jar.
+    Downloads a book directly from Libgen.li using a session cookie jar and chunked stream.
     """
     ads_url = f"https://libgen.li/ads.php?md5={md5_hash}"
     
-    # Establish cookie processor for session binding
     cookie_jar = urllib.request.HTTPCookieProcessor()
     opener = urllib.request.build_opener(cookie_jar)
     opener.addheaders = [
-        ("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36"),
+        ("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36"),
         ("Referer", ads_url)
     ]
     
@@ -698,31 +734,41 @@ def download_libgen_book(md5_hash, dest_filename):
         
         with opener.open(get_url, timeout=180) as download_response:
             with open(dest_filename, "wb") as f_out:
-                f_out.write(download_response.read())
+                while True:
+                    chunk = download_response.read(65536)
+                    if not chunk:
+                        break
+                    f_out.write(chunk)
                 
         actual_size = os.path.getsize(dest_filename)
+        if actual_size < 1024:
+            logging.error(f"Downloaded file is too small ({actual_size} bytes). Likely an error page.")
+            if os.path.exists(dest_filename):
+                os.remove(dest_filename)
+            return False
+
         logging.info(f"Book saved successfully: {dest_filename} ({actual_size} bytes)")
         return True
     except Exception as e:
         logging.error(f"Libgen.li session download failed: {e}")
+        if os.path.exists(dest_filename):
+            try:
+                os.remove(dest_filename)
+            except Exception:
+                pass
         return False
 
 # -----------------------------------------------------------------------------
-# FLARESOLVERR BYPASS FOR ANNA'S ARCHIVE DIRECT SLOW LINK
-# -----------------------------------------------------------------------------
-# -----------------------------------------------------------------------------
-# WELIB BYPASS FOR CLOUDFLARE AND SLOW LINK DOWNLOAD
+# BYPARR / FLARESOLVERR SLOW LINK DOWNLOADER
 # -----------------------------------------------------------------------------
 def download_annas_slow_link(md5_hash, dest_filename):
     """
-    Uses FlareSolverr to bypass DDoS-Guard on Anna's Archive, resolve
-    the 'no waitlist' (Option #5/6/7/8) slow download link, and download the book.
-    Attempts up to 3 options (0/4, 0/5, 0/6) sequentially.
+    Uses Byparr / FlareSolverr to bypass challenge on Anna's Archive slow download page.
     """
     if not FLARESOLVERR_URL:
         return False
         
-    options = ["0/4", "0/5", "0/6"]
+    options = ["0/4", "0/5", "0/6", "0/0", "0/1", "0/2"]
     ctx = ssl._create_unverified_context()
     
     for idx, opt in enumerate(options):
@@ -732,7 +778,7 @@ def download_annas_slow_link(md5_hash, dest_filename):
         payload = {
             "cmd": "request.get",
             "url": target_url,
-            "maxTimeout": 30000  # 30 seconds for fast fallback
+            "maxTimeout": 30000
         }
         
         headers = {"Content-Type": "application/json"}
@@ -743,7 +789,6 @@ def download_annas_slow_link(md5_hash, dest_filename):
         )
         
         try:
-            # urlopen timeout set to 35 to allow 30s FlareSolverr maxTimeout + network overhead
             with urllib.request.urlopen(req, timeout=35, context=ctx) as response:
                 res_data = json.loads(response.read().decode("utf-8"))
                 
@@ -756,8 +801,6 @@ def download_annas_slow_link(md5_hash, dest_filename):
             cookies = solution.get("cookies", [])
             user_agent = solution.get("userAgent", "")
             
-            # Search for any URL on the page that contains the MD5 hash (or its first 12 characters)
-            # This is 100% robust against any HTML/JS changes (handles href, plain text, clipboard JS, etc.)
             urls = re.findall(r'(https?://[^\s\"\'\)\(<>&]+)', html_content)
             valid_urls = []
             for u in urls:
@@ -771,14 +814,12 @@ def download_annas_slow_link(md5_hash, dest_filename):
                 
             captured_url = valid_urls[0]
             
-            # If the URL is relative, construct the absolute URL using the target_url origin
             if captured_url.startswith("/"):
                 parsed_origin = urllib.parse.urlparse(target_url)
                 resolved_url = f"{parsed_origin.scheme}://{parsed_origin.netloc}{captured_url}"
             else:
                 resolved_url = captured_url
                 
-            # URL encode spaces/special characters in the URL path (preserving slashes)
             parsed_url = urllib.parse.urlparse(resolved_url)
             encoded_path = urllib.parse.quote(parsed_url.path, safe="/")
             resolved_url = urllib.parse.urlunparse((
@@ -792,7 +833,6 @@ def download_annas_slow_link(md5_hash, dest_filename):
                 
             logging.info(f"Option #{idx+1} ({opt}) resolved download URL: {resolved_url}")
             
-            # Prepare request using solved cookies and user-agent
             cookie_header = "; ".join([f"{c['name']}={c['value']}" for c in cookies])
             dl_headers = {
                 "User-Agent": user_agent,
@@ -802,11 +842,21 @@ def download_annas_slow_link(md5_hash, dest_filename):
                 dl_headers["Cookie"] = cookie_header
                 
             dl_req = urllib.request.Request(resolved_url, headers=dl_headers)
-            with urllib.request.urlopen(dl_req, timeout=60, context=ctx) as dl_response:
+            with urllib.request.urlopen(dl_req, timeout=90, context=ctx) as dl_response:
                 with open(dest_filename, "wb") as f_out:
-                    f_out.write(dl_response.read())
+                    while True:
+                        chunk = dl_response.read(65536)
+                        if not chunk:
+                            break
+                        f_out.write(chunk)
                     
             actual_size = os.path.getsize(dest_filename)
+            if actual_size < 1024:
+                logging.warning(f"File too small ({actual_size} bytes). Removing...")
+                if os.path.exists(dest_filename):
+                    os.remove(dest_filename)
+                continue
+
             logging.info(f"Book saved successfully via FlareSolverr Option #{idx+1} ({opt}): {dest_filename} ({actual_size} bytes)")
             return True
             
@@ -819,11 +869,11 @@ def download_annas_slow_link(md5_hash, dest_filename):
                     pass
             continue
             
-    logging.error(f"All {len(options)} FlareSolverr slow download options failed for MD5: {md5_hash}.")
+    logging.error(f"All slow download options failed for MD5: {md5_hash}.")
     return False
 
 # -----------------------------------------------------------------------------
-# HELPER TO PARSE FILE SIZE FOR SORTING (e.g. "2.4MB" -> float(2400.0) KB)
+# HELPER TO PARSE FILE SIZE FOR SORTING
 # -----------------------------------------------------------------------------
 def parse_size_to_kb(size_str):
     """
@@ -847,25 +897,24 @@ def normalize_text(text):
     return ''.join(c for c in text if unicodedata.category(c) != 'Mn')
 
 # -----------------------------------------------------------------------------
-# JACCARD STRING SIMILARITY FOR ROBUST TITLE RELEVANCE FILTERING
+# HYBRID SIMILARITY FOR TITLE RELEVANCE (CONTAINMENT + JACCARD + SEQUENCE MATCH)
 # -----------------------------------------------------------------------------
 def calculate_title_similarity(query, title):
     """
-    Calculates a similarity score (0.0 to 1.0) between query and title
-    based on word overlap, ignoring case, accents, ligatures, punctuation, and common short stop words.
+    Calculates a hybrid similarity score (0.0 to 1.0) combining token containment,
+    Jaccard token overlap, and Levenshtein/difflib ratio.
+    Prevents false negatives on short single-word queries against rich metadata titles.
     """
     def tokenize(text):
         norm = normalize_text(text)
         text_norm = re.sub(r'[^\w\s]', ' ', norm)
-        # Filter out short or common noise words in French and English
         stop_words = {
             'le', 'la', 'les', 'un', 'une', 'des', 'du', 'de', 'et', 'en', 'au', 'aux', 
             'pour', 'dans', 'sur', 'par', 'avec', 'sans', 'sous', 'the', 'of', 'and', 'in', 'on', 'with', 'for',
             'fr', 'french', 'epub', 'edition', 'tome', 'vol', 'volume', 'ebook', 'livre', 
             'pdf', 'complet', 'gratuit', 'gratuits', 'version', 'integrale'
         }
-        words = [w for w in text_norm.split() if len(w) > 1 and w not in stop_words]
-        return set(words)
+        return set(w for w in text_norm.split() if len(w) > 1 and w not in stop_words)
         
     query_tokens = tokenize(query)
     title_tokens = tokenize(title)
@@ -876,16 +925,26 @@ def calculate_title_similarity(query, title):
     intersection = query_tokens.intersection(title_tokens)
     union = query_tokens.union(title_tokens)
     
-    # Standard Jaccard similarity
-    return len(intersection) / len(union) if union else 0.0
+    containment = len(intersection) / len(query_tokens)
+    jaccard = len(intersection) / len(union) if union else 0.0
+    
+    norm_q = " ".join(sorted(query_tokens))
+    norm_t = " ".join(sorted(title_tokens))
+    seq_ratio = difflib.SequenceMatcher(None, norm_q, norm_t).ratio()
+    
+    # If all query words are contained in the title, boost score to high confidence
+    if containment == 1.0:
+        return max(0.85, 0.5 * containment + 0.3 * jaccard + 0.2 * seq_ratio)
+        
+    return 0.5 * containment + 0.3 * jaccard + 0.2 * seq_ratio
 
 # -----------------------------------------------------------------------------
 # MAIN BOOK RETRIEVAL PIPELINE
 # -----------------------------------------------------------------------------
 def process_book_request(query):
     """
-    Takes a query, searches Anna's Archive, filters French EPUBs,
-    ranks them by title relevance, and downloads the smallest highly relevant file.
+    Takes a query, searches Libgen & Anna's Archive, filters French EPUBs,
+    ranks them by title relevance, and downloads the best match.
     """
     logging.info(f"Starting book search for query: '{query}'")
     
@@ -894,7 +953,7 @@ def process_book_request(query):
     if present:
         return None, f"📚 {reason}\nLa recherche a été annulée."
     
-    # 1. Primary search: Libgen.li direct JSON API (fast, no DDoS-Guard/hCaptcha)
+    # 1. Primary search: Libgen.li direct JSON API (fast, no DDoS-Guard)
     results = search_libgen_li(query)
     
     # 2. Secondary fallback search: Anna's Archive (if Libgen.li returns no results)
@@ -905,18 +964,16 @@ def process_book_request(query):
     if not results:
         return None, "Désolé, je n'ai trouvé aucun résultat pour cette recherche."
         
-    # 2. Filter for French and EPUB format, and compute title similarity scores
+    # 3. Filter for French and EPUB format, and compute similarity scores
     french_epubs = []
     for r in results:
         lang_lower = r["lang"].lower()
         format_lower = r["format"].lower()
         
-        # Check language matches French / fr (allow 'unknown' as search URL is already filtered with lang=fr&ext=epub)
         is_french = "french" in lang_lower or "fr" in lang_lower or "[fr]" in lang_lower or lang_lower == "unknown"
         is_epub = "epub" in format_lower or format_lower == "unknown"
         
         if is_french and is_epub:
-            # Calculate title similarity score between the query and this result's title
             similarity = calculate_title_similarity(query, r["title"])
             r["similarity"] = similarity
             french_epubs.append(r)
@@ -924,27 +981,20 @@ def process_book_request(query):
     if not french_epubs:
         return None, "J'ai trouvé des résultats mais aucun n'est au format EPUB en français."
         
-    # 3. Two-pass selection to balance relevance and file size:
-    # Pass 1: Find the highest title similarity score in our results
+    # 4. Multi-pass selection
     max_similarity = max(r["similarity"] for r in french_epubs)
-    
-    # Require at least a minimum absolute confidence score (e.g. 0.40) for the best match to avoid downloading random books
-    min_confidence = 0.40
+    min_confidence = 0.35
     if max_similarity < min_confidence:
         logging.warning(f"Max similarity found ({max_similarity:.2f}) is below absolute confidence threshold ({min_confidence:.2f}). Aborting search.")
-        return None, f"Désolé, je n'ai trouvé aucun livre correspondant de manière fiable à ta recherche (la similarité maximale avec les titres trouvés est de {max_similarity:.2f})."
+        return None, f"Désolé, je n'ai trouvé aucun livre correspondant de manière fiable à ta recherche (similarité max : {max_similarity:.2f})."
         
-    # Pass 2: Filter results to keep only those within a close margin (e.g. within 0.15) of the highest score,
-    # and require at least a minimum similarity score (e.g. 0.20) to avoid completely irrelevant matches.
     relevance_threshold = max(max_similarity - 0.15, 0.20)
     candidates = [r for r in french_epubs if r["similarity"] >= relevance_threshold]
     
-    # If no results passed the relevance threshold, cancel the search to avoid downloading completely irrelevant books
     if not candidates:
-        logging.warning(f"No results passed the similarity threshold of {relevance_threshold:.2f} (max similarity found was {max_similarity:.2f}).")
-        return None, f"Désolé, je n'ai trouvé aucun livre correspondant de manière fiable à ta recherche (la similarité maximale avec les titres trouvés est de {max_similarity:.2f})."
+        return None, f"Désolé, je n'ai trouvé aucun livre correspondant de manière fiable à ta recherche."
         
-    # 4. Sort candidates by size (ascending) to get the smallest file of the highly-relevant set
+    # Sort candidates by size (ascending) to prefer standard compact EPUBs
     candidates.sort(key=lambda x: parse_size_to_kb(x["size"]))
     
     # 5. Try downloading candidates sequentially until one succeeds
@@ -956,11 +1006,9 @@ def process_book_request(query):
         
         logging.info(f"Trying Candidate {idx+1}/{len(candidates)}: '{title}' | Similarity: {sim_score:.2f} | Size: {size} | MD5: {md5}")
         
-        # Standardize safe filename
         safe_title = re.sub(r'[/\\?%*:|"<>]', '_', title)
         dest_filename = os.path.join(IMPORT_DIR, f"{safe_title}.epub")
         
-        # Download book
         success = download_libgen_book(md5, dest_filename)
         if not success and FLARESOLVERR_URL:
             success = download_annas_slow_link(md5, dest_filename)
@@ -975,16 +1023,55 @@ def process_book_request(query):
                 except Exception as rm_err:
                     logging.error(f"Failed to remove partial/failed download file {dest_filename}: {rm_err}")
             
-    return None, "Le téléchargement du livre a échoué (tous les candidats ont échoué sur Libgen et Anna's Archive)."
+    return None, "Le téléchargement du livre a échoué (tous les candidats ont échoué)."
+
+# -----------------------------------------------------------------------------
+# ASYNC TASK HANDLER FOR INCOMING REQUESTS
+# -----------------------------------------------------------------------------
+def handle_incoming_request(reply_to, photo_bytes, text_query):
+    """
+    Executes OCR and book search/download in a background worker thread.
+    """
+    try:
+        query = None
+        if photo_bytes:
+            ocr_text = extract_book_details_from_cover(photo_bytes)
+            if ocr_text:
+                query = ocr_text
+                send_signal_message(f"🔍 Titre détecté : '{ocr_text}'. Recherche en cours...", reply_to)
+            else:
+                send_signal_message("⚠️ Désolé, je n'ai pas réussi à lire le titre sur la photo. Peux-tu m'écrire le titre et l'auteur par texte ?", reply_to)
+                return
+        elif text_query:
+            query = text_query
+
+        if query:
+            epub_path, status_msg = process_book_request(query)
+            if epub_path:
+                send_signal_message(f"📥 {status_msg}\nEnvoi du livre en cours...", reply_to)
+                send_signal_message("✨ Voilà ton livre ! Bonne lecture 📖", reply_to, attachment_path=epub_path)
+                logging.info(f"Process complete. Book sent to {reply_to} and saved in {IMPORT_DIR}")
+            else:
+                send_signal_message(f"⚠️ {status_msg}", reply_to)
+    except Exception as e:
+        logging.error(f"Unhandled error in worker task: {e}")
+        send_signal_message("⚠️ Une erreur inattendue est survenue lors du traitement de ta demande.", reply_to)
 
 # -----------------------------------------------------------------------------
 # BOT WORKER LOOP
 # -----------------------------------------------------------------------------
 def run_bot():
-    logging.info(f"Librarian Signal Bot is active. Polling {SIGNAL_URL} every {POLL_INTERVAL}s...")
+    logging.info(f"Librarian Signal Bot is active (Model: {GEMINI_MODEL}). Polling {SIGNAL_URL} every {POLL_INTERVAL}s...")
     
     while True:
         try:
+            # Update heartbeat for container health checks
+            try:
+                with open(HEARTBEAT_FILE, "w") as f:
+                    f.write(str(int(time.time())))
+            except Exception:
+                pass
+
             messages = receive_signal_messages()
             if not messages:
                 time.sleep(POLL_INTERVAL)
@@ -995,7 +1082,6 @@ def run_bot():
                 sender = envelope.get("sourceNumber")
                 data_msg = envelope.get("dataMessage")
                 
-                # Handle sync messages (e.g., "Note to Self" sent from primary mobile device)
                 sync_msg = envelope.get("syncMessage", {})
                 sent_msg = sync_msg.get("sentMessage") if sync_msg else None
                 if sent_msg and sender == BOT_NUMBER:
@@ -1004,29 +1090,20 @@ def run_bot():
                 if not sender or not data_msg:
                     continue
                     
-                # Strict Whitelist Validation for Security
-                # Automatically allow BOT_NUMBER (Note to Self)
                 if sender not in AUTHORIZED_NUMBERS and sender != BOT_NUMBER:
                     logging.warning(f"Blocked unauthorized message from {sender}.")
                     continue
                     
                 logging.info(f"Received message from authorized sender ({sender}).")
                 
-                # Check for cover photo attachments
                 attachments = data_msg.get("attachments", [])
-                
-                # Handle cases where message is explicitly None (e.g. photo sent with no caption)
                 raw_message = data_msg.get("message")
                 text_content = raw_message.strip() if raw_message else ""
                 
-                # Determine if the message comes from a group chat (v1 or v2 format)
                 group_info = data_msg.get("groupInfo") or data_msg.get("groupV2Info") or {}
                 group_id = group_info.get("groupId")
-                
-                # Fetch group name from message, caching it, or resolving dynamically on cache miss
                 group_name = group_info.get("name")
                 if group_id:
-                    # Always resolve to ensure BOTH name cache and API-compatible ID format cache are populated
                     resolved_name = resolve_group_name(group_id)
                     if resolved_name:
                         group_name = resolved_name
@@ -1040,105 +1117,46 @@ def run_bot():
                 else:
                     is_note_to_self = (sender == BOT_NUMBER)
                 
-                # Enforce context isolation: Only respond in group chats OR in Note to Self.
-                # Standard one-on-one DMs from other users are completely ignored to avoid spam.
                 if not (is_group or is_note_to_self):
                     logging.info(f"Ignored message from {sender} (not in a group and not Note to Self).")
                     continue
                 
-                # If a specific authorized group is configured, restrict group messages to that group
                 if is_group and AUTHORIZED_GROUP:
-                    # Match by group ID or group name (case-insensitive)
                     matches_id = (group_id == AUTHORIZED_GROUP)
                     matches_name = (group_name and group_name.strip().lower() == AUTHORIZED_GROUP.lower())
-                    
                     if not (matches_id or matches_name):
                         logging.warning(f"Blocked group message from unauthorized group: '{group_name}' (ID: {group_id}).")
                         continue
                 
-                # Resolve the API-compatible group ID format (starting with "group.") if it exists in cache
                 api_group_id = GROUP_ID_API_FORMAT_CACHE.get(group_id, group_id)
-                # Ensure the prefix "group." is present for sending back to a group ID
                 if is_group and not api_group_id.startswith("group."):
                     api_group_id = f"group.{api_group_id}"
                 
-                # Reply destination: send back to the group if it's a group message, otherwise to DM (Note to Self)
                 reply_to = api_group_id if is_group else sender
                 
-                # Verify trigger prefixes (e.g., !book or !livre) to prevent normal chat/note/group spam.
-                # Prefix is strictly mandatory for normal messages, but optional if there is an image attachment.
                 prefix_pattern = r"^(!book|!livre)\b"
                 has_prefix = bool(re.match(prefix_pattern, text_content, re.IGNORECASE))
                 has_image_attachment = any("image" in att.get("contentType", "") for att in attachments)
                 
                 if not (has_prefix or has_image_attachment):
-                    # Silently ignore normal non-book related messages in chats/groups
                     continue
                 
-                query = None
-                
-                # Handling Cover Photo OCR
-                if attachments:
-                    photo = attachments[0]
-                    content_type = photo.get("contentType", "")
-                    if "image" in content_type:
-                        photo_id = photo.get("id")
-                        send_signal_message(
-                            "📸 J'ai bien reçu la photo de la couverture. Analyse de l'image en cours...", 
-                            reply_to
-                        )
-                        
-                        image_bytes = download_signal_attachment(photo_id)
-                        if image_bytes:
-                            ocr_text = extract_book_details_from_cover(image_bytes)
-                            if ocr_text:
-                                query = ocr_text
-                                send_signal_message(
-                                    f"🔍 Titre détecté : '{ocr_text}'. Recherche en cours...", 
-                                    reply_to
-                                )
-                            else:
-                                send_signal_message(
-                                    "⚠️ Désolé, je n'ai pas réussi à lire le titre sur la photo. Peux-tu m'écrire le titre et l'auteur par texte ?", 
-                                    reply_to
-                                )
-                        else:
-                            send_signal_message(
-                                "⚠️ Erreur lors du téléchargement de la photo depuis l'API Signal.", 
-                                reply_to
-                            )
-                
-                # Handling Text Search Query (only processed if has_prefix is True)
-                elif text_content:
-                    # Extract query by stripping the prefix
-                    query = re.sub(prefix_pattern, "", text_content, flags=re.IGNORECASE).strip()
+                # Fast path: dispatch tasks to thread pool so receive loop never blocks
+                if attachments and has_image_attachment:
+                    photo = next(att for att in attachments if "image" in att.get("contentType", ""))
+                    photo_id = photo.get("id")
+                    send_signal_message("📸 J'ai bien reçu la photo de la couverture. Analyse de l'image en cours...", reply_to)
                     
-                    send_signal_message(
-                        f"🔍 Recherche de '{query}' en cours...", 
-                        reply_to
-                    )
-                    
-                # Run the search & download pipeline
-                if query:
-                    epub_path, status_msg = process_book_request(query)
-                    
-                    if epub_path:
-                        send_signal_message(
-                            f"📥 {status_msg}\nEnvoi du livre en cours...", 
-                            reply_to
-                        )
-                        # Send the file back natively to the user via Signal
-                        send_signal_message(
-                            "✨ Voilà ton livre ! Bonne lecture 📖", 
-                            reply_to, 
-                            attachment_path=epub_path
-                        )
-                        logging.info(f"Process complete. Book sent and saved in {IMPORT_DIR}")
+                    image_bytes = download_signal_attachment(photo_id)
+                    if image_bytes:
+                        task_executor.submit(handle_incoming_request, reply_to, image_bytes, None)
                     else:
-                        send_signal_message(
-                            f"⚠️ {status_msg}", 
-                            reply_to
-                        )
+                        send_signal_message("⚠️ Erreur lors du téléchargement de la photo depuis l'API Signal.", reply_to)
+                
+                elif text_content and has_prefix:
+                    query = re.sub(prefix_pattern, "", text_content, flags=re.IGNORECASE).strip()
+                    send_signal_message(f"🔍 Recherche de '{query}' en cours...", reply_to)
+                    task_executor.submit(handle_incoming_request, reply_to, None, query)
                         
         except Exception as e:
             logging.error(f"Error in bot loop: {e}")
