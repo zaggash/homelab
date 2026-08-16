@@ -101,6 +101,20 @@ storage:
       contents:
         inline: KEYMAP=fr
 
+    - path: /etc/docker/daemon.json
+      mode: 0644
+      contents:
+        inline: |
+          {
+            "log-driver": "json-file",
+            "log-opts": {
+              "max-size": "10m",
+              "max-file": "3",
+              "compress": "true"
+            },
+            "live-restore": true
+          }
+
     - path: /etc/modules-load.d/br_netfilter.conf
       mode: 0644
       contents:
