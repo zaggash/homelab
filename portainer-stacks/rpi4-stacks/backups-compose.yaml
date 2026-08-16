@@ -32,13 +32,14 @@ services:
       BACKUP_CRON_EXPRESSION: "15 0 * * *"
       BACKUP_RETENTION_DAYS: "7"
       BACKUP_PRUNING_PREFIX: "unifi-"
+      BACKUP_EXCLUDE_REGEXP: ""
     volumes:
-      - "unifi_persistent:/backup/unifi/persistent"
-      - "unifi_data:/backup/unifi/data"
-      - "unifi_srv:/backup/unifi/srv"
+      #- "unifi_persistent:/backup/unifi/persistent"
+      #- "unifi_data:/backup/unifi/data"
+      #- "unifi_srv:/backup/unifi/srv"
       - "unifi_var-lib-unifi:/backup/unifi/var/lib/unifi"
-      - "unifi_var-lib-mongodb:/backup/unifi/var/lib/mongodb"
-      - "unifi_etc-rabbitmq-ssl:/backup/unifi/etc/rabbitmq/ssl"
+      #- "unifi_var-lib-mongodb:/backup/unifi/var/lib/mongodb"
+      #- "unifi_etc-rabbitmq-ssl:/backup/unifi/etc/rabbitmq/ssl"
       - "unraid_backups:/archive"
 
 volumes:
