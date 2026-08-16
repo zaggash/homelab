@@ -1,11 +1,10 @@
 import re
 import time
-import json
 import logging
-import urllib.request
-import urllib.error
+from typing import Optional, List, Tuple, Any
 from config import Config
 from core.matching import calculate_title_similarity
+from core.http import json_request
 
 
 class GrimmoryClient:
@@ -14,13 +13,13 @@ class GrimmoryClient:
         self._jwt_cache = None
         self._books_cache = {"data": None, "timestamp": 0}
 
-    def get_jwt(self):
+    def get_jwt(self) -> Optional[str]:
         if not self.config.GRIMMORY_URL or not self.config.GRIMMORY_USER:
             return None
-            
+
         if self._jwt_cache:
             return self._jwt_cache
-            
+
         # Case 1: Local Authentication (Username/Password)
         if self.config.GRIMMORY_USER and self.config.GRIMMORY_PASSWORD:
             logging.info(f"Authenticating with Grimmory Local Auth for user '{self.config.GRIMMORY_USER}'...")
@@ -29,20 +28,14 @@ class GrimmoryClient:
                 "username": self.config.GRIMMORY_USER,
                 "password": self.config.GRIMMORY_PASSWORD
             }
-            headers = {"Content-Type": "application/json"}
-            data_bytes = json.dumps(payload).encode("utf-8")
-            req = urllib.request.Request(url, data=data_bytes, headers=headers, method="POST")
-            try:
-                with urllib.request.urlopen(req, timeout=10) as response:
-                    res_data = json.loads(response.read().decode("utf-8"))
-                    self._jwt_cache = res_data.get("accessToken")
-                    if self._jwt_cache:
-                        logging.info("Grimmory local JWT acquired and cached successfully.")
-                        return self._jwt_cache
-            except Exception as e:
-                logging.error(f"Failed to authenticate with Grimmory Local Auth: {e}")
+            res_data, _ = json_request(url, method="POST", payload=payload, timeout=10)
+            if res_data and isinstance(res_data, dict):
+                self._jwt_cache = res_data.get("accessToken")
+                if self._jwt_cache:
+                    logging.info("Grimmory local JWT acquired and cached successfully.")
+                    return self._jwt_cache
             return None
-            
+
         # Case 2: Remote Auth / SSO (Username only, no Password)
         if self.config.GRIMMORY_USER and not self.config.GRIMMORY_PASSWORD:
             logging.info(f"Authenticating dynamically with Grimmory Remote Auth for user '{self.config.GRIMMORY_USER}'...")
@@ -54,55 +47,54 @@ class GrimmoryClient:
             }
             if self.config.GRIMMORY_AUTH_HEADER and self.config.GRIMMORY_AUTH_HEADER != "Authorization":
                 headers[self.config.GRIMMORY_AUTH_HEADER] = self.config.GRIMMORY_USER
-                
-            req = urllib.request.Request(url, headers=headers)
-            try:
-                with urllib.request.urlopen(req, timeout=10) as response:
-                    res_data = json.loads(response.read().decode("utf-8"))
-                    self._jwt_cache = res_data.get("accessToken")
-                    if self._jwt_cache:
-                        logging.info("Grimmory dynamic JWT acquired and cached successfully.")
-                        return self._jwt_cache
-            except Exception as e:
-                logging.error(f"Failed to fetch dynamic JWT from Grimmory: {e}")
-                
+
+            res_data, _ = json_request(url, method="GET", headers=headers, timeout=10)
+            if res_data and isinstance(res_data, dict):
+                self._jwt_cache = res_data.get("accessToken")
+                if self._jwt_cache:
+                    logging.info("Grimmory dynamic JWT acquired and cached successfully.")
+                    return self._jwt_cache
+
         return None
 
-    def make_request(self, endpoint, retry_on_401=True):
+    def make_request(self, endpoint: str, retry_on_401: bool = True) -> Optional[Any]:
         jwt = self.get_jwt()
         if not jwt:
             return None
-            
-        url = f"{self.config.GRIMMORY_URL}{endpoint}"
-        headers = {
-            "Authorization": f"Bearer {jwt}"
-        }
-        
-        req = urllib.request.Request(url, headers=headers)
-        try:
-            with urllib.request.urlopen(req, timeout=10) as response:
-                return json.loads(response.read().decode("utf-8"))
-        except urllib.error.HTTPError as e:
-            if e.code == 401 and retry_on_401:
-                logging.warning("Grimmory token expired (401). Clearing cache and retrying...")
-                self._jwt_cache = None
-                return self.make_request(endpoint, retry_on_401=False)
-            logging.error(f"Grimmory API HTTP error on GET {endpoint}: {e}")
-            return None
-        except Exception as e:
-            logging.error(f"Grimmory API error on GET {endpoint}: {e}")
-            return None
 
-    def is_book_already_present(self, query):
+        url = f"{self.config.GRIMMORY_URL}{endpoint}"
+        headers = {"Authorization": f"Bearer {jwt}"}
+
+        data, status = json_request(url, method="GET", headers=headers, timeout=10)
+        if status == 401 and retry_on_401:
+            logging.warning("Grimmory token expired (401). Clearing cache and retrying...")
+            self._jwt_cache = None
+            return self.make_request(endpoint, retry_on_401=False)
+
+        return data if isinstance(data, (dict, list)) else None
+
+    @staticmethod
+    def _build_match_targets(title: Optional[str], meta_title: Optional[str], authors: List[str]) -> List[str]:
+        targets = []
+        for t in [title, meta_title]:
+            if t:
+                targets.append(t)
+                for author in authors:
+                    if author:
+                        targets.append(f"{author} - {t}")
+                        targets.append(f"{t} - {author}")
+        return targets
+
+    def is_book_already_present(self, query: str) -> Tuple[bool, Optional[str]]:
         """
         Checks if the book is already in Grimmory library or in the bookdrop queue.
         """
         if not self.config.GRIMMORY_URL or not self.config.GRIMMORY_USER:
             return False, None
-            
+
         logging.info(f"Checking if '{query}' is already present in Grimmory (library or bookdrop)...")
         now = time.time()
-        
+
         # 1. Check Library Books (GET /api/v1/books?size=1000)
         books = None
         if self._books_cache["data"] and (now - self._books_cache["timestamp"] < 60):
@@ -123,21 +115,12 @@ class GrimmoryClient:
                 metadata = b.get("metadata") or {}
                 meta_title = metadata.get("title")
                 authors = metadata.get("authors") or []
-                
-                targets = []
-                for t in [title, meta_title]:
-                    if t:
-                        targets.append(t)
-                        for author in authors:
-                            if author:
-                                targets.append(f"{author} - {t}")
-                                targets.append(f"{t} - {author}")
-                
+
+                targets = self._build_match_targets(title, meta_title, authors)
                 for t in targets:
-                    similarity = calculate_title_similarity(query, t)
-                    if similarity >= 0.70:
+                    if calculate_title_similarity(query, t) >= 0.70:
                         return True, f"Déjà présent dans la bibliothèque : '{t}'"
-                            
+
         # 2. Check Bookdrop Queue (GET /api/v1/bookdrop/files?size=1000)
         bookdrop_data = self.make_request("/api/v1/bookdrop/files?size=1000")
         if bookdrop_data and isinstance(bookdrop_data, dict):
@@ -147,33 +130,19 @@ class GrimmoryClient:
                     file_name = f.get("fileName")
                     original_metadata = f.get("originalMetadata") or {}
                     fetched_metadata = f.get("fetchedMetadata") or {}
-                    
+
                     meta_title_orig = original_metadata.get("title")
                     meta_title_fetch = fetched_metadata.get("title")
-                    
+                    file_name_clean = re.sub(r'\.[a-zA-Z0-9]+$', '', file_name) if file_name else ""
+
                     authors_orig = original_metadata.get("authors") or []
                     authors_fetch = fetched_metadata.get("authors") or []
-                    
-                    file_name_clean = re.sub(r'\.[a-zA-Z0-9]+$', '', file_name) if file_name else ""
-                    
-                    titles = [t for t in [file_name_clean, meta_title_orig, meta_title_fetch] if t]
-                    authors = []
-                    for a_list in [authors_orig, authors_fetch]:
-                        for a in a_list:
-                            if a and a not in authors:
-                                authors.append(a)
-                                
-                    targets = []
-                    for t in titles:
-                        targets.append(t)
-                        for author in authors:
-                            if author:
-                                targets.append(f"{author} - {t}")
-                                targets.append(f"{t} - {author}")
-                                
-                    for t in targets:
-                        similarity = calculate_title_similarity(query, t)
-                        if similarity >= 0.70:
-                            return True, f"Déjà dans la file d'attente bookdrop : '{t}'"
-                                
+                    authors = list(dict.fromkeys([a for a in (authors_orig + authors_fetch) if a]))
+
+                    for t_candidate in [file_name_clean, meta_title_orig, meta_title_fetch]:
+                        targets = self._build_match_targets(t_candidate, None, authors)
+                        for t in targets:
+                            if calculate_title_similarity(query, t) >= 0.70:
+                                return True, f"Déjà dans la file d'attente bookdrop : '{t}'"
+
         return False, None

@@ -1,13 +1,23 @@
 import re
 import difflib
 import unicodedata
+from typing import List, Set
 
 STOP_WORDS = {
-    'le', 'la', 'les', 'un', 'une', 'des', 'du', 'de', 'et', 'en', 'au', 'aux', 
+    'le', 'la', 'les', 'un', 'une', 'des', 'du', 'de', 'et', 'en', 'au', 'aux',
     'pour', 'dans', 'sur', 'par', 'avec', 'sans', 'sous', 'the', 'of', 'and', 'in', 'on', 'with', 'for',
-    'fr', 'french', 'epub', 'edition', 'tome', 'vol', 'volume', 'ebook', 'livre', 
+    'fr', 'french', 'epub', 'edition', 'tome', 'vol', 'volume', 'ebook', 'livre',
     'pdf', 'complet', 'gratuit', 'gratuits', 'version', 'integrale'
 }
+
+
+def mask_identifier(val: str) -> str:
+    """
+    Masks sensitive identifiers like phone numbers for privacy-safe logging.
+    """
+    if not val or len(val) < 8:
+        return "****"
+    return f"{val[:4]}****{val[-4:]}"
 
 
 def normalize_text(text: str) -> str:
@@ -38,7 +48,7 @@ def parse_size_to_kb(size_str: str) -> float:
     return val
 
 
-def tokenize(text: str) -> set:
+def tokenize(text: str) -> Set[str]:
     norm = normalize_text(text)
     text_norm = re.sub(r'[^\w\s]', ' ', norm)
     return set(w for w in text_norm.split() if len(w) > 1 and w not in STOP_WORDS)
@@ -48,34 +58,39 @@ def calculate_title_similarity(query: str, title: str) -> float:
     """
     Calculates a hybrid similarity score (0.0 to 1.0) combining token containment,
     Jaccard token overlap, and Levenshtein/difflib ratio.
-    Prevents false negatives on short single-word queries against rich metadata titles.
+    Prevents false negatives on short single-word queries against rich metadata titles,
+    and queries containing 'Author - Title' against standalone book titles.
     """
     query_tokens = tokenize(query)
     title_tokens = tokenize(title)
-    
+
     if not query_tokens or not title_tokens:
         return 0.0
-        
+
     intersection = query_tokens.intersection(title_tokens)
     union = query_tokens.union(title_tokens)
-    
+
     containment_q = len(intersection) / len(query_tokens)
     containment_t = len(intersection) / len(title_tokens)
     containment = max(containment_q, containment_t)
     jaccard = len(intersection) / len(union) if union else 0.0
-    
+
     norm_q = " ".join(sorted(query_tokens))
     norm_t = " ".join(sorted(title_tokens))
     seq_ratio = difflib.SequenceMatcher(None, norm_q, norm_t).ratio()
-    
-    # If all query words are in title (or vice versa), boost score to high confidence
-    if containment_q == 1.0 or containment_t == 1.0:
+
+    # Case 1: 100% of query tokens found in candidate title (e.g. 'Dune' in 'Cycle de Dune')
+    # Case 2: 100% of title tokens found in multi-token query with substantial overlap (e.g. 'Author - Title')
+    is_exact_query_match = (containment_q == 1.0)
+    is_exact_title_in_query = (containment_t == 1.0 and (containment_q >= 0.5 or len(intersection) >= 2))
+
+    if is_exact_query_match or is_exact_title_in_query:
         return max(0.85, 0.5 * containment + 0.3 * jaccard + 0.2 * seq_ratio)
-        
-    return 0.5 * containment + 0.3 * jaccard + 0.2 * seq_ratio
+
+    return 0.5 * containment_q + 0.35 * jaccard + 0.15 * (jaccard * seq_ratio)
 
 
-def generate_query_candidates(raw_q: str) -> list:
+def generate_query_candidates(raw_q: str) -> List[str]:
     """
     Generates variations of a search query (full, split on hyphen, top keywords).
     """
@@ -85,7 +100,7 @@ def generate_query_candidates(raw_q: str) -> list:
         for p in parts:
             if len(p) > 2 and p not in candidates:
                 candidates.append(p)
-                
+
     norm = normalize_text(raw_q)
     words = [w for w in re.sub(r'[^\w\s]', ' ', norm).split() if len(w) > 1 and w not in STOP_WORDS]
     if len(words) >= 2:
