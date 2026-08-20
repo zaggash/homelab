@@ -26,11 +26,12 @@ class BookPipeline:
         self,
         query: str,
         results: List[BookCandidate],
-        min_confidence: float = 0.35
+        min_confidence: float = 0.55
     ) -> List[BookCandidate]:
         """
         Filters raw candidates for French EPUBs, calculates similarity scores,
-        and returns matching candidates sorted by file size.
+        and returns matching candidates sorted primarily by similarity score (descending),
+        using file size as a secondary tie-breaker.
         """
         french_epubs: List[BookCandidate] = []
         for r in results:
@@ -54,15 +55,18 @@ class BookPipeline:
             )
             return []
 
-        relevance_threshold = max(max_similarity - 0.15, 0.20)
+        # Keep candidates within a tight margin of best match, never going below min_confidence
+        relevance_threshold = max(max_similarity - 0.10, min_confidence)
         candidates = [r for r in french_epubs if r.similarity >= relevance_threshold]
-        candidates.sort(key=lambda x: parse_size_to_kb(x.size))
+        
+        # Sort primarily by similarity score (highest first), with size (smallest first) as tie-breaker
+        candidates.sort(key=lambda x: (-round(x.similarity, 2), parse_size_to_kb(x.size)))
         return candidates
 
     def process_book_request(self, query: str) -> Tuple[Optional[str], str]:
         """
-        Takes a query, searches Libgen & Anna's Archive, filters French EPUBs,
-        ranks them by title relevance, and downloads the best match.
+        Takes a query, searches Anna's Archive first (via Byparr), falls back to Libgen,
+        filters French EPUBs, ranks them by title relevance, and downloads the best match.
         """
         logging.info(f"Starting book search for query: '{query}'")
 
@@ -71,16 +75,19 @@ class BookPipeline:
         if present:
             return None, f"📚 {reason}\nLa recherche a été annulée."
 
-        # 1. Primary search: Libgen.li direct JSON API (fast, no DDoS-Guard)
-        libgen_results: List[BookCandidate] = search_libgen_li(query)
-        candidates = self._filter_and_rank_candidates(query, libgen_results)
+        candidates: List[BookCandidate] = []
 
-        # 2. Secondary fallback search: Anna's Archive
-        # Triggered if Libgen returned 0 results, 0 French EPUBs, or no confident match
-        if not candidates and self.flaresolverr.is_available:
-            logging.info("Libgen.li returned no valid French EPUB candidates. Falling back to Anna's Archive...")
-            annas_results: List[BookCandidate] = search_annas_archive(query, flaresolverr=self.flaresolverr)
+        # 1. Primary search: Anna's Archive via Byparr / FlareSolverr (comprehensive shadow library index)
+        if self.flaresolverr.is_available:
+            logging.info("Searching Anna's Archive (Primary Engine via Byparr)...")
+            annas_results = search_annas_archive(query, flaresolverr=self.flaresolverr)
             candidates = self._filter_and_rank_candidates(query, annas_results)
+
+        # 2. Secondary fallback search: Libgen.li direct JSON API (fast fallback)
+        if not candidates:
+            logging.info("Anna's Archive produced no valid French EPUB candidates. Trying Libgen.li fallback...")
+            libgen_results = search_libgen_li(query)
+            candidates = self._filter_and_rank_candidates(query, libgen_results)
 
         if not candidates:
             return None, "Désolé, je n'ai trouvé aucun livre correspondant de manière fiable en EPUB français."
@@ -97,7 +104,9 @@ class BookPipeline:
             safe_title = re.sub(r'[/\\?%*:|"<>]', '_', title)
             dest_filename = os.path.join(self.config.IMPORT_DIR, f"{safe_title}.epub")
 
+            # Try Libgen direct download key first (instant, no slow wait timer)
             success = download_libgen_book(md5, dest_filename)
+            # If not in Libgen, fall back to Anna's Archive slow download link via Byparr
             if not success and self.flaresolverr.is_available:
                 success = download_annas_slow_link(md5, dest_filename, flaresolverr=self.flaresolverr)
 

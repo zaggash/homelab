@@ -24,25 +24,30 @@ def _parse_annas_html(html: str, connected_domain: str) -> List[BookCandidate]:
 
     results: List[BookCandidate] = []
     for idx, (h, pos) in enumerate(zip(unique_md5s, unique_positions)):
+        start_pos = max(0, pos - 300)
         next_pos = unique_positions[idx + 1] if idx + 1 < len(unique_positions) else pos + 5000
-        snippet = html[pos:next_pos]
 
+        # 1. Title is in the <a> tag surrounding /md5/{h}
+        title_snippet = html[start_pos:next_pos]
         title = "Unknown"
-        title_match = re.search(r'href="/md5/[a-f0-9]{32}"[^>]*class="[^"]*font-semibold[^"]*">([^<]+)</a>', snippet)
-        if title_match:
-            title = html_lib.unescape(title_match.group(1))
+        m = re.search(r'<a[^>]*href=[\"\']/md5/' + h + r'[\"\'][^>]*>(.*?)</a>', title_snippet, re.DOTALL | re.IGNORECASE)
+        if m:
+            clean = re.sub(r'<[^>]+>', ' ', m.group(1))
+            title = ' '.join(html_lib.unescape(clean).split())
         else:
-            a_match = re.search(r'<a href="/md5/[a-f0-9]{32}"[^>]*>([^<]+)</a>', snippet)
-            if a_match:
-                title = html_lib.unescape(a_match.group(1))
-        title = re.sub(r'<[^>]+>', '', title).strip()
+            m2 = re.search(r'/md5/' + h + r'[^>]*>(.*?)</a>', title_snippet, re.DOTALL | re.IGNORECASE)
+            if m2:
+                clean = re.sub(r'<[^>]+>', ' ', m2.group(1))
+                title = ' '.join(html_lib.unescape(clean).split())
 
-        clean_text = re.sub(r'<[^>]+>', ' | ', snippet)
+        # 2. Metadata line is after pos
+        meta_snippet = html[pos:next_pos]
+        clean_text = re.sub(r'<[^>]+>', ' | ', meta_snippet)
         clean_text = re.sub(r'\s*\|\s*', ' | ', clean_text)
         clean_text = re.sub(r'\s+', ' ', clean_text)
 
         meta_line = "Unknown"
-        dot_match = re.search(r'([^|·]+·\s*[^|·]+\s*·\s*[^|·]+\s*·\s*[^|·]+)', clean_text)
+        dot_match = re.search(r'([^|·<\n]+·\s*[^|·<\n]+\s*·\s*[^|·<\n]+\s*·\s*[^|·<\n]+)', clean_text)
         if dot_match:
             meta_line = html_lib.unescape(dot_match.group(1).strip())
 
@@ -93,7 +98,8 @@ def search_annas_archive(
                 # 1. Direct Attempt
                 raw_html, status = json_request(url, timeout=10, ssl_context=get_ssl_context())
                 if raw_html and isinstance(raw_html, str):
-                    if "DDoS-Guard" not in raw_html and "Just a moment..." not in raw_html:
+                    is_direct_challenge = ("<title>DDoS-Guard</title>" in raw_html) or ("<title>Just a moment...</title>" in raw_html) or ("id=\"ddg-l10n-title\"" in raw_html)
+                    if not is_direct_challenge and "/md5/" in raw_html:
                         html = raw_html
                         connected_domain = domain
                         logging.info(f"Successfully fetched results directly from {domain}")
@@ -104,7 +110,8 @@ def search_annas_archive(
                     solution = fs_client.solve(url, timeout_ms=60000)
                     if solution:
                         byparr_html = solution.get("response", "")
-                        if byparr_html and "DDoS-Guard" not in byparr_html:
+                        is_byparr_challenge = ("<title>DDoS-Guard</title>" in byparr_html) or ("<title>Just a moment...</title>" in byparr_html) or ("id=\"ddg-l10n-title\"" in byparr_html)
+                        if byparr_html and not is_byparr_challenge:
                             html = byparr_html
                             connected_domain = domain
                             logging.info(f"Successfully fetched results via Byparr from {domain}")
