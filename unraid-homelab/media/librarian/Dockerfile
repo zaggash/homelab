@@ -1,16 +1,35 @@
-# Use a lightweight, minimal Python Alpine image
-FROM python:3.14-alpine
+# Use Debian-based Python slim image for Camoufox & Playwright compatibility
+FROM python:3.12-slim
 
-# Prevent Python from writing .pyc files and enable unbuffered logging
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 ENV PYTHONPATH=/app/src
+ENV CAMOUFOX_HEADLESS=virtual
 
-# Create a non-root user and group matching standard homelab permissions (UID/GID 1000)
-RUN addgroup -g 1000 librarian && \
-    adduser -u 1000 -G librarian -S -D -h /app librarian
+# Install OS libraries for headless Firefox/Camoufox, Xvfb and font rendering
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    xvfb \
+    libgtk-3-0 \
+    libdbus-glib-1-2 \
+    libx11-xcb1 \
+    libxtst6 \
+    libxrandr2 \
+    fonts-liberation \
+    ca-certificates \
+    curl \
+    $(apt-cache search --names-only '^libasound2(t64)?$' | awk '{print $1}' | head -n 1) \
+    && rm -rf /var/lib/apt/lists/*
 
-# Create directories and set correct ownership
+# Create non-root user matching standard homelab permissions (UID/GID 1000)
+RUN groupadd -g 1000 librarian && \
+    useradd -u 1000 -g librarian -m -d /app librarian
+
+# Install Camoufox and fetch stealth browser binary pre-cached into image
+RUN pip install --no-cache-dir camoufox[geoip] && \
+    camoufox fetch && \
+    chown -R librarian:librarian /app /root/.cache 2>/dev/null || true
+
+# Set up workdir and import directory
 WORKDIR /app
 RUN mkdir -p /books_import && \
     chown -R librarian:librarian /app /books_import

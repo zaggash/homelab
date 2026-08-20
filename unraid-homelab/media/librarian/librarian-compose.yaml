@@ -19,6 +19,14 @@ services:
     pull_policy: build
     depends_on:
       - signal-api
+    shm_size: 1gb
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 2048M
+        reservations:
+          memory: 512M
     environment:
       SIGNAL_URL: http://signal-api:8080
       BOT_NUMBER: ${LIBRARIAN_BOT_NUMBER}
@@ -30,7 +38,6 @@ services:
       GRIMMORY_AUTH_HEADER: ${LIBRARIAN_GRIMMORY_AUTH_HEADER:-Remote-User}
       GEMINI_API_KEY: ${LIBRARIAN_GEMINI_API_KEY}
       GEMINI_MODEL: ${LIBRARIAN_GEMINI_MODEL:-gemini-2.5-flash}
-      FLARESOLVERR_URL: ${LIBRARIAN_FLARESOLVERR_URL:-}
       IMPORT_DIR: /books_import
       POLL_INTERVAL: 10
     volumes:

@@ -23,7 +23,6 @@ class Config:
     GRIMMORY_USER = os.getenv("GRIMMORY_USER", "").strip()
     GRIMMORY_PASSWORD = os.getenv("GRIMMORY_PASSWORD", "").strip()
     GRIMMORY_AUTH_HEADER = os.getenv("GRIMMORY_AUTH_HEADER", "Remote-User").strip()
-    FLARESOLVERR_URL = os.getenv("FLARESOLVERR_URL", "").rstrip("/")
     HEARTBEAT_FILE = os.getenv("HEARTBEAT_FILE", "/tmp/librarian_heartbeat")
 
     AUTHORIZED_NUMBERS = [num.strip() for num in AUTHORIZED_NUMBERS_STR.split(",") if num.strip()]

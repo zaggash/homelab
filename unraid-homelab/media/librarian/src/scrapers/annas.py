@@ -1,13 +1,13 @@
 import re
 import time
+import asyncio
 import logging
 import urllib.parse
 import html as html_lib
-from typing import Optional, List
+from typing import Optional, List, Dict, Tuple
 from core.matching import generate_query_candidates
 from core.models import BookCandidate
-from core.http import json_request, download_stream, get_ssl_context, DEFAULT_USER_AGENT
-from clients.flaresolverr import FlareSolverrClient
+from core.http import download_stream, get_ssl_context, DEFAULT_USER_AGENT
 
 ANNAS_DOMAINS = ["annas-archive.gl", "annas-archive.pk", "annas-archive.gd"]
 
@@ -72,17 +72,47 @@ def _parse_annas_html(html: str, connected_domain: str) -> List[BookCandidate]:
     return results
 
 
+async def _async_fetch_annas_html(url: str, timeout_sec: int = 40) -> str:
+    """
+    Spins up stealth Camoufox browser to pass DDoS-Guard challenge and retrieve search HTML.
+    """
+    try:
+        from camoufox.async_api import AsyncCamoufox
+    except ImportError:
+        try:
+            from invisible_playwright.async_api import InvisiblePlaywright as AsyncCamoufox
+        except ImportError:
+            raise ImportError("Camoufox or InvisiblePlaywright must be installed for Anna's Archive scraping.")
+
+    async with AsyncCamoufox(headless="virtual", humanize=True) as browser:
+        context = await browser.new_context()
+        page = await context.new_page()
+        await page.goto(url, timeout=timeout_sec * 1000)
+
+        # Wait for DDoS-Guard to solve and navigate to search results
+        for _ in range(15):
+            await asyncio.sleep(2)
+            for f in page.frames:
+                if "/md5/" in f.url or "&check=" in f.url:
+                    content = await f.content()
+                    if "/md5/" in content:
+                        return content
+
+            content = await page.content()
+            if "/md5/" in content and "<title>DDoS-Guard</title>" not in content:
+                return content
+
+        return await page.content()
+
+
 def search_annas_archive(
     query: str,
-    flaresolverr: Optional[FlareSolverrClient] = None,
     max_retries: int = 1,
     retry_delay: int = 2
 ) -> List[BookCandidate]:
     """
-    Searches Anna's Archive across active domains using query candidates.
-    Falls back to FlareSolverr / Byparr when challenge is detected.
+    Searches Anna's Archive across active domains using native Camoufox stealth browser.
     """
-    fs_client = flaresolverr or FlareSolverrClient()
     query_candidates = generate_query_candidates(query)
 
     for target_q in query_candidates:
@@ -92,30 +122,19 @@ def search_annas_archive(
 
         for domain in ANNAS_DOMAINS:
             url = f"https://{domain}/search?q={encoded_query}&lang=fr&ext=epub"
-            logging.info(f"Searching Anna's Archive for '{target_q}' on {domain}...")
+            logging.info(f"Searching Anna's Archive for '{target_q}' on {domain} via Camoufox...")
 
             for attempt in range(max_retries):
-                # 1. Direct Attempt
-                raw_html, status = json_request(url, timeout=10, ssl_context=get_ssl_context())
-                if raw_html and isinstance(raw_html, str):
-                    is_direct_challenge = ("<title>DDoS-Guard</title>" in raw_html) or ("<title>Just a moment...</title>" in raw_html) or ("id=\"ddg-l10n-title\"" in raw_html)
-                    if not is_direct_challenge and "/md5/" in raw_html:
+                try:
+                    raw_html = asyncio.run(_async_fetch_annas_html(url))
+                    is_challenge = ("<title>DDoS-Guard</title>" in raw_html) or ("<title>Just a moment...</title>" in raw_html)
+                    if raw_html and not is_challenge and "/md5/" in raw_html:
                         html = raw_html
                         connected_domain = domain
-                        logging.info(f"Successfully fetched results directly from {domain}")
+                        logging.info(f"Successfully fetched results via Camoufox from {domain}")
                         break
-
-                # 2. Byparr / FlareSolverr Fallback Attempt
-                if fs_client.is_available:
-                    solution = fs_client.solve(url, timeout_ms=60000)
-                    if solution:
-                        byparr_html = solution.get("response", "")
-                        is_byparr_challenge = ("<title>DDoS-Guard</title>" in byparr_html) or ("<title>Just a moment...</title>" in byparr_html) or ("id=\"ddg-l10n-title\"" in byparr_html)
-                        if byparr_html and not is_byparr_challenge:
-                            html = byparr_html
-                            connected_domain = domain
-                            logging.info(f"Successfully fetched results via Byparr from {domain}")
-                            break
+                except Exception as e:
+                    logging.warning(f"Camoufox search attempt failed on {domain}: {e}")
 
                 if attempt < max_retries - 1 and not html:
                     time.sleep(retry_delay)
@@ -133,76 +152,103 @@ def search_annas_archive(
     return []
 
 
+async def _async_resolve_slow_link(target_url: str, md5_hash: str, timeout_sec: int = 60) -> Optional[Tuple[str, List[Dict], str]]:
+    """
+    Uses Camoufox to bypass countdown / DDoS-Guard on slow download partner pages.
+    """
+    try:
+        from camoufox.async_api import AsyncCamoufox
+    except ImportError:
+        try:
+            from invisible_playwright.async_api import InvisiblePlaywright as AsyncCamoufox
+        except ImportError:
+            raise ImportError("Camoufox or InvisiblePlaywright must be installed for Anna's Archive scraping.")
+
+    async with AsyncCamoufox(headless="virtual", humanize=True) as browser:
+        context = await browser.new_context()
+        page = await context.new_page()
+        await page.goto(target_url, timeout=timeout_sec * 1000)
+
+        # Wait for partner timer countdown to resolve and expose download link
+        for _ in range(25):
+            await asyncio.sleep(2)
+            for f in page.frames:
+                fc = await f.content()
+                urls = re.findall(r'(https?://[^\s\"\'\)\(<>&]+)', fc)
+                for u in urls:
+                    u_clean = html_lib.unescape(u)
+                    if (md5_hash in u_clean or md5_hash[:12] in u_clean) and "slow_download" not in u_clean:
+                        cookies = await context.cookies()
+                        user_agent = await page.evaluate("navigator.userAgent")
+                        return u_clean, cookies, user_agent
+
+            content = await page.content()
+            urls = re.findall(r'(https?://[^\s\"\'\)\(<>&]+)', content)
+            for u in urls:
+                u_clean = html_lib.unescape(u)
+                if (md5_hash in u_clean or md5_hash[:12] in u_clean) and "slow_download" not in u_clean:
+                    cookies = await context.cookies()
+                    user_agent = await page.evaluate("navigator.userAgent")
+                    return u_clean, cookies, user_agent
+
+    return None
+
+
 def download_annas_slow_link(
     md5_hash: str,
-    dest_filename: str,
-    flaresolverr: Optional[FlareSolverrClient] = None
+    dest_filename: str
 ) -> bool:
     """
-    Uses Byparr / FlareSolverr to bypass challenge on Anna's Archive slow download page.
+    Uses Camoufox stealth browser to bypass challenge on Anna's Archive slow download page.
     """
-    fs_client = flaresolverr or FlareSolverrClient()
-    if not fs_client.is_available:
-        return False
-
     options = ["0/4", "0/5", "0/6", "0/0", "0/1", "0/2"]
 
     for idx, opt in enumerate(options):
-        logging.info(f"Attempting FlareSolverr bypass Option #{idx + 1} ({opt}) for MD5: {md5_hash}...")
+        logging.info(f"Attempting Camoufox bypass Option #{idx + 1} ({opt}) for MD5: {md5_hash}...")
         target_url = f"https://annas-archive.gl/slow_download/{md5_hash}/{opt}"
 
-        solution = fs_client.solve(target_url, timeout_ms=60000)
-        if not solution:
-            continue
+        try:
+            resolved = asyncio.run(_async_resolve_slow_link(target_url, md5_hash))
+            if not resolved:
+                logging.warning(f"Option #{idx + 1} ({opt}) - Could not resolve download URL.")
+                continue
 
-        html_content = solution.get("response", "")
-        cookies = solution.get("cookies", [])
-        user_agent = solution.get("userAgent", DEFAULT_USER_AGENT)
+            captured_url, cookies, user_agent = resolved
 
-        urls = re.findall(r'(https?://[^\s\"\'\)\(<>&]+)', html_content)
-        valid_urls = []
-        for u in urls:
-            u_clean = html_lib.unescape(u)
-            if (md5_hash in u_clean or md5_hash[:12] in u_clean) and u_clean not in valid_urls:
-                valid_urls.append(u_clean)
+            parsed_url = urllib.parse.urlparse(captured_url)
+            encoded_path = urllib.parse.quote(parsed_url.path, safe="/")
+            resolved_url = urllib.parse.urlunparse((
+                parsed_url.scheme,
+                parsed_url.netloc,
+                encoded_path,
+                parsed_url.params,
+                parsed_url.query,
+                parsed_url.fragment
+            ))
 
-        if not valid_urls:
-            logging.warning(f"Option #{idx + 1} ({opt}) - Could not find resolved download URL in FlareSolverr response.")
-            continue
+            logging.info(f"Option #{idx + 1} ({opt}) resolved download URL: {resolved_url}")
 
-        captured_url = valid_urls[0]
-        parsed_url = urllib.parse.urlparse(captured_url)
-        encoded_path = urllib.parse.quote(parsed_url.path, safe="/")
-        resolved_url = urllib.parse.urlunparse((
-            parsed_url.scheme,
-            parsed_url.netloc,
-            encoded_path,
-            parsed_url.params,
-            parsed_url.query,
-            parsed_url.fragment
-        ))
+            cookie_header = "; ".join([f"{c['name']}={c['value']}" for c in cookies if 'name' in c and 'value' in c])
+            dl_headers = {
+                "User-Agent": user_agent or DEFAULT_USER_AGENT,
+                "Referer": target_url
+            }
+            if cookie_header:
+                dl_headers["Cookie"] = cookie_header
 
-        logging.info(f"Option #{idx + 1} ({opt}) resolved download URL: {resolved_url}")
-
-        cookie_header = "; ".join([f"{c['name']}={c['value']}" for c in cookies])
-        dl_headers = {
-            "User-Agent": user_agent,
-            "Referer": target_url
-        }
-        if cookie_header:
-            dl_headers["Cookie"] = cookie_header
-
-        success = download_stream(
-            resolved_url,
-            dest_filename,
-            headers=dl_headers,
-            timeout=90,
-            min_size_bytes=1024,
-            ssl_context=get_ssl_context()
-        )
-        if success:
-            logging.info(f"Book saved successfully via FlareSolverr Option #{idx + 1} ({opt}): {dest_filename}")
-            return True
+            success = download_stream(
+                resolved_url,
+                dest_filename,
+                headers=dl_headers,
+                timeout=90,
+                min_size_bytes=1024,
+                ssl_context=get_ssl_context()
+            )
+            if success:
+                logging.info(f"Book saved successfully via Camoufox Option #{idx + 1} ({opt}): {dest_filename}")
+                return True
+        except Exception as e:
+            logging.warning(f"Camoufox slow download error on Option #{idx + 1} ({opt}): {e}")
 
     logging.error(f"All slow download options failed for MD5: {md5_hash}.")
     return False

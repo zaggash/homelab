@@ -13,7 +13,6 @@ from core.models import IncomingEvent
 from clients.signal import SignalClient
 from clients.gemini import GeminiClient
 from clients.grimmory import GrimmoryClient
-from clients.flaresolverr import FlareSolverrClient
 from core.pipeline import BookPipeline
 
 
@@ -68,8 +67,7 @@ def run_bot():
     signal_client = SignalClient(Config)
     gemini_client = GeminiClient(Config)
     grimmory_client = GrimmoryClient(Config)
-    flaresolverr_client = FlareSolverrClient(Config.FLARESOLVERR_URL)
-    pipeline = BookPipeline(Config, grimmory_client, flaresolverr_client)
+    pipeline = BookPipeline(Config, grimmory_client)
 
     task_executor = ThreadPoolExecutor(max_workers=2, thread_name_prefix="librarian_worker")
 
