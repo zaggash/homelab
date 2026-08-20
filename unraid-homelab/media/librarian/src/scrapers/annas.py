@@ -9,7 +9,7 @@ from core.models import BookCandidate
 from core.http import json_request, download_stream, get_ssl_context, DEFAULT_USER_AGENT
 from clients.flaresolverr import FlareSolverrClient
 
-ANNAS_DOMAINS = ["annas-archive.gl", "annas-archive.pk", "annas-archive.gd", "annas-archive.li", "annas-archive.se"]
+ANNAS_DOMAINS = ["annas-archive.gl", "annas-archive.pk", "annas-archive.gd"]
 
 
 def _parse_annas_html(html: str, connected_domain: str) -> List[BookCandidate]:
@@ -144,7 +144,7 @@ def download_annas_slow_link(
         logging.info(f"Attempting FlareSolverr bypass Option #{idx + 1} ({opt}) for MD5: {md5_hash}...")
         target_url = f"https://annas-archive.gl/slow_download/{md5_hash}/{opt}"
 
-        solution = fs_client.solve(target_url, timeout_ms=30000)
+        solution = fs_client.solve(target_url, timeout_ms=60000)
         if not solution:
             continue
 

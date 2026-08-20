@@ -22,30 +22,16 @@ class BookPipeline:
         self.grimmory = grimmory_client or GrimmoryClient(config)
         self.flaresolverr = flaresolverr_client or FlareSolverrClient(config.FLARESOLVERR_URL)
 
-    def process_book_request(self, query: str) -> Tuple[Optional[str], str]:
+    def _filter_and_rank_candidates(
+        self,
+        query: str,
+        results: List[BookCandidate],
+        min_confidence: float = 0.35
+    ) -> List[BookCandidate]:
         """
-        Takes a query, searches Libgen & Anna's Archive, filters French EPUBs,
-        ranks them by title relevance, and downloads the best match.
+        Filters raw candidates for French EPUBs, calculates similarity scores,
+        and returns matching candidates sorted by file size.
         """
-        logging.info(f"Starting book search for query: '{query}'")
-
-        # 0. Check if already present in Grimmory (library or bookdrop queue)
-        present, reason = self.grimmory.is_book_already_present(query)
-        if present:
-            return None, f"📚 {reason}\nLa recherche a été annulée."
-
-        # 1. Primary search: Libgen.li direct JSON API (fast, no DDoS-Guard)
-        results: List[BookCandidate] = search_libgen_li(query)
-
-        # 2. Secondary fallback search: Anna's Archive (if Libgen.li returns no results)
-        if not results:
-            logging.info("Libgen.li returned no results. Trying Anna's Archive secondary fallback...")
-            results = search_annas_archive(query, flaresolverr=self.flaresolverr)
-
-        if not results:
-            return None, "Désolé, je n'ai trouvé aucun résultat pour cette recherche."
-
-        # 3. Filter for French and EPUB format, and compute similarity scores
         french_epubs: List[BookCandidate] = []
         for r in results:
             lang_lower = r.lang.lower()
@@ -59,25 +45,47 @@ class BookPipeline:
                 french_epubs.append(r)
 
         if not french_epubs:
-            return None, "J'ai trouvé des résultats mais aucun n'est au format EPUB en français."
+            return []
 
-        # 4. Multi-pass selection
         max_similarity = max(r.similarity for r in french_epubs)
-        min_confidence = 0.35
         if max_similarity < min_confidence:
-            logging.warning(f"Max similarity found ({max_similarity:.2f}) is below absolute confidence threshold ({min_confidence:.2f}). Aborting search.")
-            return None, f"Désolé, je n'ai trouvé aucun livre correspondant de manière fiable à ta recherche (similarité max : {max_similarity:.2f})."
+            logging.warning(
+                f"Max similarity found ({max_similarity:.2f}) is below absolute confidence threshold ({min_confidence:.2f})."
+            )
+            return []
 
         relevance_threshold = max(max_similarity - 0.15, 0.20)
         candidates = [r for r in french_epubs if r.similarity >= relevance_threshold]
+        candidates.sort(key=lambda x: parse_size_to_kb(x.size))
+        return candidates
+
+    def process_book_request(self, query: str) -> Tuple[Optional[str], str]:
+        """
+        Takes a query, searches Libgen & Anna's Archive, filters French EPUBs,
+        ranks them by title relevance, and downloads the best match.
+        """
+        logging.info(f"Starting book search for query: '{query}'")
+
+        # 0. Check if already present in Grimmory (library or bookdrop queue)
+        present, reason = self.grimmory.is_book_already_present(query)
+        if present:
+            return None, f"📚 {reason}\nLa recherche a été annulée."
+
+        # 1. Primary search: Libgen.li direct JSON API (fast, no DDoS-Guard)
+        libgen_results: List[BookCandidate] = search_libgen_li(query)
+        candidates = self._filter_and_rank_candidates(query, libgen_results)
+
+        # 2. Secondary fallback search: Anna's Archive
+        # Triggered if Libgen returned 0 results, 0 French EPUBs, or no confident match
+        if not candidates and self.flaresolverr.is_available:
+            logging.info("Libgen.li returned no valid French EPUB candidates. Falling back to Anna's Archive...")
+            annas_results: List[BookCandidate] = search_annas_archive(query, flaresolverr=self.flaresolverr)
+            candidates = self._filter_and_rank_candidates(query, annas_results)
 
         if not candidates:
-            return None, "Désolé, je n'ai trouvé aucun livre correspondant de manière fiable à ta recherche."
+            return None, "Désolé, je n'ai trouvé aucun livre correspondant de manière fiable en EPUB français."
 
-        # Sort candidates by size (ascending) to prefer standard compact EPUBs
-        candidates.sort(key=lambda x: parse_size_to_kb(x.size))
-
-        # 5. Try downloading candidates sequentially until one succeeds
+        # 3. Try downloading candidates sequentially until one succeeds
         for idx, best_match in enumerate(candidates):
             title = best_match.title
             size = best_match.size
