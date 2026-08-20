@@ -1,7 +1,7 @@
 services:
   reolinkproxy:
     container_name: hassio-reolinkproxy
-    image: ghcr.io/shareed2k/reolinkproxy:v0.2.5@sha256:d49b43559520f9448e3f49e378a6257855af37b9ad47dc84f3d757677f30dc82
+    image: ghcr.io/shareed2k/reolinkproxy:v0.2.6@sha256:ef992c8c4470c6625bc0b7d69da6682640c9b7af5047b03518ec4ba91283107d
     labels:
       folder.view3: Hassio
     environment:
