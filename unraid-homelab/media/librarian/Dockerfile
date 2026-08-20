@@ -5,6 +5,8 @@ ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 ENV PYTHONPATH=/app/src
 ENV CAMOUFOX_HEADLESS=virtual
+ENV HOME=/app
+ENV XDG_CACHE_HOME=/app/.cache
 
 # Install OS libraries for headless Firefox/Camoufox, Xvfb and font rendering
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -24,15 +26,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 RUN groupadd -g 1000 librarian && \
     useradd -u 1000 -g librarian -m -d /app librarian
 
-# Install Camoufox and fetch stealth browser binary pre-cached into image
-RUN pip install --no-cache-dir camoufox[geoip] && \
-    camoufox fetch && \
-    chown -R librarian:librarian /app /root/.cache 2>/dev/null || true
-
 # Set up workdir and import directory
 WORKDIR /app
-RUN mkdir -p /books_import && \
+RUN mkdir -p /books_import /app/.cache && \
     chown -R librarian:librarian /app /books_import
+
+# Install dependencies including invisible_playwright, camoufox, and fetch browser
+RUN pip install --no-cache-dir invisible_playwright invisible_core camoufox[geoip] psutil tzdata && \
+    su librarian -c "camoufox fetch"
 
 # Copy application source code
 COPY --chown=librarian:librarian src/ ./src/

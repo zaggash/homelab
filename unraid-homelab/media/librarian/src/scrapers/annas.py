@@ -72,35 +72,39 @@ def _parse_annas_html(html: str, connected_domain: str) -> List[BookCandidate]:
     return results
 
 
-async def _async_fetch_annas_html(url: str, timeout_sec: int = 40) -> str:
+async def _async_fetch_annas_html(url: str, timeout_sec: int = 60) -> str:
     """
-    Spins up stealth Camoufox browser to pass DDoS-Guard challenge and retrieve search HTML.
+    Spins up stealth InvisiblePlaywright browser to pass DDoS-Guard challenge and retrieve search HTML.
     """
     try:
-        from camoufox.async_api import AsyncCamoufox
+        from invisible_playwright.async_api import InvisiblePlaywright
     except ImportError:
         try:
-            from invisible_playwright.async_api import InvisiblePlaywright as AsyncCamoufox
+            from camoufox.async_api import AsyncCamoufox as InvisiblePlaywright
         except ImportError:
-            raise ImportError("Camoufox or InvisiblePlaywright must be installed for Anna's Archive scraping.")
+            raise ImportError("InvisiblePlaywright or Camoufox must be installed for Anna's Archive scraping.")
 
-    async with AsyncCamoufox(headless="virtual", humanize=True) as browser:
+    async with InvisiblePlaywright(headless="virtual", humanize=True) as browser:
         context = await browser.new_context()
         page = await context.new_page()
         await page.goto(url, timeout=timeout_sec * 1000)
 
-        # Wait for DDoS-Guard to solve and navigate to search results
+        # Poll for DDoS-Guard frame redirect (&check=1 or /md5/ in content)
         for _ in range(15):
             await asyncio.sleep(2)
             for f in page.frames:
-                if "/md5/" in f.url or "&check=" in f.url:
-                    content = await f.content()
-                    if "/md5/" in content:
-                        return content
+                fc = await f.content()
+                if "/md5/" in fc and "<title>DDoS-Guard</title>" not in fc:
+                    return fc
 
             content = await page.content()
             if "/md5/" in content and "<title>DDoS-Guard</title>" not in content:
                 return content
+
+        for f in page.frames:
+            fc = await f.content()
+            if "/md5/" in fc:
+                return fc
 
         return await page.content()
 
@@ -111,7 +115,7 @@ def search_annas_archive(
     retry_delay: int = 2
 ) -> List[BookCandidate]:
     """
-    Searches Anna's Archive across active domains using native Camoufox stealth browser.
+    Searches Anna's Archive across active domains using native stealth browser.
     """
     query_candidates = generate_query_candidates(query)
 
@@ -154,17 +158,17 @@ def search_annas_archive(
 
 async def _async_resolve_slow_link(target_url: str, md5_hash: str, timeout_sec: int = 60) -> Optional[Tuple[str, List[Dict], str]]:
     """
-    Uses Camoufox to bypass countdown / DDoS-Guard on slow download partner pages.
+    Uses InvisiblePlaywright to bypass countdown / DDoS-Guard on slow download partner pages.
     """
     try:
-        from camoufox.async_api import AsyncCamoufox
+        from invisible_playwright.async_api import InvisiblePlaywright
     except ImportError:
         try:
-            from invisible_playwright.async_api import InvisiblePlaywright as AsyncCamoufox
+            from camoufox.async_api import AsyncCamoufox as InvisiblePlaywright
         except ImportError:
-            raise ImportError("Camoufox or InvisiblePlaywright must be installed for Anna's Archive scraping.")
+            raise ImportError("InvisiblePlaywright or Camoufox must be installed for Anna's Archive scraping.")
 
-    async with AsyncCamoufox(headless="virtual", humanize=True) as browser:
+    async with InvisiblePlaywright(headless="virtual", humanize=True) as browser:
         context = await browser.new_context()
         page = await context.new_page()
         await page.goto(target_url, timeout=timeout_sec * 1000)
@@ -199,7 +203,7 @@ def download_annas_slow_link(
     dest_filename: str
 ) -> bool:
     """
-    Uses Camoufox stealth browser to bypass challenge on Anna's Archive slow download page.
+    Uses InvisiblePlaywright stealth browser to bypass challenge on Anna's Archive slow download page.
     """
     options = ["0/4", "0/5", "0/6", "0/0", "0/1", "0/2"]
 
