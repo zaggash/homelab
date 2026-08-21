@@ -38,12 +38,12 @@ def json_request(
 
     req = urllib.request.Request(url, data=data_bytes, headers=req_headers, method=method)
     try:
+        handlers: list[urllib.request.BaseHandler] = [urllib.request.ProxyHandler()]
         if ssl_context:
-            resp_ctx = urllib.request.urlopen(req, timeout=timeout, context=ssl_context)
-        else:
-            resp_ctx = urllib.request.urlopen(req, timeout=timeout)
+            handlers.append(urllib.request.HTTPSHandler(context=ssl_context))
+        dyn_opener = urllib.request.build_opener(*handlers)
 
-        with resp_ctx as resp:
+        with dyn_opener.open(req, timeout=timeout) as resp:
             raw = resp.read().decode("utf-8", errors="ignore")
             status = getattr(resp, "status", 200)
             try:
@@ -82,10 +82,12 @@ def download_stream(
     try:
         if opener:
             open_resp = opener.open(req, timeout=timeout)
-        elif ssl_context:
-            open_resp = urllib.request.urlopen(req, timeout=timeout, context=ssl_context)
         else:
-            open_resp = urllib.request.urlopen(req, timeout=timeout)
+            handlers: list[urllib.request.BaseHandler] = [urllib.request.ProxyHandler()]
+            if ssl_context:
+                handlers.append(urllib.request.HTTPSHandler(context=ssl_context))
+            dyn_opener = urllib.request.build_opener(*handlers)
+            open_resp = dyn_opener.open(req, timeout=timeout)
 
         with open_resp as resp:
             with open(dest_path, "wb") as f_out:
