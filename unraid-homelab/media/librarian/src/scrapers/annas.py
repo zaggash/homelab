@@ -76,18 +76,23 @@ async def _async_fetch_annas_html(url: str, timeout_sec: int = 35) -> str:
     """
     Spins up stealth Camoufox browser to pass DDoS-Guard challenge and retrieve search HTML.
     """
-    try:
-        from invisible_playwright.async_api import InvisiblePlaywright
-    except ImportError:
-        try:
-            from camoufox.async_api import AsyncCamoufox as InvisiblePlaywright
-        except ImportError:
-            raise ImportError("InvisiblePlaywright or Camoufox must be installed for Anna's Archive scraping.")
-
     proxy_url = os.getenv("HTTP_PROXY") or os.getenv("http_proxy")
     proxy_config = {"server": proxy_url} if proxy_url else None
 
-    async with InvisiblePlaywright(headless="virtual", humanize=True, geoip=True, proxy=proxy_config) as browser:
+    try:
+        from camoufox.async_api import AsyncCamoufox as BrowserEngine
+        engine_kwargs = {"headless": "virtual", "humanize": True, "geoip": True}
+    except ImportError:
+        try:
+            from invisible_playwright.async_api import InvisiblePlaywright as BrowserEngine
+            engine_kwargs = {"headless": "virtual", "humanize": True}
+        except ImportError:
+            raise ImportError("Camoufox or InvisiblePlaywright must be installed for Anna's Archive scraping.")
+
+    if proxy_config:
+        engine_kwargs["proxy"] = proxy_config
+
+    async with BrowserEngine(**engine_kwargs) as browser:
         context = await browser.new_context(proxy=proxy_config)
         page = await context.new_page()
         await page.goto(url, wait_until="domcontentloaded", timeout=timeout_sec * 1000)
@@ -144,18 +149,23 @@ async def _async_resolve_slow_link(target_url: str, md5_hash: str, timeout_sec: 
     """
     Uses Camoufox to bypass countdown / DDoS-Guard on slow download partner pages.
     """
-    try:
-        from invisible_playwright.async_api import InvisiblePlaywright
-    except ImportError:
-        try:
-            from camoufox.async_api import AsyncCamoufox as InvisiblePlaywright
-        except ImportError:
-            raise ImportError("InvisiblePlaywright or Camoufox must be installed for Anna's Archive scraping.")
-
     proxy_url = os.getenv("HTTP_PROXY") or os.getenv("http_proxy")
     proxy_config = {"server": proxy_url} if proxy_url else None
 
-    async with InvisiblePlaywright(headless="virtual", humanize=True, geoip=True, proxy=proxy_config) as browser:
+    try:
+        from camoufox.async_api import AsyncCamoufox as BrowserEngine
+        engine_kwargs = {"headless": "virtual", "humanize": True, "geoip": True}
+    except ImportError:
+        try:
+            from invisible_playwright.async_api import InvisiblePlaywright as BrowserEngine
+            engine_kwargs = {"headless": "virtual", "humanize": True}
+        except ImportError:
+            raise ImportError("Camoufox or InvisiblePlaywright must be installed for Anna's Archive scraping.")
+
+    if proxy_config:
+        engine_kwargs["proxy"] = proxy_config
+
+    async with BrowserEngine(**engine_kwargs) as browser:
         context = await browser.new_context(proxy=proxy_config)
         page = await context.new_page()
         await page.goto(target_url, wait_until="domcontentloaded", timeout=timeout_sec * 1000)
