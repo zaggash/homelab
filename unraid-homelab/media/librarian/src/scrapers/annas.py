@@ -27,18 +27,16 @@ def _parse_annas_html(html: str, connected_domain: str) -> List[BookCandidate]:
         start_pos = max(0, pos - 300)
         next_pos = unique_positions[idx + 1] if idx + 1 < len(unique_positions) else pos + 5000
 
-        # 1. Title is in the <a> tag surrounding /md5/{h}
+        # 1. Title is in the <a> tag surrounding /md5/{h} with non-empty text
         title_snippet = html[start_pos:next_pos]
         title = "Unknown"
-        m = re.search(r'<a[^>]*href=[\"\']/md5/' + h + r'[\"\'][^>]*>(.*?)</a>', title_snippet, re.DOTALL | re.IGNORECASE)
-        if m:
-            clean = re.sub(r'<[^>]+>', ' ', m.group(1))
-            title = ' '.join(html_lib.unescape(clean).split())
-        else:
-            m2 = re.search(r'/md5/' + h + r'[^>]*>(.*?)</a>', title_snippet, re.DOTALL | re.IGNORECASE)
-            if m2:
-                clean = re.sub(r'<[^>]+>', ' ', m2.group(1))
-                title = ' '.join(html_lib.unescape(clean).split())
+        a_matches = re.findall(r'<a[^>]*href=[\"\']/md5/' + h + r'[\"\'][^>]*>(.*?)</a>', title_snippet, re.DOTALL | re.IGNORECASE)
+        for am in a_matches:
+            clean = re.sub(r'<[^>]+>', ' ', am)
+            clean_title = ' '.join(html_lib.unescape(clean).split())
+            if clean_title:
+                title = clean_title
+                break
 
         # 2. Metadata line is after pos
         meta_snippet = html[pos:next_pos]
