@@ -11,6 +11,7 @@ import requests
 from core.models import BookCandidate
 from core.http import DEFAULT_USER_AGENT
 
+# Anna's Archive scrapers with fast single-attempt resolution and Camoufox stealth
 ANNAS_DOMAINS = ["annas-archive.gl", "annas-archive.pk", "annas-archive.gd"]
 
 
