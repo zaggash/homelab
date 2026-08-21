@@ -224,16 +224,18 @@ async def _async_resolve_slow_link(target_url: str, md5_hash: str, timeout_sec: 
 
 def download_annas_slow_link(
     md5_hash: str,
-    dest_filename: str
+    dest_filename: str,
+    domain: Optional[str] = None
 ) -> bool:
     """
     Uses InvisiblePlaywright stealth browser to bypass challenge on Anna's Archive slow download page.
     """
+    active_domain = domain or "annas-archive.pk"
     options = ["0/4", "0/5", "0/6", "0/0", "0/1", "0/2"]
 
     for idx, opt in enumerate(options):
-        logging.info(f"Attempting Camoufox bypass Option #{idx + 1} ({opt}) for MD5: {md5_hash}...")
-        target_url = f"https://annas-archive.gl/slow_download/{md5_hash}/{opt}"
+        logging.info(f"Attempting Camoufox bypass Option #{idx + 1} ({opt}) on {active_domain} for MD5: {md5_hash}...")
+        target_url = f"https://{active_domain}/slow_download/{md5_hash}/{opt}"
 
         try:
             resolved = asyncio.run(_async_resolve_slow_link(target_url, md5_hash))

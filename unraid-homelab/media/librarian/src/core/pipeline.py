@@ -108,7 +108,7 @@ class BookPipeline:
             success = download_libgen_book(md5, dest_filename)
             # If not in Libgen, fall back to Anna's Archive slow download link via Camoufox
             if not success:
-                success = download_annas_slow_link(md5, dest_filename)
+                success = download_annas_slow_link(md5, dest_filename, domain=best_match.domain)
 
             if success:
                 return dest_filename, f"Livre trouvé ! '{title}' (EPUB, {size}). Téléchargement terminé."
