@@ -76,6 +76,7 @@ async def _async_fetch_annas_html(url: str, timeout_sec: int = 60) -> str:
     """
     Spins up stealth InvisiblePlaywright browser to pass DDoS-Guard challenge and retrieve search HTML.
     """
+    import os
     try:
         from invisible_playwright.async_api import InvisiblePlaywright
     except ImportError:
@@ -84,29 +85,44 @@ async def _async_fetch_annas_html(url: str, timeout_sec: int = 60) -> str:
         except ImportError:
             raise ImportError("InvisiblePlaywright or Camoufox must be installed for Anna's Archive scraping.")
 
-    async with InvisiblePlaywright(headless="virtual", humanize=True) as browser:
-        context = await browser.new_context()
+    proxy_url = os.getenv("HTTP_PROXY") or os.getenv("http_proxy")
+    proxy_config = {"server": proxy_url} if proxy_url else None
+
+    async with InvisiblePlaywright(headless="virtual", humanize=True, proxy=proxy_config) as browser:
+        context = await browser.new_context(proxy=proxy_config)
         page = await context.new_page()
-        await page.goto(url, timeout=timeout_sec * 1000)
+        await page.goto(url, wait_until="domcontentloaded", timeout=timeout_sec * 1000)
 
         # Poll for DDoS-Guard frame redirect (&check=1 or /md5/ in content)
-        for _ in range(15):
+        for _ in range(20):
             await asyncio.sleep(2)
             for f in page.frames:
-                fc = await f.content()
-                if "/md5/" in fc and "<title>DDoS-Guard</title>" not in fc:
-                    return fc
+                try:
+                    fc = await f.content()
+                    if "/md5/" in fc and "<title>DDoS-Guard</title>" not in fc:
+                        return fc
+                except Exception:
+                    pass
 
-            content = await page.content()
-            if "/md5/" in content and "<title>DDoS-Guard</title>" not in content:
-                return content
+            try:
+                content = await page.content()
+                if "/md5/" in content and "<title>DDoS-Guard</title>" not in content:
+                    return content
+            except Exception:
+                pass
 
         for f in page.frames:
-            fc = await f.content()
-            if "/md5/" in fc:
-                return fc
+            try:
+                fc = await f.content()
+                if "/md5/" in fc:
+                    return fc
+            except Exception:
+                pass
 
-        return await page.content()
+        try:
+            return await page.content()
+        except Exception:
+            return ""
 
 
 def search_annas_archive(
@@ -160,6 +176,7 @@ async def _async_resolve_slow_link(target_url: str, md5_hash: str, timeout_sec: 
     """
     Uses InvisiblePlaywright to bypass countdown / DDoS-Guard on slow download partner pages.
     """
+    import os
     try:
         from invisible_playwright.async_api import InvisiblePlaywright
     except ImportError:
@@ -168,32 +185,41 @@ async def _async_resolve_slow_link(target_url: str, md5_hash: str, timeout_sec: 
         except ImportError:
             raise ImportError("InvisiblePlaywright or Camoufox must be installed for Anna's Archive scraping.")
 
-    async with InvisiblePlaywright(headless="virtual", humanize=True) as browser:
-        context = await browser.new_context()
+    proxy_url = os.getenv("HTTP_PROXY") or os.getenv("http_proxy")
+    proxy_config = {"server": proxy_url} if proxy_url else None
+
+    async with InvisiblePlaywright(headless="virtual", humanize=True, proxy=proxy_config) as browser:
+        context = await browser.new_context(proxy=proxy_config)
         page = await context.new_page()
-        await page.goto(target_url, timeout=timeout_sec * 1000)
+        await page.goto(target_url, wait_until="domcontentloaded", timeout=timeout_sec * 1000)
 
         # Wait for partner timer countdown to resolve and expose download link
         for _ in range(25):
             await asyncio.sleep(2)
             for f in page.frames:
-                fc = await f.content()
-                urls = re.findall(r'(https?://[^\s\"\'\)\(<>&]+)', fc)
+                try:
+                    fc = await f.content()
+                    urls = re.findall(r'(https?://[^\s\"\'\)\(<>&]+)', fc)
+                    for u in urls:
+                        u_clean = html_lib.unescape(u)
+                        if (md5_hash in u_clean or md5_hash[:12] in u_clean) and "slow_download" not in u_clean:
+                            cookies = await context.cookies()
+                            user_agent = await page.evaluate("navigator.userAgent")
+                            return u_clean, cookies, user_agent
+                except Exception:
+                    pass
+
+            try:
+                content = await page.content()
+                urls = re.findall(r'(https?://[^\s\"\'\)\(<>&]+)', content)
                 for u in urls:
                     u_clean = html_lib.unescape(u)
                     if (md5_hash in u_clean or md5_hash[:12] in u_clean) and "slow_download" not in u_clean:
                         cookies = await context.cookies()
                         user_agent = await page.evaluate("navigator.userAgent")
                         return u_clean, cookies, user_agent
-
-            content = await page.content()
-            urls = re.findall(r'(https?://[^\s\"\'\)\(<>&]+)', content)
-            for u in urls:
-                u_clean = html_lib.unescape(u)
-                if (md5_hash in u_clean or md5_hash[:12] in u_clean) and "slow_download" not in u_clean:
-                    cookies = await context.cookies()
-                    user_agent = await page.evaluate("navigator.userAgent")
-                    return u_clean, cookies, user_agent
+            except Exception:
+                pass
 
     return None
 

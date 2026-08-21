@@ -67,6 +67,35 @@ def search_libgen_li(query: str) -> List[BookCandidate]:
                 domain="libgen.li"
             ))
 
+        if not results and "ads.php?md5=" in raw_html:
+            matches = list(re.finditer(r'ads\.php\?md5=([a-f0-9]{32})', raw_html))
+            seen_md5 = set()
+            for match in matches:
+                md5 = match.group(1).lower()
+                if md5 in seen_md5:
+                    continue
+                seen_md5.add(md5)
+                start_pos = max(0, match.start() - 500)
+                end_pos = min(len(raw_html), match.end() + 500)
+                snippet = raw_html[start_pos:end_pos]
+                
+                title = "Unknown"
+                tm = re.search(r'<a[^>]*href=["\'](?:/)?(?:book/index\.php\?md5=|ads\.php\?md5=)' + md5 + r'["\'][^>]*>(.*?)</a>', snippet, re.DOTALL | re.IGNORECASE)
+                if tm:
+                    clean = re.sub(r'<[^>]+>', ' ', tm.group(1))
+                    title = ' '.join(html_lib.unescape(clean).split())
+                
+                results.append(BookCandidate(
+                    md5=md5,
+                    title=title,
+                    meta="libgen.li · HTML",
+                    lang="fr",
+                    format="epub",
+                    size="Unknown",
+                    year="Unknown",
+                    domain="libgen.li"
+                ))
+
         if results:
             logging.info(f"Libgen.li search returned {len(results)} results for query '{target_q}'.")
             return results

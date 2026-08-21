@@ -40,8 +40,12 @@ services:
       GEMINI_MODEL: ${LIBRARIAN_GEMINI_MODEL:-gemini-2.5-flash}
       IMPORT_DIR: /books_import
       POLL_INTERVAL: 10
+      HTTP_PROXY: http://gluetun:8888
+      HTTPS_PROXY: http://gluetun:8888
+      NO_PROXY: localhost,127.0.0.1,signal-api,grimmory
     volumes:
       - "${SECRET_DATADIR}/downloads/complete/ebooks_import:/books_import"
     networks:
       - media-backend
+      - gluetun
     restart: always
