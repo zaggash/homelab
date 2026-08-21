@@ -24,6 +24,7 @@ class Config:
     GRIMMORY_PASSWORD = os.getenv("GRIMMORY_PASSWORD", "").strip()
     GRIMMORY_AUTH_HEADER = os.getenv("GRIMMORY_AUTH_HEADER", "Remote-User").strip()
     HEARTBEAT_FILE = os.getenv("HEARTBEAT_FILE", "/tmp/librarian_heartbeat")
+    GLUETUN_URL = os.getenv("GLUETUN_URL", "http://gluetun:8000").rstrip("/")
 
     AUTHORIZED_NUMBERS = [num.strip() for num in AUTHORIZED_NUMBERS_STR.split(",") if num.strip()]
 

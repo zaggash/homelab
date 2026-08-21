@@ -6,8 +6,9 @@ from config import Config
 from core.models import BookCandidate
 from core.matching import calculate_title_similarity, parse_size_to_kb
 from clients.grimmory import GrimmoryClient
-from scrapers.libgen import search_libgen_li, download_libgen_book
+from scrapers.libgen import download_libgen_book
 from scrapers.annas import search_annas_archive, download_annas_slow_link
+from core.vpn import rotate_vpn_ip
 
 
 class BookPipeline:
@@ -75,15 +76,18 @@ class BookPipeline:
         candidates: List[BookCandidate] = []
 
         # 1. Primary search: Anna's Archive via Camoufox (comprehensive shadow library index)
-        logging.info("Searching Anna's Archive (Primary Engine via Camoufox)...")
+        logging.info("Searching Anna's Archive (via Camoufox)...")
         annas_results = search_annas_archive(query)
         candidates = self._filter_and_rank_candidates(query, annas_results)
 
-        # 2. Secondary fallback search: Libgen.li direct JSON API (fast fallback)
+        # 2. If Anna's Archive failed across all domains, rotate VPN IP and retry search once
         if not candidates:
-            logging.info("Anna's Archive produced no valid French EPUB candidates. Trying Libgen.li fallback...")
-            libgen_results = search_libgen_li(query)
-            candidates = self._filter_and_rank_candidates(query, libgen_results)
+            logging.warning("Anna's Archive search yielded no valid candidates. Rotating VPN IP to bypass potential anti-bot blocks...")
+            rotated = rotate_vpn_ip(self.config.GLUETUN_URL)
+            if rotated:
+                logging.info("Retrying Anna's Archive search with new VPN IP...")
+                annas_results = search_annas_archive(query)
+                candidates = self._filter_and_rank_candidates(query, annas_results)
 
         if not candidates:
             return None, "Désolé, je n'ai trouvé aucun livre correspondant de manière fiable en EPUB français."
