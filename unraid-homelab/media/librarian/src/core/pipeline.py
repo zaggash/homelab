@@ -92,8 +92,8 @@ class BookPipeline:
         if not candidates:
             return None, "Désolé, je n'ai trouvé aucun livre correspondant de manière fiable en EPUB français."
 
-        # 3. Try downloading candidates sequentially until one succeeds
-        for idx, best_match in enumerate(candidates):
+        # 3. Try downloading top matching candidates (limit to top 2 to avoid endless retries)
+        for idx, best_match in enumerate(candidates[:2]):
             title = best_match.title
             size = best_match.size
             md5 = best_match.md5

@@ -1,13 +1,15 @@
 import re
 import time
+import os
 import asyncio
 import logging
 import urllib.parse
 import html as html_lib
 from typing import Optional, List, Dict, Tuple
-from core.matching import generate_query_candidates
+import requests
+
 from core.models import BookCandidate
-from core.http import download_stream, get_ssl_context, DEFAULT_USER_AGENT
+from core.http import DEFAULT_USER_AGENT
 
 ANNAS_DOMAINS = ["annas-archive.gl", "annas-archive.pk", "annas-archive.gd"]
 
@@ -70,11 +72,10 @@ def _parse_annas_html(html: str, connected_domain: str) -> List[BookCandidate]:
     return results
 
 
-async def _async_fetch_annas_html(url: str, timeout_sec: int = 60) -> str:
+async def _async_fetch_annas_html(url: str, timeout_sec: int = 35) -> str:
     """
-    Spins up stealth InvisiblePlaywright browser to pass DDoS-Guard challenge and retrieve search HTML.
+    Spins up stealth Camoufox browser to pass DDoS-Guard challenge and retrieve search HTML.
     """
-    import os
     try:
         from invisible_playwright.async_api import InvisiblePlaywright
     except ImportError:
@@ -86,13 +87,13 @@ async def _async_fetch_annas_html(url: str, timeout_sec: int = 60) -> str:
     proxy_url = os.getenv("HTTP_PROXY") or os.getenv("http_proxy")
     proxy_config = {"server": proxy_url} if proxy_url else None
 
-    async with InvisiblePlaywright(headless="virtual", humanize=True, proxy=proxy_config) as browser:
+    async with InvisiblePlaywright(headless="virtual", humanize=True, geoip=True, proxy=proxy_config) as browser:
         context = await browser.new_context(proxy=proxy_config)
         page = await context.new_page()
         await page.goto(url, wait_until="domcontentloaded", timeout=timeout_sec * 1000)
 
-        # Poll for DDoS-Guard frame redirect (&check=1 or /md5/ in content)
-        for _ in range(20):
+        # Poll for DDoS-Guard clearance
+        for _ in range(18):
             await asyncio.sleep(2)
             for f in page.frames:
                 try:
@@ -109,72 +110,40 @@ async def _async_fetch_annas_html(url: str, timeout_sec: int = 60) -> str:
             except Exception:
                 pass
 
-        for f in page.frames:
-            try:
-                fc = await f.content()
-                if "/md5/" in fc:
-                    return fc
-            except Exception:
-                pass
-
         try:
             return await page.content()
         except Exception:
             return ""
 
 
-def search_annas_archive(
-    query: str,
-    max_retries: int = 1,
-    retry_delay: int = 2
-) -> List[BookCandidate]:
+def search_annas_archive(query: str) -> List[BookCandidate]:
     """
-    Searches Anna's Archive across active domains using native stealth browser.
+    Direct, fast search on Anna's Archive with minimal overhead.
     """
-    query_candidates = generate_query_candidates(query)
+    encoded_query = urllib.parse.quote_plus(query)
 
-    for target_q in query_candidates:
-        encoded_query = urllib.parse.quote_plus(target_q)
-        html = ""
-        connected_domain = ""
+    for domain in ANNAS_DOMAINS:
+        url = f"https://{domain}/search?q={encoded_query}&lang=fr&ext=epub"
+        logging.info(f"Searching Anna's Archive for '{query}' on {domain}...")
+        try:
+            raw_html = asyncio.run(_async_fetch_annas_html(url))
+            is_challenge = ("<title>DDoS-Guard</title>" in raw_html) or ("<title>Just a moment...</title>" in raw_html)
+            if raw_html and not is_challenge and "/md5/" in raw_html:
+                results = _parse_annas_html(raw_html, domain)
+                if results:
+                    logging.info(f"Anna's Archive returned {len(results)} results from {domain}.")
+                    return results
+        except Exception as e:
+            logging.warning(f"Search attempt failed on {domain}: {e}")
 
-        for domain in ANNAS_DOMAINS:
-            url = f"https://{domain}/search?q={encoded_query}&lang=fr&ext=epub"
-            logging.info(f"Searching Anna's Archive for '{target_q}' on {domain} via Camoufox...")
-
-            for attempt in range(max_retries):
-                try:
-                    raw_html = asyncio.run(_async_fetch_annas_html(url))
-                    is_challenge = ("<title>DDoS-Guard</title>" in raw_html) or ("<title>Just a moment...</title>" in raw_html)
-                    if raw_html and not is_challenge and "/md5/" in raw_html:
-                        html = raw_html
-                        connected_domain = domain
-                        logging.info(f"Successfully fetched results via Camoufox from {domain}")
-                        break
-                except Exception as e:
-                    logging.warning(f"Camoufox search attempt failed on {domain}: {e}")
-
-                if attempt < max_retries - 1 and not html:
-                    time.sleep(retry_delay)
-
-            if html:
-                break
-
-        if html:
-            results = _parse_annas_html(html, connected_domain)
-            if results:
-                logging.info(f"Anna's Archive returned {len(results)} results for query '{target_q}'.")
-                return results
-
-    logging.warning("All search attempts on Anna's Archive failed.")
+    logging.warning("Search failed across all Anna's Archive domains.")
     return []
 
 
-async def _async_resolve_slow_link(target_url: str, md5_hash: str, timeout_sec: int = 60) -> Optional[Tuple[str, List[Dict], str]]:
+async def _async_resolve_slow_link(target_url: str, md5_hash: str, timeout_sec: int = 40) -> Optional[Tuple[str, List[Dict], str]]:
     """
-    Uses InvisiblePlaywright to bypass countdown / DDoS-Guard on slow download partner pages.
+    Uses Camoufox to bypass countdown / DDoS-Guard on slow download partner pages.
     """
-    import os
     try:
         from invisible_playwright.async_api import InvisiblePlaywright
     except ImportError:
@@ -186,13 +155,13 @@ async def _async_resolve_slow_link(target_url: str, md5_hash: str, timeout_sec: 
     proxy_url = os.getenv("HTTP_PROXY") or os.getenv("http_proxy")
     proxy_config = {"server": proxy_url} if proxy_url else None
 
-    async with InvisiblePlaywright(headless="virtual", humanize=True, proxy=proxy_config) as browser:
+    async with InvisiblePlaywright(headless="virtual", humanize=True, geoip=True, proxy=proxy_config) as browser:
         context = await browser.new_context(proxy=proxy_config)
         page = await context.new_page()
         await page.goto(target_url, wait_until="domcontentloaded", timeout=timeout_sec * 1000)
 
         # Wait for partner timer countdown to resolve and expose download link
-        for _ in range(25):
+        for _ in range(20):
             await asyncio.sleep(2)
             for f in page.frames:
                 try:
@@ -228,19 +197,20 @@ def download_annas_slow_link(
     domain: Optional[str] = None
 ) -> bool:
     """
-    Uses InvisiblePlaywright stealth browser to bypass challenge on Anna's Archive slow download page.
+    Downloads book from Anna's Archive slow download partners using session cookies.
+    Tries primary partner (0/4) first, then fallback partner (0/5).
     """
-    active_domain = domain or "annas-archive.pk"
-    options = ["0/4", "0/5", "0/6", "0/0", "0/1", "0/2"]
+    active_domain = domain or "annas-archive.gl"
+    options = ["0/4", "0/5"]
 
     for idx, opt in enumerate(options):
-        logging.info(f"Attempting Camoufox bypass Option #{idx + 1} ({opt}) on {active_domain} for MD5: {md5_hash}...")
         target_url = f"https://{active_domain}/slow_download/{md5_hash}/{opt}"
+        logging.info(f"Downloading from Anna's Archive Partner #{idx + 1} ({opt}) on {active_domain}...")
 
         try:
             resolved = asyncio.run(_async_resolve_slow_link(target_url, md5_hash))
             if not resolved:
-                logging.warning(f"Option #{idx + 1} ({opt}) - Could not resolve download URL.")
+                logging.warning(f"Partner #{idx + 1} ({opt}) - Could not resolve download URL.")
                 continue
 
             captured_url, cookies, user_agent = resolved
@@ -256,29 +226,33 @@ def download_annas_slow_link(
                 parsed_url.fragment
             ))
 
-            logging.info(f"Option #{idx + 1} ({opt}) resolved download URL: {resolved_url}")
-
-            cookie_header = "; ".join([f"{c['name']}={c['value']}" for c in cookies if 'name' in c and 'value' in c])
-            dl_headers = {
+            logging.info(f"Streaming book from resolved partner link...")
+            s = requests.Session()
+            for c in cookies:
+                s.cookies.set(c['name'], c['value'])
+            s.headers.update({
                 "User-Agent": user_agent or DEFAULT_USER_AGENT,
                 "Referer": target_url
-            }
-            if cookie_header:
-                dl_headers["Cookie"] = cookie_header
+            })
 
-            success = download_stream(
-                resolved_url,
-                dest_filename,
-                headers=dl_headers,
-                timeout=90,
-                min_size_bytes=1024,
-                ssl_context=get_ssl_context()
-            )
-            if success:
-                logging.info(f"Book saved successfully via Camoufox Option #{idx + 1} ({opt}): {dest_filename}")
-                return True
+            resp = s.get(resolved_url, stream=True, timeout=120)
+            if resp.status_code == 200:
+                with open(dest_filename, "wb") as f:
+                    for chunk in resp.iter_content(chunk_size=65536):
+                        if chunk:
+                            f.write(chunk)
+
+                if os.path.exists(dest_filename) and os.path.getsize(dest_filename) > 1024:
+                    logging.info(f"Book saved successfully ({os.path.getsize(dest_filename)} bytes): {dest_filename}")
+                    return True
+                else:
+                    logging.warning(f"Downloaded file was too small. Removing {dest_filename}...")
+                    if os.path.exists(dest_filename):
+                        os.remove(dest_filename)
+            else:
+                logging.warning(f"Download returned HTTP {resp.status_code}")
         except Exception as e:
-            logging.warning(f"Camoufox slow download error on Option #{idx + 1} ({opt}): {e}")
+            logging.warning(f"Partner #{idx + 1} ({opt}) download error: {e}")
 
-    logging.error(f"All slow download options failed for MD5: {md5_hash}.")
+    logging.error(f"All slow download partners failed for MD5: {md5_hash}.")
     return False
