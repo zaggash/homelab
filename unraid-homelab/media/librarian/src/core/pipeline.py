@@ -2,10 +2,14 @@ import os
 import re
 import logging
 from typing import Tuple, Optional, List
+
 from config import Config
 from core.models import BookCandidate
 from core.matching import calculate_title_similarity, parse_size_to_kb
 from clients.grimmory import GrimmoryClient
+from clients.qbittorrent import QBittorrentClient
+from scrapers.fourtoutici import search_fourtoutici, download_fourtoutici_book
+from scrapers.prowlarr import search_prowlarr
 from scrapers.annas import search_annas_archive, download_annas_slow_link, resolve_active_domain
 from core.vpn import rotate_vpn_ip
 
@@ -14,10 +18,12 @@ class BookPipeline:
     def __init__(
         self,
         config=Config,
-        grimmory_client: Optional[GrimmoryClient] = None
+        grimmory_client: Optional[GrimmoryClient] = None,
+        qbittorrent_client: Optional[QBittorrentClient] = None
     ):
         self.config = config
         self.grimmory = grimmory_client or GrimmoryClient(config)
+        self.qbittorrent = qbittorrent_client or QBittorrentClient(config)
 
     def _filter_and_rank_candidates(
         self,
@@ -62,61 +68,92 @@ class BookPipeline:
 
     def process_book_request(self, query: str) -> Tuple[Optional[str], str]:
         """
-        Processes an incoming book query:
-        1. Checks for duplicates in Grimmory.
-        2. Searches Anna's Archive via Camoufox on the active mirror.
-        3. Rotates VPN IP if no candidates are returned due to potential challenge block.
-        4. Filters and ranks matching French EPUBs.
-        5. Downloads the best candidate via Anna's Archive slow download partners.
+        Multi-provider search cascade:
+        0. Check Grimmory for duplicates.
+        1. Search & download via FourToutIci (instant direct download for French ebooks).
+        2. Search Prowlarr (EBook categories) & send to qBittorrent (#ebook tag, /books_import savepath).
+        3. Search Anna's Archive (dedicated mirror + VPN rotation fallback) & slow download.
         """
-        logging.info(f"Starting book search for query: '{query}'")
+        logging.info(f"Starting book retrieval cascade for query: '{query}'")
 
         # 0. Check if already present in Grimmory (library or bookdrop queue)
         present, reason = self.grimmory.is_book_already_present(query)
         if present:
             return None, f"📚 {reason}\nLa recherche a été annulée."
 
+        # ---------------------------------------------------------------------
+        # 1. Provider: FourToutIci
+        # ---------------------------------------------------------------------
+        logging.info("Cascade Step 1: Checking FourToutIci...")
+        fti_results = search_fourtoutici(query)
+        fti_candidates = self._filter_and_rank_candidates(query, fti_results)
+
+        for best_fti in fti_candidates[:2]:
+            safe_title = re.sub(r'[/\\?%*:|"<>]', '_', best_fti.title)
+            dest_filename = os.path.join(self.config.IMPORT_DIR, f"{safe_title}.epub")
+
+            logging.info(f"Attempting FourToutIci download for '{best_fti.title}'...")
+            if download_fourtoutici_book(best_fti, dest_filename):
+                return dest_filename, f"Livre trouvé sur FourToutIci ! '{best_fti.title}' (EPUB). Téléchargement terminé."
+
+        # ---------------------------------------------------------------------
+        # 2. Provider: Prowlarr + qBittorrent
+        # ---------------------------------------------------------------------
+        if self.config.PROWLARR_API_KEY:
+            logging.info("Cascade Step 2: Checking Prowlarr EBook indexers...")
+            prowlarr_results = search_prowlarr(query)
+            prowlarr_candidates = self._filter_and_rank_candidates(query, prowlarr_results)
+
+            for best_torrent in prowlarr_candidates[:2]:
+                if best_torrent.download_url:
+                    indexer_name = best_torrent.indexer or "Prowlarr"
+                    logging.info(f"Queueing torrent to qBittorrent from {indexer_name}: '{best_torrent.title}'...")
+                    queued = self.qbittorrent.add_torrent(
+                        torrent_url_or_magnet=best_torrent.download_url,
+                        save_path=self.config.QBITTORRENT_SAVE_PATH,
+                        category=self.config.QBITTORRENT_CATEGORY,
+                        tags=self.config.QBITTORRENT_TAG
+                    )
+                    if queued:
+                        return None, (
+                            f"Livre trouvé sur {indexer_name} ! '{best_torrent.title}'.\n"
+                            f"📥 Téléchargement ajouté à qBittorrent avec le tag #{self.config.QBITTORRENT_TAG} "
+                            f"(dossier dédié NAS). Il sera importé automatiquement dans Grimmory dès réception."
+                        )
+
+        # ---------------------------------------------------------------------
+        # 3. Provider: Anna's Archive (dedicated mirror + VPN failover)
+        # ---------------------------------------------------------------------
+        logging.info("Cascade Step 3: Checking Anna's Archive...")
         active_domain = resolve_active_domain()
-        logging.info(f"Using Anna's Archive active domain: {active_domain}")
-
-        # 1. Primary search: Anna's Archive via Camoufox
         annas_results = search_annas_archive(query, domain=active_domain)
-        candidates = self._filter_and_rank_candidates(query, annas_results)
+        annas_candidates = self._filter_and_rank_candidates(query, annas_results)
 
-        # 2. If Anna's Archive returned no results, rotate VPN IP and retry search once
-        if not candidates:
-            logging.warning("Anna's Archive search yielded no valid candidates. Rotating VPN IP to bypass potential anti-bot blocks...")
+        if not annas_candidates:
+            logging.warning("Anna's Archive yielded no valid candidates. Rotating VPN IP...")
             rotated = rotate_vpn_ip(self.config.GLUETUN_URL)
             if rotated:
                 logging.info("Retrying Anna's Archive search with new VPN IP...")
                 annas_results = search_annas_archive(query, domain=active_domain)
-                candidates = self._filter_and_rank_candidates(query, annas_results)
+                annas_candidates = self._filter_and_rank_candidates(query, annas_results)
 
-        if not candidates:
-            return None, "Désolé, je n'ai trouvé aucun livre correspondant de manière fiable en EPUB français."
-
-        # 3. Try downloading top matching candidates (limit to top 2 to avoid excessive delays)
-        for idx, best_match in enumerate(candidates[:2]):
+        for best_match in annas_candidates[:2]:
             title = best_match.title
             size = best_match.size
             md5 = best_match.md5
-            sim_score = best_match.similarity
-
-            logging.info(f"Trying Candidate {idx + 1}/{len(candidates)}: '{title}' | Similarity: {sim_score:.2f} | Size: {size} | MD5: {md5}")
 
             safe_title = re.sub(r'[/\\?%*:|"<>]', '_', title)
             dest_filename = os.path.join(self.config.IMPORT_DIR, f"{safe_title}.epub")
 
+            logging.info(f"Attempting Anna's Archive slow download for '{title}' ({md5})...")
             success = download_annas_slow_link(md5, dest_filename, domain=best_match.domain)
-
             if success:
-                return dest_filename, f"Livre trouvé ! '{title}' (EPUB, {size}). Téléchargement terminé."
+                return dest_filename, f"Livre trouvé sur Anna's Archive ! '{title}' (EPUB, {size}). Téléchargement terminé."
             else:
-                logging.warning(f"Failed to download candidate {idx + 1} ({md5}). Trying next available candidate...")
                 if os.path.exists(dest_filename):
                     try:
                         os.remove(dest_filename)
                     except Exception as rm_err:
                         logging.error(f"Failed to remove partial download file {dest_filename}: {rm_err}")
 
-        return None, "Le téléchargement du livre a échoué (tous les candidats ont échoué)."
+        return None, "Désolé, aucun livre correspondant n'a pu être trouvé ou téléchargé parmi les fournisseurs disponibles."

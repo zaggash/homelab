@@ -4,15 +4,18 @@ from typing import Optional
 
 @dataclass
 class BookCandidate:
-    md5: str
     title: str
-    format: str
-    size: str
-    lang: str
     domain: str
+    format: str = "epub"
+    size: str = "Unknown"
+    lang: str = "fr"
     year: str = "Unknown"
     meta: str = ""
     similarity: float = 0.0
+    md5: Optional[str] = None
+    download_url: Optional[str] = None
+    source_type: str = "direct"  # "direct" (local download) or "torrent" (prowlarr/qbittorrent)
+    indexer: Optional[str] = None
 
 
 @dataclass

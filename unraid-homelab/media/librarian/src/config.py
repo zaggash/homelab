@@ -34,6 +34,24 @@ class Config:
         if d.strip()
     ]
 
+    # FourToutIci Settings
+    FOURTOUTICI_PRIMARY_DOMAIN = os.getenv("FOURTOUTICI_PRIMARY_DOMAIN", "fourtoutici.cc").strip()
+    FOURTOUTICI_FALLBACK_DOMAINS = [
+        d.strip()
+        for d in os.getenv("FOURTOUTICI_FALLBACK_DOMAINS", "fourtoutici.click,fourtoutici.ac").split(",")
+        if d.strip()
+    ]
+
+    # Prowlarr & qBittorrent Settings
+    PROWLARR_URL = os.getenv("PROWLARR_URL", "http://prowlarr:9696").rstrip("/")
+    PROWLARR_API_KEY = os.getenv("PROWLARR_API_KEY", "").strip()
+    QBITTORRENT_URL = os.getenv("QBITTORRENT_URL", "http://gluetun:8080").rstrip("/")
+    QBITTORRENT_USER = os.getenv("QBITTORRENT_USER", "").strip()
+    QBITTORRENT_PASSWORD = os.getenv("QBITTORRENT_PASSWORD", "").strip()
+    QBITTORRENT_SAVE_PATH = os.getenv("QBITTORRENT_SAVE_PATH", "/data/downloads/complete/ebooks_import").strip()
+    QBITTORRENT_TAG = os.getenv("QBITTORRENT_TAG", "ebook").strip()
+    QBITTORRENT_CATEGORY = os.getenv("QBITTORRENT_CATEGORY", "ebook").strip()
+
     AUTHORIZED_NUMBERS = [num.strip() for num in AUTHORIZED_NUMBERS_STR.split(",") if num.strip()]
 
     @classmethod
@@ -46,3 +64,5 @@ class Config:
             logging.error("GEMINI_API_KEY environment variable is missing!")
         if cls.AUTHORIZED_GROUP:
             logging.info(f"Group restriction active: Only responding in group matching '{cls.AUTHORIZED_GROUP}'")
+        if cls.PROWLARR_API_KEY:
+            logging.info("Prowlarr integration enabled (EBook search & qBittorrent auto-tagging active).")

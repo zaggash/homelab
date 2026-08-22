@@ -38,11 +38,19 @@ services:
       GRIMMORY_AUTH_HEADER: ${LIBRARIAN_GRIMMORY_AUTH_HEADER:-Remote-User}
       GEMINI_API_KEY: ${LIBRARIAN_GEMINI_API_KEY}
       GEMINI_MODEL: ${LIBRARIAN_GEMINI_MODEL:-gemini-2.5-flash}
+      PROWLARR_URL: ${LIBRARIAN_PROWLARR_URL:-http://prowlarr:9696}
+      PROWLARR_API_KEY: ${LIBRARIAN_PROWLARR_API_KEY:-}
+      QBITTORRENT_URL: ${LIBRARIAN_QBITTORRENT_URL:-http://gluetun:8080}
+      QBITTORRENT_USER: ${LIBRARIAN_QBITTORRENT_USER:-}
+      QBITTORRENT_PASSWORD: ${LIBRARIAN_QBITTORRENT_PASSWORD:-}
+      QBITTORRENT_SAVE_PATH: ${LIBRARIAN_QBITTORRENT_SAVE_PATH:-/data/downloads/complete/ebooks_import}
+      QBITTORRENT_TAG: ${LIBRARIAN_QBITTORRENT_TAG:-ebook}
+      QBITTORRENT_CATEGORY: ${LIBRARIAN_QBITTORRENT_CATEGORY:-ebook}
       IMPORT_DIR: /books_import
       POLL_INTERVAL: 10
       HTTP_PROXY: http://gluetun:8888
       HTTPS_PROXY: http://gluetun:8888
-      NO_PROXY: localhost,127.0.0.1,signal-api,grimmory
+      NO_PROXY: localhost,127.0.0.1,signal-api,grimmory,prowlarr,gluetun
     volumes:
       - "${SECRET_DATADIR}/downloads/complete/ebooks_import:/books_import"
     networks:

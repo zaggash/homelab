@@ -52,6 +52,9 @@ def handle_event(
                 signal_client.send_message(f"📥 {status_msg}\nEnvoi du livre en cours...", event.reply_to)
                 signal_client.send_message("✨ Voilà ton livre ! Bonne lecture 📖", event.reply_to, attachment_path=epub_path)
                 logging.info(f"Process complete. Book sent to {event.reply_to} and saved in {Config.IMPORT_DIR}")
+            elif "qBittorrent" in status_msg or "trouvé" in status_msg.lower():
+                signal_client.send_message(f"📥 {status_msg}", event.reply_to)
+                logging.info(f"Background task queued for {event.reply_to}: {status_msg}")
             else:
                 signal_client.send_message(f"⚠️ {status_msg}", event.reply_to)
 
