@@ -8,7 +8,7 @@ from core.models import BookCandidate
 from core.matching import calculate_title_similarity, parse_size_to_kb
 from clients.grimmory import GrimmoryClient
 from clients.qbittorrent import QBittorrentClient
-from scrapers.fourtoutici import search_fourtoutici, download_fourtoutici_book
+from scrapers.fourtoutici import fetch_from_fourtoutici
 from scrapers.prowlarr import search_prowlarr
 from scrapers.annas import search_annas_archive, download_annas_slow_link, resolve_active_domain
 from core.vpn import rotate_vpn_ip
@@ -70,7 +70,7 @@ class BookPipeline:
         """
         Multi-provider search cascade:
         0. Check Grimmory for duplicates.
-        1. Search & download via FourToutIci (instant direct download for French ebooks).
+        1. Single-pass Search & Download via FourToutIci.
         2. Search Prowlarr (EBook categories) & send to qBittorrent (#ebook tag, /books_import savepath).
         3. Search Anna's Archive (dedicated mirror + VPN rotation fallback) & slow download.
         """
@@ -82,19 +82,12 @@ class BookPipeline:
             return None, f"📚 {reason}\nLa recherche a été annulée."
 
         # ---------------------------------------------------------------------
-        # 1. Provider: FourToutIci
+        # 1. Provider: FourToutIci (Single-pass search & stream download)
         # ---------------------------------------------------------------------
         logging.info("Cascade Step 1: Checking FourToutIci...")
-        fti_results = search_fourtoutici(query)
-        fti_candidates = self._filter_and_rank_candidates(query, fti_results)
-
-        for best_fti in fti_candidates[:2]:
-            safe_title = re.sub(r'[/\\?%*:|"<>]', '_', best_fti.title)
-            dest_filename = os.path.join(self.config.IMPORT_DIR, f"{safe_title}.epub")
-
-            logging.info(f"Attempting FourToutIci download for '{best_fti.title}'...")
-            if download_fourtoutici_book(best_fti, dest_filename):
-                return dest_filename, f"Livre trouvé sur FourToutIci ! '{best_fti.title}' (EPUB). Téléchargement terminé."
+        dest_file, fti_title = fetch_from_fourtoutici(query, self.config.IMPORT_DIR)
+        if dest_file:
+            return dest_file, f"Livre trouvé sur FourToutIci ! '{fti_title}' (EPUB). Téléchargement terminé."
 
         # ---------------------------------------------------------------------
         # 2. Provider: Prowlarr + qBittorrent

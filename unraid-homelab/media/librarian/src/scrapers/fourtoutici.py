@@ -9,6 +9,7 @@ from typing import Optional, List, Tuple
 
 from config import Config
 from core.models import BookCandidate
+from core.matching import calculate_title_similarity
 from core.http import DEFAULT_USER_AGENT, download_stream
 from scrapers.annas import stealth_browser_page
 
@@ -45,29 +46,38 @@ def resolve_active_fti_domain(
 def _clean_fti_title(raw_text: str) -> str:
     """
     Cleans raw FourToutIci download label or link text into a clean 'Author - Title' or 'Title'.
-    Example: 'Télécharger : EBOOK Il faudrait leur dire – Carène Ponte.epub' -> 'Carène Ponte - Il faudrait leur dire'
+    Example: 'Télécharger : EBOOK Il faudrait leur dire – Carène Ponte.epub' -> 'Il faudrait leur dire - Carène Ponte'
     """
     text = html_lib.unescape(raw_text).strip()
-    # Strip prefix 'Télécharger :'
     text = re.sub(r'^Télécharger\s*:\s*', '', text, flags=re.IGNORECASE).strip()
-    # Strip leading category tag (EBOOK, BD, MANGA, etc.)
     text = re.sub(r'^(?:EBOOK|BD|MANGA|MAGAZINE|JOURNAL|AUDIO|AUTRES)\s+', '', text, flags=re.IGNORECASE).strip()
-    # Strip trailing file extension
     text = re.sub(r'\.(?:epub|pdf|mobi|azw3|cbr|cbz)$', '', text, flags=re.IGNORECASE).strip()
-    # Normalize dashes: '–' or '—' -> '-'
     text = re.sub(r'\s*[–—]\s*', ' - ', text).strip()
     return text
 
 
-async def _async_search_fti(url: str, query: str, timeout_sec: int = 35) -> List[dict]:
+async def _async_search_and_download_fti(
+    query: str,
+    dest_dir: str,
+    domain: str,
+    min_confidence: float = 0.55,
+    timeout_sec: int = 35
+) -> Tuple[Optional[str], Optional[str]]:
     """
-    Navigates to FourToutIci, searches the query, and extracts resulting download links.
+    Single-pass search and direct download on FourToutIci:
+    1. Opens FourToutIci with Camoufox stealth browser.
+    2. Searches for the query.
+    3. Ranks matching French EPUB candidates.
+    4. Downloads the best candidate directly using active session cookies.
     """
+    url = f"https://{domain}"
     async with stealth_browser_page() as (page, context):
+        logging.info(f"Navigating to FourToutIci ({domain})...")
         await page.goto(url, wait_until="domcontentloaded", timeout=timeout_sec * 1000)
-        await asyncio.sleep(2)
+        await asyncio.sleep(1.5)
 
-        # Fill search input and submit
+        # Type search query and click search
+        logging.info(f"Searching FourToutIci for '{query}'...")
         await page.fill("#fileSearch", query)
         await page.click("#searchBtn")
         await asyncio.sleep(2.5)
@@ -84,110 +94,80 @@ async def _async_search_fti(url: str, query: str, timeout_sec: int = 35) -> List
                 };
             });
         }""")
-        return raw_items or []
 
+        if not raw_items:
+            logging.info("FourToutIci returned 0 search results.")
+            return None, None
 
-def search_fourtoutici(query: str, domain: Optional[str] = None) -> List[BookCandidate]:
-    """
-    Searches FourToutIci for matching books.
-    """
-    active_domain = domain or resolve_active_fti_domain()
-    base_url = f"https://{active_domain}"
-
-    logging.info(f"Searching FourToutIci for '{query}' on {active_domain}...")
-    try:
-        raw_items = asyncio.run(_async_search_fti(base_url, query))
-        candidates: List[BookCandidate] = []
-        seen_urls = set()
-
+        candidates = []
         for item in raw_items:
-            href = item.get("href", "")
-            if not href or href in seen_urls:
+            href = item.get("href")
+            if not href:
                 continue
-            seen_urls.add(href)
-
-            label = item.get("label", "") or item.get("text", "") or item.get("rowText", "")
+            label = item.get("label") or item.get("text") or item.get("rowText", "")
             clean_title = _clean_fti_title(label)
 
-            # Determine format from label
             fmt = "epub"
             if ".pdf" in label.lower() or " pdf" in label.lower():
                 fmt = "pdf"
             elif ".mobi" in label.lower():
                 fmt = "mobi"
 
-            candidates.append(BookCandidate(
-                title=clean_title,
-                domain=active_domain,
-                format=fmt,
-                size="Unknown",
-                lang="fr",
-                download_url=href,
-                meta=f"fourtoutici · {fmt.upper()}",
-                source_type="direct"
-            ))
+            sim = calculate_title_similarity(query, clean_title)
+            if fmt == "epub" and sim >= min_confidence:
+                candidates.append({
+                    "title": clean_title,
+                    "download_url": href,
+                    "similarity": sim
+                })
 
-        logging.info(f"FourToutIci returned {len(candidates)} candidates for '{query}'.")
-        return candidates
-    except Exception as e:
-        logging.warning(f"FourToutIci search failed on {active_domain}: {e}")
-        return []
+        if not candidates:
+            logging.info(f"No candidate passed confidence threshold ({min_confidence}) on FourToutIci.")
+            return None, None
 
+        candidates.sort(key=lambda x: x["similarity"], reverse=True)
+        best = candidates[0]
+        title = best["title"]
+        dl_url = best["download_url"]
 
-async def _async_download_fti(download_url: str, timeout_sec: int = 40) -> Optional[Tuple[str, List[dict], str]]:
-    """
-    Resolves FourToutIci download session and extracts clearance cookies + User Agent.
-    """
-    parsed = urllib.parse.urlparse(download_url)
-    origin = f"{parsed.scheme}://{parsed.netloc}"
+        logging.info(f"Found match on FourToutIci: '{title}' (Similarity: {best['similarity']:.2f}). Streaming file...")
 
-    async with stealth_browser_page() as (page, context):
-        await page.goto(origin, wait_until="domcontentloaded", timeout=timeout_sec * 1000)
-        await asyncio.sleep(1.5)
+        safe_title = re.sub(r'[/\\?%*:|"<>]', '_', title)
+        dest_filename = os.path.join(dest_dir, f"{safe_title}.epub")
+
         cookies = await context.cookies()
         user_agent = await page.evaluate("navigator.userAgent")
-        return download_url, cookies, user_agent
-
-
-def download_fourtoutici_book(candidate: BookCandidate, dest_filename: str) -> bool:
-    """
-    Downloads book from FourToutIci using resolved session cookies and streams to disk.
-    """
-    if not candidate.download_url:
-        logging.error("Candidate missing download_url for FourToutIci.")
-        return False
-
-    logging.info(f"Downloading from FourToutIci: '{candidate.title}' ({candidate.download_url})...")
-    try:
-        resolved = asyncio.run(_async_download_fti(candidate.download_url))
-        if not resolved:
-            logging.error("Failed to establish FourToutIci download session.")
-            return False
-
-        target_url, cookies, user_agent = resolved
-
         cookie_header = "; ".join(f"{c['name']}={c['value']}" for c in cookies if 'name' in c and 'value' in c)
+
         headers = {
             "User-Agent": user_agent or DEFAULT_USER_AGENT,
-            "Referer": f"https://{candidate.domain}/"
+            "Referer": url
         }
         if cookie_header:
             headers["Cookie"] = cookie_header
 
         success = download_stream(
-            target_url,
+            dl_url,
             dest_filename,
             headers=headers,
-            timeout=120,
+            timeout=90,
             min_size_bytes=1024
         )
 
         if success:
             logging.info(f"Book saved successfully from FourToutIci: {dest_filename}")
-            return True
-        else:
-            logging.warning("FourToutIci download failed or file too small.")
-            return False
+            return dest_filename, title
+
+        return None, None
+
+
+def fetch_from_fourtoutici(query: str, dest_dir: str) -> Tuple[Optional[str], Optional[str]]:
+    """
+    Entry point for FourToutIci single-pass search & download.
+    """
+    domain = resolve_active_fti_domain()
+    try:
+        return asyncio.run(_async_search_and_download_fti(query, dest_dir, domain))
     except Exception as e:
-        logging.error(f"FourToutIci download exception: {e}")
-        return False
+        logging.error(f"FourToutIci error on {domain}: {e}")
+        return None, None
