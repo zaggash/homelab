@@ -26,6 +26,14 @@ class Config:
     HEARTBEAT_FILE = os.getenv("HEARTBEAT_FILE", "/tmp/librarian_heartbeat")
     GLUETUN_URL = os.getenv("GLUETUN_URL", "http://gluetun:8000").rstrip("/")
 
+    # Anna's Archive Mirrors
+    ANNAS_PRIMARY_DOMAIN = os.getenv("ANNAS_PRIMARY_DOMAIN", "annas-archive.gl").strip()
+    ANNAS_FALLBACK_DOMAINS = [
+        d.strip()
+        for d in os.getenv("ANNAS_FALLBACK_DOMAINS", "annas-archive.pk,annas-archive.gd").split(",")
+        if d.strip()
+    ]
+
     AUTHORIZED_NUMBERS = [num.strip() for num in AUTHORIZED_NUMBERS_STR.split(",") if num.strip()]
 
     @classmethod

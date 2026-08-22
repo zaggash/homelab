@@ -6,8 +6,7 @@ from config import Config
 from core.models import BookCandidate
 from core.matching import calculate_title_similarity, parse_size_to_kb
 from clients.grimmory import GrimmoryClient
-from scrapers.libgen import download_libgen_book
-from scrapers.annas import search_annas_archive, download_annas_slow_link
+from scrapers.annas import search_annas_archive, download_annas_slow_link, resolve_active_domain
 from core.vpn import rotate_vpn_ip
 
 
@@ -49,7 +48,7 @@ class BookPipeline:
         max_similarity = max(r.similarity for r in french_epubs)
         if max_similarity < min_confidence:
             logging.warning(
-                f"Max similarity found ({max_similarity:.2f}) is below absolute confidence threshold ({min_confidence:.2f})."
+                f"Max similarity found ({max_similarity:.2f}) is below confidence threshold ({min_confidence:.2f})."
             )
             return []
 
@@ -63,8 +62,12 @@ class BookPipeline:
 
     def process_book_request(self, query: str) -> Tuple[Optional[str], str]:
         """
-        Takes a query, searches Anna's Archive first (via Camoufox), falls back to Libgen,
-        filters French EPUBs, ranks them by title relevance, and downloads the best match.
+        Processes an incoming book query:
+        1. Checks for duplicates in Grimmory.
+        2. Searches Anna's Archive via Camoufox on the active mirror.
+        3. Rotates VPN IP if no candidates are returned due to potential challenge block.
+        4. Filters and ranks matching French EPUBs.
+        5. Downloads the best candidate via Anna's Archive slow download partners.
         """
         logging.info(f"Starting book search for query: '{query}'")
 
@@ -73,26 +76,26 @@ class BookPipeline:
         if present:
             return None, f"📚 {reason}\nLa recherche a été annulée."
 
-        candidates: List[BookCandidate] = []
+        active_domain = resolve_active_domain()
+        logging.info(f"Using Anna's Archive active domain: {active_domain}")
 
-        # 1. Primary search: Anna's Archive via Camoufox (comprehensive shadow library index)
-        logging.info("Searching Anna's Archive (via Camoufox)...")
-        annas_results = search_annas_archive(query)
+        # 1. Primary search: Anna's Archive via Camoufox
+        annas_results = search_annas_archive(query, domain=active_domain)
         candidates = self._filter_and_rank_candidates(query, annas_results)
 
-        # 2. If Anna's Archive failed across all domains, rotate VPN IP and retry search once
+        # 2. If Anna's Archive returned no results, rotate VPN IP and retry search once
         if not candidates:
             logging.warning("Anna's Archive search yielded no valid candidates. Rotating VPN IP to bypass potential anti-bot blocks...")
             rotated = rotate_vpn_ip(self.config.GLUETUN_URL)
             if rotated:
                 logging.info("Retrying Anna's Archive search with new VPN IP...")
-                annas_results = search_annas_archive(query)
+                annas_results = search_annas_archive(query, domain=active_domain)
                 candidates = self._filter_and_rank_candidates(query, annas_results)
 
         if not candidates:
             return None, "Désolé, je n'ai trouvé aucun livre correspondant de manière fiable en EPUB français."
 
-        # 3. Try downloading top matching candidates (limit to top 2 to avoid endless retries)
+        # 3. Try downloading top matching candidates (limit to top 2 to avoid excessive delays)
         for idx, best_match in enumerate(candidates[:2]):
             title = best_match.title
             size = best_match.size
@@ -104,11 +107,7 @@ class BookPipeline:
             safe_title = re.sub(r'[/\\?%*:|"<>]', '_', title)
             dest_filename = os.path.join(self.config.IMPORT_DIR, f"{safe_title}.epub")
 
-            # Try Libgen direct download key first (instant, no slow wait timer)
-            success = download_libgen_book(md5, dest_filename)
-            # If not in Libgen, fall back to Anna's Archive slow download link via Camoufox
-            if not success:
-                success = download_annas_slow_link(md5, dest_filename, domain=best_match.domain)
+            success = download_annas_slow_link(md5, dest_filename, domain=best_match.domain)
 
             if success:
                 return dest_filename, f"Livre trouvé ! '{title}' (EPUB, {size}). Téléchargement terminé."
@@ -118,6 +117,6 @@ class BookPipeline:
                     try:
                         os.remove(dest_filename)
                     except Exception as rm_err:
-                        logging.error(f"Failed to remove partial/failed download file {dest_filename}: {rm_err}")
+                        logging.error(f"Failed to remove partial download file {dest_filename}: {rm_err}")
 
         return None, "Le téléchargement du livre a échoué (tous les candidats ont échoué)."
