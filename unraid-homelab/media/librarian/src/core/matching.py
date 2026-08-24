@@ -7,7 +7,8 @@ STOP_WORDS = {
     'le', 'la', 'les', 'un', 'une', 'des', 'du', 'de', 'et', 'en', 'au', 'aux',
     'pour', 'dans', 'sur', 'par', 'avec', 'sans', 'sous', 'the', 'of', 'and', 'in', 'on', 'with', 'for',
     'fr', 'french', 'epub', 'edition', 'tome', 'vol', 'volume', 'ebook', 'livre',
-    'pdf', 'complet', 'gratuit', 'gratuits', 'version', 'integrale'
+    'pdf', 'complet', 'gratuit', 'gratuits', 'version', 'integrale',
+    'm4b', 'mp3', 'flac', 'audio', 'audiobook', 'audiolib', 'lizzie', 'audible', 'lu'
 }
 
 
@@ -33,17 +34,19 @@ def normalize_text(text: str) -> str:
 
 def parse_size_to_kb(size_str: str) -> float:
     """
-    Converts size strings (e.g. '2.4MB', '320KB') into float values in KB.
+    Converts size strings (e.g. '2.4MB', '320KB', '1.2GB') into float values in KB.
     """
     if not size_str:
         return 999999.0
     size_str = size_str.upper().strip()
-    match = re.search(r'([0-9.]+)\s*([KM]B)', size_str)
+    match = re.search(r'([0-9.]+)\s*([KMG]B)', size_str)
     if not match:
         return 999999.0
     val = float(match.group(1))
     unit = match.group(2)
-    if unit == "MB":
+    if unit == "GB":
+        return val * 1024.0 * 1024.0
+    elif unit == "MB":
         return val * 1024.0
     return val
 

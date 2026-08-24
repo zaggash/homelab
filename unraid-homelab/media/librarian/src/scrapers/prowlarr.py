@@ -7,8 +7,9 @@ from core.models import BookCandidate
 from core.http import json_request
 
 
-# Torznab / Newznab standard categories for Books / EBooks
+# Torznab / Newznab standard categories for Books / EBooks and Audiobooks
 EBOOK_CATEGORIES = [7000, 7020]
+AUDIOBOOK_CATEGORIES = [3030]
 
 
 def search_prowlarr(
@@ -16,7 +17,7 @@ def search_prowlarr(
     categories: Optional[List[int]] = None
 ) -> List[BookCandidate]:
     """
-    Searches indexers configured in Prowlarr, filtered by EBook categories.
+    Searches indexers configured in Prowlarr, filtered by category.
     """
     if not Config.PROWLARR_URL or not Config.PROWLARR_API_KEY:
         return []
@@ -37,6 +38,7 @@ def search_prowlarr(
         logging.warning(f"Prowlarr search returned status {status} or invalid payload.")
         return []
 
+    is_audio_search = bool(categories and 3030 in categories)
     candidates: List[BookCandidate] = []
     for item in data:
         if not isinstance(item, dict):
@@ -52,17 +54,31 @@ def search_prowlarr(
 
         # Format file size
         size_kb = float(size_bytes) / 1024.0 if size_bytes else 0
-        size_str = f"{size_kb / 1024.0:.1f}MB" if size_kb > 1024 else f"{size_kb:.0f}KB"
+        if size_kb >= 1024 * 1024:
+            size_str = f"{size_kb / (1024.0 * 1024.0):.1f}GB"
+        elif size_kb >= 1024:
+            size_str = f"{size_kb / 1024.0:.1f}MB"
+        else:
+            size_str = f"{size_kb:.0f}KB"
 
         # Determine format from title
-        fmt = "epub"
-        if ".pdf" in title.lower() or " pdf" in title.lower():
+        title_lower = title.lower()
+        if ".m4b" in title_lower or "m4b" in title_lower:
+            fmt = "m4b"
+        elif ".mp3" in title_lower or "mp3" in title_lower:
+            fmt = "mp3"
+        elif ".flac" in title_lower or "flac" in title_lower:
+            fmt = "flac"
+        elif ".pdf" in title_lower or " pdf" in title_lower:
             fmt = "pdf"
-        elif ".mobi" in title.lower():
+        elif ".mobi" in title_lower or " mobi" in title_lower:
             fmt = "mobi"
+        elif ".epub" in title_lower or " epub" in title_lower:
+            fmt = "epub"
+        else:
+            fmt = "audiobook" if is_audio_search else "epub"
 
         # Check language markers
-        title_lower = title.lower()
         is_fr = "french" in title_lower or "fr" in title_lower or "vff" in title_lower or "truefrench" in title_lower
 
         candidates.append(BookCandidate(
@@ -79,3 +95,10 @@ def search_prowlarr(
 
     logging.info(f"Prowlarr returned {len(candidates)} candidates for '{query}'.")
     return candidates
+
+
+def search_prowlarr_audiobooks(query: str) -> List[BookCandidate]:
+    """
+    Searches indexers configured in Prowlarr for audiobooks (Category 3030).
+    """
+    return search_prowlarr(query, categories=AUDIOBOOK_CATEGORIES)

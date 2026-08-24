@@ -47,16 +47,25 @@ def handle_event(
             if not event.photo_id:
                 signal_client.send_message(f"🔍 Recherche de '{query}' en cours...", event.reply_to)
 
-            epub_path, status_msg = pipeline.process_book_request(query)
+            epub_path, status_msg, audio_note = pipeline.process_book_request(query)
             if epub_path:
                 signal_client.send_message(f"📥 {status_msg}\nEnvoi du livre en cours...", event.reply_to)
-                signal_client.send_message("✨ Voilà ton livre ! Bonne lecture 📖", event.reply_to, attachment_path=epub_path)
+                msg = "✨ Voilà ton livre ! Bonne lecture 📖"
+                if audio_note:
+                    msg += f"\n\n{audio_note}"
+                signal_client.send_message(msg, event.reply_to, attachment_path=epub_path)
                 logging.info(f"Process complete. Book sent to {event.reply_to} and saved in {Config.IMPORT_DIR}")
             elif "qBittorrent" in status_msg or "trouvé" in status_msg.lower():
-                signal_client.send_message(f"📥 {status_msg}", event.reply_to)
+                msg = f"📥 {status_msg}"
+                if audio_note:
+                    msg += f"\n\n{audio_note}"
+                signal_client.send_message(msg, event.reply_to)
                 logging.info(f"Background task queued for {event.reply_to}: {status_msg}")
             else:
-                signal_client.send_message(f"⚠️ {status_msg}", event.reply_to)
+                msg = f"⚠️ {status_msg}"
+                if audio_note:
+                    msg += f"\n\n{audio_note}"
+                signal_client.send_message(msg, event.reply_to)
 
     except Exception as e:
         logging.error(f"Unhandled error in worker task: {e}")
