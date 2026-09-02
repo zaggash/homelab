@@ -1,7 +1,7 @@
 services:
   minecraft-server:
     container_name: minecraft-server
-    image: itzg/minecraft-server:java21@sha256:b7c41f7a105b45a9d1022a8a34b14f9b3f9b98469367b4f925c700ccf2aae5db
+    image: itzg/minecraft-server:java21@sha256:6691a620cb88ae666c9fd2a4211c3c0ae611943ca8bd23e4cebd785921032ec4
     labels:
       folder.view3: Gaming
       net.unraid.docker.icon: file://${SECRET_APPDATA}/icons/minecraft.png
