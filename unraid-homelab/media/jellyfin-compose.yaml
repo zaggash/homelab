@@ -1,7 +1,10 @@
 services:
   jellyfin:
     container_name: jellyfin
-    image: ghcr.io/linuxserver/jellyfin:10.11.11@sha256:438e44330078e6b1a810fdec9dc0f4773e6595edb137c5eb4417a516da4c7f0e
+    image: ghcr.io/jellyfin/jellyfin:10.11.11@sha256:45f648c382a0c8b552582fcea40e95cb17c5d475473a891cba0eb7523fb92112
+    user: ${UID}:${GID}
+    group_add:
+      - '18'
     labels:
       folder.view3: Media
       net.unraid.docker.icon: file://${SECRET_APPDATA}/icons/jellyfin.png
@@ -12,18 +15,17 @@ services:
       traefik.http.services.jellyfin.loadbalancer.server.port: 8096
       traefik.http.services.jellyfin.loadbalancer.server.scheme: http
     volumes:
-      - "${SECRET_APPDATA}/jellyfin:/config"
+      - "${SECRET_APPDATA}/jellyfin/config:/config"
+      - "${SECRET_APPDATA}/jellyfin/cache:/cache"
       - "${SECRET_DATADIR}/media:/media"
     devices:
-      - /dev/dri:/dev/dri
-      - /dev/kfd:/dev/kfd
+      - /dev/dri/renderD128:/dev/dri/renderD128
     shm_size: '2gb'
     environment:
       TZ: ${TZ}
-      PUID: ${UID}
-      PGID: ${GID}
+      JELLYFIN_DATA_DIR: "/config/data"
+      JELLYFIN_CONFIG_DIR: "/config"
       #JELLYFIN_PublishedServerUrl: http://vod.${SECRET_HOME_DOMAIN} # Unused unless Macvlan
-      DOCKER_MODS: linuxserver/mods:jellyfin-amd
     networks:
       media:
     restart: always
