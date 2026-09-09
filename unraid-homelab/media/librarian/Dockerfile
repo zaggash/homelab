@@ -1,5 +1,5 @@
 # Use Debian-based Python slim image for Camoufox & Playwright compatibility
-FROM python:3.12-slim
+FROM python:3.14-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
