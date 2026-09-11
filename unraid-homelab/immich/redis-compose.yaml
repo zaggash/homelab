@@ -19,4 +19,4 @@ services:
       TZ: ${TZ}
     restart: always
     healthcheck:
-      test: redis-cli ping || exit 1
+      test: redis-cli ping | grep -q PONG || exit 1
