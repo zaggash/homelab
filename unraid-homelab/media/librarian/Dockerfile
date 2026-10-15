@@ -7,6 +7,7 @@ ENV PYTHONPATH=/app/src
 ENV CAMOUFOX_HEADLESS=virtual
 ENV HOME=/app
 ENV XDG_CACHE_HOME=/app/.cache
+ENV PATH="/app/.venv/bin:$PATH"
 
 # Install OS libraries for headless Firefox/Camoufox, Xvfb and font rendering
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -24,22 +25,22 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 # Create non-root user matching standard homelab permissions (UID/GID 1000)
 RUN groupadd -g 1000 librarian && \
-    useradd -u 1000 -g librarian -m -d /app librarian
-
-# Set up workdir and import directory
-WORKDIR /app
-RUN mkdir -p /books_import /app/.cache && \
+    useradd -u 1000 -g librarian -m -d /app librarian && \
+    mkdir -p /books_import /app/.cache && \
     chown -R librarian:librarian /app /books_import
-
-# Install dependencies including invisible_playwright, camoufox, and fetch browser
-RUN pip install --no-cache-dir invisible_playwright invisible_core camoufox[geoip] psutil tzdata && \
-    su librarian -c "camoufox fetch"
-
-# Copy application source code
-COPY --chown=librarian:librarian src/ ./src/
 
 # Switch to non-root user
 USER librarian
+WORKDIR /app
+
+# Create virtualenv and install dependencies in non-root user space
+RUN python -m venv /app/.venv && \
+    pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir invisible_playwright invisible_core "camoufox[geoip]" psutil tzdata && \
+    camoufox fetch
+
+# Copy application source code
+COPY --chown=librarian:librarian src/ ./src/
 
 # Healthcheck ensuring polling loop heartbeat stays fresh
 HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
