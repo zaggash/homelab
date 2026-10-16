@@ -1,7 +1,7 @@
 services:
   sonarr:
     container_name: sonarr
-    image: ghcr.io/home-operations/sonarr:5.0.0@sha256:6c9d5f5e005ade94cdaa2a9e454f66a53e159c3b0950260484fd88c5ee4eea1a
+    image: ghcr.io/home-operations/sonarr:5.0.0@sha256:d40f6e5b384eb9489944ea939b20a6903dadffedc26624aaa322ca712a3c8260
     labels:
       folder.view3: Media
       net.unraid.docker.icon: file://${SECRET_APPDATA}/icons/sonarr.png
