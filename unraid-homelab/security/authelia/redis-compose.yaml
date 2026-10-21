@@ -1,7 +1,7 @@
 services:
   authelia-redis:
     container_name: authelia-redis
-    image: docker.io/redis:8.10@sha256:2c2dff791878316e3b083188be0d578423b24813cdda5de0e80ea4f7b3e6bfd6
+    image: docker.io/redis:8.10@sha256:5c02d7c0f8d75af45958c0294a8004f2e14b42df98a1103e3a669aa7ec787be6
     command: redis-server --requirepass "${SECRET_AUTHELIA_REDIS_PASSWORD}"
     labels:
       folder.view3: Security
