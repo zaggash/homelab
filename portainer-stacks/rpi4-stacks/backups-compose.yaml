@@ -2,7 +2,7 @@ version: "3"
 
 services:
   dns: &backup_service
-    image: offen/docker-volume-backup:v2.49.2@sha256:6630d1f122f42ada84566550e47647d2e7488ac3775176ee654b64e489ab6e40
+    image: offen/docker-volume-backup:v2.49.3@sha256:570a4bea8c19f824b22a4ce31e01afdf418a7bb616dcb17052f0a78b504ac54c
     restart: always
     dns:
       - 192.168.1.10
