@@ -1,7 +1,7 @@
 services:
   traefik-socket:
     container_name: traefik-socket
-    image: ghcr.io/wollomatic/socket-proxy:1.13.1@sha256:e78e68ba3ea4a6bf8ee47865ac1d1f98d525c3660df948554e766283c40d3f4b
+    image: ghcr.io/wollomatic/socket-proxy:1.13.2@sha256:82db5c4728e4fd68d969ec3d74d99bf6d990d06428b583a6f1daabab27de1bd3
     labels:
       folder.view3: Ingress
       net.unraid.docker.icon: file://${SECRET_APPDATA}/icons/docker-socket.png
