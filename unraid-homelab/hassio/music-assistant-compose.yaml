@@ -1,0 +1,19 @@
+services:
+  music-assistant:
+    container_name: music-assistant
+    image: ghcr.io/sproft/ytmusic-free-provider:edge@sha256:6dbd3849957917056301111fb42ec70ce2e9462b8346c574324462d2e52efbaa
+    labels:
+      folder.view3: Hassio
+      net.unraid.docker.icon: file://${SECRET_APPDATA}/icons/music-assistant.png
+      traefik.enable: false
+    volumes:
+      - "${SECRET_APPDATA}/hassio/music-assistant:/data/"
+      - "/mnt/user/musics/:/media:ro"
+    environment:
+      TZ: ${TZ}
+      LOG_LEVEL: info
+    networks:
+      lan:
+        ipv4_address: 192.168.1.13
+      hassio-net:
+    restart: unless-stopped
