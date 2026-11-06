@@ -1,7 +1,7 @@
 services:
   hassio-mqtt:
     container_name: hassio-mqtt
-    image: docker.io/eclipse-mosquitto:2.1.2-alpine@sha256:48b5f8c14504da1155156282ecc557897ff002cd60fd604aa2fd74d47bb725ff
+    image: docker.io/eclipse-mosquitto:2.1.2-alpine@sha256:467ee25e5b6aaaa5562e1f64c60f723274ebb2dbad62cbb89f981d051eb7c6b7
     labels:
       folder.view3: Hassio
       net.unraid.docker.icon: file://${SECRET_APPDATA}/icons/mqtt.png
