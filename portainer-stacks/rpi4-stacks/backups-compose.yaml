@@ -42,25 +42,7 @@ services:
       #- "unifi_etc-rabbitmq-ssl:/backup/unifi/etc/rabbitmq/ssl"
       - "unraid_backups:/archive"
 
-  sendspin-bt:
-    <<: *backup_service
-    environment:
-      <<: *backup_env
-      BACKUP_FILENAME: "sendspin-bt-%Y-%m-%dT%H-%M-%S.tar.gz"
-      BACKUP_LATEST_SYMLINK: "sendspin-bt-latest.tar.gz"
-      BACKUP_ARCHIVE: "/archive/sendspin-bt"
-      BACKUP_SOURCE: "/backup/sendspin-bt"
-      BACKUP_CRON_EXPRESSION: "15 0 * * *"
-      BACKUP_RETENTION_DAYS: "7"
-      BACKUP_PRUNING_PREFIX: "sendspin-bt-"
-      BACKUP_EXCLUDE_REGEXP: ""
-    volumes:
-      - "sendspin-bt_data:/backup/sendspin-bt/data"
-      - "unraid_backups:/archive"
-
 volumes:
-  sendspin-bt_data:
-    external: true
   dns_config:
     external: true
   dns_log:
